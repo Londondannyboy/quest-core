@@ -15,7 +15,7 @@ https://quest-core.vercel.app/api/hume-clm-sse
 ## Steps to Update:
 
 1. Go to Hume Dashboard: https://app.hume.ai
-2. Find your configuration (ID: 8f16326f-a45d-4433-9a12-890120244ec3)
+2. Find your configuration (ID: 671d99bc-1358-4aa7-b92a-d6b762cb18b5)
 3. Edit the Custom Language Model URL
 4. Change it to: `https://quest-core.vercel.app/api/hume-clm-sse`
 5. Save the configuration

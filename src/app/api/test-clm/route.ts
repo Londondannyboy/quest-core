@@ -1,5 +1,13 @@
 import { NextRequest } from 'next/server';
 
+export async function GET() {
+  return Response.json({
+    status: 'Test CLM endpoint is working',
+    actualEndpoint: '/api/hume-clm-sse/chat/completions',
+    method: 'Use POST to test the CLM'
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
