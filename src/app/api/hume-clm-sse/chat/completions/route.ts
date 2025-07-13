@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { openai } from '@ai-sdk/openai';
-import { streamText } from 'ai';
 
 export async function POST(request: NextRequest) {
   console.log('[CLM] Received request from Hume');
@@ -16,123 +14,89 @@ export async function POST(request: NextRequest) {
       lastMessage: messages?.[messages.length - 1]
     });
 
-    // Build system prompt with context
-    let systemPrompt = `You are Quest Coach, an AI-powered professional development assistant specializing in career growth and personal excellence.
+    // Get the last user message
+    const lastUserMessage = messages?.filter((m: any) => m.role === 'user').pop();
+    const userContent = lastUserMessage?.content || '';
 
-Your role is to:
-1. Guide users through the Trinity System (Quest, Service, Pledge) for self-discovery
-2. Provide skills intelligence and market insights
-3. Offer personalized career coaching based on user context
-4. Be conversational, supportive, and insightful
+    // Create a simple, fast response
+    let responseText = '';
+    
+    if (messages.length <= 2) {
+      responseText = "Hello! I'm Quest Coach, your AI career development assistant. I'm here to help you explore your professional identity through the Trinity System. What brings you here today?";
+    } else if (userContent.toLowerCase().includes('trinity')) {
+      responseText = "The Trinity System helps you discover three key elements: your Quest (what drives you), your Service (how you help others), and your Pledge (your commitment). Which aspect would you like to explore first?";
+    } else if (userContent.toLowerCase().includes('career')) {
+      responseText = "I'd be happy to help with your career journey. Are you looking to make a transition, develop new skills, or better understand your professional purpose?";
+    } else {
+      responseText = "That's interesting. Can you tell me more about what you're hoping to achieve in our conversation today?";
+    }
 
-Voice Interaction Guidelines:
-- Keep responses concise and natural for voice conversation
-- Ask one question at a time
-- Acknowledge what the user says before responding
-- Be encouraging and supportive
-- Use natural pauses and transitions`;
+    console.log('[CLM] Sending response:', responseText);
 
-    // TODO: Add user context from database when available
-    // const userContext = await getUserContext(user_id);
-    // if (userContext) {
-    //   systemPrompt += `\n\nUser Context:\n${JSON.stringify(userContext)}`;
-    // }
-
-    console.log('[CLM] Creating response stream...');
-
-    // Create the response stream
-    const response = new Response(
-      new ReadableStream({
-        async start(controller) {
-          const encoder = new TextEncoder();
+    // Create the SSE response
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      start(controller) {
+        try {
+          // Send the response as chunks
+          const words = responseText.split(' ');
+          let chunkCount = 0;
           
-          try {
-            console.log('[CLM] Starting stream...');
+          for (let i = 0; i < words.length; i++) {
+            const chunk = words[i] + (i < words.length - 1 ? ' ' : '');
             
-            // Stream the AI response
-            const result = await streamText({
-              model: openai('gpt-4-turbo'),
-              messages: [
-                { role: 'system', content: systemPrompt },
-                ...messages
-              ],
-              temperature: 0.7,
-              maxTokens: 500, // Keep responses concise for voice
-            });
-
-            let chunkCount = 0;
-            
-            for await (const textPart of result.textStream) {
-              chunkCount++;
-              
-              // Format as SSE in OpenAI chat completion format
-              const sseData = {
-                id: `chatcmpl-${Date.now()}`,
-                object: 'chat.completion.chunk',
-                created: Math.floor(Date.now() / 1000),
-                model: 'gpt-4',
-                choices: [{
-                  index: 0,
-                  delta: { content: textPart },
-                  finish_reason: null
-                }]
-              };
-              
-              const chunk = `data: ${JSON.stringify(sseData)}\n\n`;
-              controller.enqueue(encoder.encode(chunk));
-              
-              // Log every 10th chunk to avoid spam
-              if (chunkCount % 10 === 0) {
-                console.log(`[CLM] Sent ${chunkCount} chunks...`);
-              }
-            }
-
-            console.log(`[CLM] Stream complete. Total chunks: ${chunkCount}`);
-
-            // Send the final chunk
-            const finalData = {
+            const sseData = {
               id: `chatcmpl-${Date.now()}`,
               object: 'chat.completion.chunk',
               created: Math.floor(Date.now() / 1000),
               model: 'gpt-4',
               choices: [{
                 index: 0,
-                delta: {},
-                finish_reason: 'stop'
+                delta: { content: chunk },
+                finish_reason: null
               }]
             };
             
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalData)}\n\n`));
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            
-            console.log('[CLM] Sent final chunk and [DONE]');
-            
-          } catch (error) {
-            console.error('[CLM] Streaming error:', error);
-            const errorData = {
-              error: {
-                message: error instanceof Error ? error.message : 'An error occurred during streaming',
-                type: 'streaming_error'
-              }
-            };
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify(errorData)}\n\n`));
-          } finally {
-            controller.close();
-            console.log('[CLM] Stream closed');
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(sseData)}\n\n`));
+            chunkCount++;
           }
+          
+          console.log(`[CLM] Sent ${chunkCount} chunks`);
+          
+          // Send final chunk
+          const finalData = {
+            id: `chatcmpl-${Date.now()}`,
+            object: 'chat.completion.chunk',
+            created: Math.floor(Date.now() / 1000),
+            model: 'gpt-4',
+            choices: [{
+              index: 0,
+              delta: {},
+              finish_reason: 'stop'
+            }]
+          };
+          
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalData)}\n\n`));
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          
+          console.log('[CLM] Response complete');
+          
+        } catch (error) {
+          console.error('[CLM] Stream error:', error);
+        } finally {
+          controller.close();
         }
-      }),
-      {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-          'X-Accel-Buffering': 'no', // Disable Nginx buffering
-        },
       }
-    );
+    });
 
-    return response;
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      },
+    });
     
   } catch (error) {
     console.error('[CLM] Request error:', error);
