@@ -19,7 +19,7 @@ import {
   Lightbulb,
   Shield
 } from 'lucide-react'
-import { VoiceInterface } from '@/components/voice/VoiceInterface'
+import { HumeVoiceInterface } from '@/components/voice/HumeVoiceInterface'
 
 interface VoiceSession {
   id: string
@@ -131,15 +131,9 @@ export default function VoiceCoachPage() {
 
   if (isSessionActive) {
     return (
-      <VoiceInterface
+      <HumeVoiceInterface
         sessionType={sessionType}
-        duration={sessionDuration}
         onEndSession={endSession}
-        voiceSettings={voiceSettings}
-        isListening={isListening}
-        onToggleListening={() => setIsListening(!isListening)}
-        currentMood={currentMood}
-        onMoodChange={setCurrentMood}
       />
     )
   }
