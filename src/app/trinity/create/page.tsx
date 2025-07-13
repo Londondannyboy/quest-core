@@ -275,7 +275,7 @@ export default function TrinityCreatePage() {
                 <ul className="space-y-2 text-sm text-slate-600 mb-6">
                   <li>• What do people consistently come to you for help with?</li>
                   <li>• What complex problems do you solve easily?</li>
-                  <li>• What value do you create that you're most proud of?</li>
+                  <li>• What value do you create that you&apos;re most proud of?</li>
                   <li>• How has your ability to serve others evolved?</li>
                 </ul>
                 <Textarea
@@ -396,7 +396,7 @@ export default function TrinityCreatePage() {
               Trinity Complete!
             </CardTitle>
             <CardDescription>
-              Congratulations! You've created your professional Trinity. This is just the beginning of your journey.
+              Congratulations! You&apos;ve created your professional Trinity. This is just the beginning of your journey.
             </CardDescription>
           </CardHeader>
           <CardContent>

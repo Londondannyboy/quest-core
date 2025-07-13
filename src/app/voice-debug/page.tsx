@@ -199,7 +199,7 @@ export default function VoiceDebugPage() {
           <CardContent>
             <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
               {connectionLog.length === 0 ? (
-                <p className="text-slate-400">No events yet. Click "Test Connection" to start.</p>
+                <p className="text-slate-400">No events yet. Click &quot;Test Connection&quot; to start.</p>
               ) : (
                 connectionLog.map((log, index) => (
                   <div key={index} className="mb-1">
