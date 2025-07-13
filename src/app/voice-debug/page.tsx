@@ -228,9 +228,16 @@ export default function VoiceDebugPage() {
                         {new Date().toLocaleTimeString()}
                       </span>
                     </div>
-                    {msg.message?.content && (
-                      <p className="text-slate-700">{msg.message.content}</p>
-                    )}
+                    {(() => {
+                      if ('message' in msg && msg.message) {
+                        if (typeof msg.message === 'string') {
+                          return <p className="text-slate-700">{msg.message}</p>
+                        } else if ('content' in msg.message && msg.message.content) {
+                          return <p className="text-slate-700">{msg.message.content}</p>
+                        }
+                      }
+                      return null
+                    })()}
                   </div>
                 ))}
               </div>
