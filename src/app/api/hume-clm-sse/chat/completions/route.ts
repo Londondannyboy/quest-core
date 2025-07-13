@@ -3,9 +3,18 @@ import { openai } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 
 export async function POST(request: NextRequest) {
+  console.log('[CLM] Received request from Hume');
+  
   try {
     const body = await request.json();
     const { messages, session_id, user_id } = body;
+    
+    console.log('[CLM] Request body:', { 
+      messageCount: messages?.length, 
+      session_id, 
+      user_id,
+      lastMessage: messages?.[messages.length - 1]
+    });
 
     // Build system prompt with context
     let systemPrompt = `You are Quest Coach, an AI-powered professional development assistant specializing in career growth and personal excellence.
@@ -29,6 +38,8 @@ Voice Interaction Guidelines:
     //   systemPrompt += `\n\nUser Context:\n${JSON.stringify(userContext)}`;
     // }
 
+    console.log('[CLM] Creating response stream...');
+
     // Create the response stream
     const response = new Response(
       new ReadableStream({
@@ -36,6 +47,8 @@ Voice Interaction Guidelines:
           const encoder = new TextEncoder();
           
           try {
+            console.log('[CLM] Starting stream...');
+            
             // Stream the AI response
             const result = await streamText({
               model: openai('gpt-4-turbo'),
@@ -47,9 +60,11 @@ Voice Interaction Guidelines:
               maxTokens: 500, // Keep responses concise for voice
             });
 
-            let isFirstChunk = true;
+            let chunkCount = 0;
             
             for await (const textPart of result.textStream) {
+              chunkCount++;
+              
               // Format as SSE in OpenAI chat completion format
               const sseData = {
                 id: `chatcmpl-${Date.now()}`,
@@ -63,8 +78,16 @@ Voice Interaction Guidelines:
                 }]
               };
               
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify(sseData)}\n\n`));
+              const chunk = `data: ${JSON.stringify(sseData)}\n\n`;
+              controller.enqueue(encoder.encode(chunk));
+              
+              // Log every 10th chunk to avoid spam
+              if (chunkCount % 10 === 0) {
+                console.log(`[CLM] Sent ${chunkCount} chunks...`);
+              }
             }
+
+            console.log(`[CLM] Stream complete. Total chunks: ${chunkCount}`);
 
             // Send the final chunk
             const finalData = {
@@ -82,17 +105,20 @@ Voice Interaction Guidelines:
             controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalData)}\n\n`));
             controller.enqueue(encoder.encode('data: [DONE]\n\n'));
             
+            console.log('[CLM] Sent final chunk and [DONE]');
+            
           } catch (error) {
-            console.error('Streaming error:', error);
+            console.error('[CLM] Streaming error:', error);
             const errorData = {
               error: {
-                message: 'An error occurred during streaming',
+                message: error instanceof Error ? error.message : 'An error occurred during streaming',
                 type: 'streaming_error'
               }
             };
             controller.enqueue(encoder.encode(`data: ${JSON.stringify(errorData)}\n\n`));
           } finally {
             controller.close();
+            console.log('[CLM] Stream closed');
           }
         }
       }),
@@ -101,6 +127,7 @@ Voice Interaction Guidelines:
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
           'Connection': 'keep-alive',
+          'X-Accel-Buffering': 'no', // Disable Nginx buffering
         },
       }
     );
@@ -108,9 +135,9 @@ Voice Interaction Guidelines:
     return response;
     
   } catch (error) {
-    console.error('CLM SSE Error:', error);
+    console.error('[CLM] Request error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

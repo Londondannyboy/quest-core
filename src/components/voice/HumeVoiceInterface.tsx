@@ -80,7 +80,19 @@ export function HumeVoiceInterface({
         updateEmotionalState(lastMessage.message.content || '')
       }
     }
+    
+    // Handle errors
+    if (lastMessage.type === 'error') {
+      console.error('Hume error:', lastMessage)
+    }
   }, [messages])
+  
+  // Auto-reconnect on disconnect
+  useEffect(() => {
+    if (status.value === 'error') {
+      console.log('Connection error detected, will not auto-reconnect to prevent loops')
+    }
+  }, [status.value])
 
   const updateEmotionalState = (userInput: string) => {
     setEmotionalState(prev => ({
