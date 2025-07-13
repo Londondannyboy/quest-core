@@ -23,7 +23,7 @@ export default function RootLayout({
             type: 'apiKey',
             value: process.env.NEXT_PUBLIC_HUME_API_KEY || '',
           }}
-          configId={process.env.NEXT_PUBLIC_HUME_CONFIG_ID || ''}
+          configId={process.env.NEXT_PUBLIC_HUME_CONFIGURE_ID_QUEST_CORE || ''}
           hostname="api.hume.ai"
         >
           <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">

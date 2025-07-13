@@ -175,7 +175,7 @@ export default function VoiceDebugPage() {
               <div className="flex justify-between">
                 <span className="text-slate-600">Config ID:</span>
                 <span className="font-mono text-xs">
-                  {process.env.NEXT_PUBLIC_HUME_CONFIG_ID || 'Not set'}
+                  {process.env.NEXT_PUBLIC_HUME_CONFIGURE_ID_QUEST_CORE || 'Not set'}
                 </span>
               </div>
               <div className="flex justify-between">
