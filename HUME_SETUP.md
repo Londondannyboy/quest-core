@@ -70,7 +70,7 @@ Engage naturally in voice conversations, listening actively and responding thoug
 Make sure these are set in your Vercel project:
 ```env
 NEXT_PUBLIC_HUME_API_KEY=your_hume_api_key
-NEXT_PUBLIC_HUME_CONFIG_ID=your_config_id_from_dashboard
+NEXT_PUBLIC_HUME_CONFIGURE_ID_QUEST_CORE=671d99bc-1358-4aa7-b92a-d6b762cb18b5
 OPENAI_API_KEY=your_openai_api_key
 ```
 
