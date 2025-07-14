@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@clerk/nextjs';
 import { Badge } from '@/components/ui/badge';
+import { CompanySearch } from '@/components/ui/company-search';
 
 interface Company {
   id: string;
@@ -31,6 +32,7 @@ interface Institution {
 interface WorkExperience {
   id?: string;
   companyId: string;
+  companyName: string;
   position: string;
   startDate: string;
   endDate?: string;
@@ -71,6 +73,7 @@ export default function ProfileSetupPage() {
 
   const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([{
     companyId: '',
+    companyName: '',
     position: '',
     startDate: '',
     endDate: '',
@@ -125,6 +128,7 @@ export default function ProfileSetupPage() {
   const addWorkExperience = () => {
     setWorkExperiences(prev => [...prev, {
       companyId: '',
+      companyName: '',
       position: '',
       startDate: '',
       endDate: '',
@@ -290,16 +294,14 @@ export default function ProfileSetupPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Company *</label>
-                  <select
-                    value={exp.companyId}
-                    onChange={(e) => updateWorkExperience(index, 'companyId', e.target.value)}
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="">Select company</option>
-                    {companies.map(company => (
-                      <option key={company.id} value={company.id}>{company.name}</option>
-                    ))}
-                  </select>
+                  <CompanySearch
+                    value={exp.companyName}
+                    onSelect={(company) => {
+                      updateWorkExperience(index, 'companyId', company.id);
+                      updateWorkExperience(index, 'companyName', company.name);
+                    }}
+                    placeholder="Search for your company..."
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Position *</label>
