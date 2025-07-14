@@ -1,27 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrCreateUser } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
-
 // POST - Create/Update Surface Profile
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
     const body = await request.json();
     const { profile, workExperiences, educations, skills } = body;
-
-    // Get or create user
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
 
     // Use transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
@@ -131,14 +117,10 @@ export async function POST(request: NextRequest) {
 // GET - Fetch user's surface profile
 export async function GET() {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+    const userWithProfile = await prisma.user.findUnique({
+      where: { id: user.id },
       include: {
         surfaceProfile: true,
         workExperiences: {
@@ -163,15 +145,11 @@ export async function GET() {
       }
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
     return NextResponse.json({
-      profile: user.surfaceProfile,
-      workExperiences: user.workExperiences,
-      education: user.userEducation,
-      skills: user.userSkills
+      profile: userWithProfile?.surfaceProfile,
+      workExperiences: userWithProfile?.workExperiences || [],
+      education: userWithProfile?.userEducation || [],
+      skills: userWithProfile?.userSkills || []
     });
 
   } catch (error) {

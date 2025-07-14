@@ -1,27 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrCreateUser } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
-
 // POST - Create/Update Working Profile
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
     const body = await request.json();
     const { profile, projects, achievements } = body;
-
-    // Get or create user
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
 
     // Use transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
@@ -109,14 +95,10 @@ export async function POST(request: NextRequest) {
 // GET - Fetch user's working profile
 export async function GET() {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+    const userWithProfile = await prisma.user.findUnique({
+      where: { id: user.id },
       include: {
         workingProfile: {
           include: {
@@ -137,15 +119,11 @@ export async function GET() {
       }
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
     return NextResponse.json({
-      profile: user.workingProfile,
-      projects: user.workingProfile?.workingProjects || [],
-      achievements: user.workingProfile?.workingAchievements || [],
-      media: user.workingProfile?.workingMedia || []
+      profile: userWithProfile?.workingProfile,
+      projects: userWithProfile?.workingProfile?.workingProjects || [],
+      achievements: userWithProfile?.workingProfile?.workingAchievements || [],
+      media: userWithProfile?.workingProfile?.workingMedia || []
     });
 
   } catch (error) {

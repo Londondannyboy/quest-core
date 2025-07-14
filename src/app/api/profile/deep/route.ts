@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrCreateUser } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
-
 // GET - Fetch user's deep repository
 export async function GET() {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+    const userWithDeep = await prisma.user.findUnique({
+      where: { id: user.id },
       include: {
         trinityCore: true,
         deepInsights: {
@@ -21,13 +16,9 @@ export async function GET() {
       }
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
     return NextResponse.json({
-      trinityCore: user.trinityCore || null,
-      insights: user.deepInsights || []
+      trinityCore: userWithDeep?.trinityCore || null,
+      insights: userWithDeep?.deepInsights || []
     });
 
   } catch (error) {
@@ -39,23 +30,10 @@ export async function GET() {
 // POST - Create/Update Deep Repository (usually system-managed)
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
     const body = await request.json();
     const { trinityCore, insights } = body;
-
-    // Get or create user
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
 
     // Use transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {

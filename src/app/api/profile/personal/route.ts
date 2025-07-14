@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrCreateUser } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
-
 // GET - Fetch user's personal repository
 export async function GET() {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+    const userWithPersonal = await prisma.user.findUnique({
+      where: { id: user.id },
       include: {
         personalGoals: {
           orderBy: { createdAt: 'desc' }
@@ -23,13 +18,9 @@ export async function GET() {
       }
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
     return NextResponse.json({
-      goals: user.personalGoals || [],
-      notes: user.personalNotes || []
+      goals: userWithPersonal?.personalGoals || [],
+      notes: userWithPersonal?.personalNotes || []
     });
 
   } catch (error) {
@@ -41,23 +32,10 @@ export async function GET() {
 // POST - Create/Update Personal Repository
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
     const body = await request.json();
     const { goals, notes } = body;
-
-    // Get or create user
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
 
     // Use transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
