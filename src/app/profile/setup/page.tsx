@@ -302,7 +302,7 @@ export default function ProfileSetupPage() {
                       const selectedValue = e.target.value;
                       updateWorkExperience(index, 'companyId', selectedValue);
                       // Set company name based on selection
-                      const companyNames = {
+                      const companyNames: Record<string, string> = {
                         'test-company-1': 'Tech Corp Ltd',
                         'test-company-2': 'StartupXYZ', 
                         'test-company-3': 'BigCorp Inc'

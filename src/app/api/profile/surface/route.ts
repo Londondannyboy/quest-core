@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
             // Handle test company IDs
             let actualCompanyId = exp.companyId;
             if (exp.companyId.startsWith('test-company-')) {
-              const testCompanies = {
+              const testCompanies: Record<string, { name: string; industry: string }> = {
                 'test-company-1': { name: 'Tech Corp Ltd', industry: 'Software Development' },
                 'test-company-2': { name: 'StartupXYZ', industry: 'Technology' },
                 'test-company-3': { name: 'BigCorp Inc', industry: 'Enterprise Software' }
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
             // Handle test institution IDs
             let actualInstitutionId = edu.institutionId;
             if (edu.institutionId.startsWith('test-institution-')) {
-              const testInstitutions = {
+              const testInstitutions: Record<string, { name: string; type: string; country: string }> = {
                 'test-institution-1': { name: 'University of Technology', type: 'university', country: 'United States' },
                 'test-institution-2': { name: 'Community College Central', type: 'community_college', country: 'United States' },
                 'test-institution-3': { name: 'Coding Bootcamp Pro', type: 'bootcamp', country: 'United States' }
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
             // Handle test skill IDs
             let actualSkillId = skill.skillId;
             if (skill.skillId.startsWith('test-skill-')) {
-              const testSkills = {
+              const testSkills: Record<string, { name: string; category: string }> = {
                 'test-skill-1': { name: 'JavaScript', category: 'Programming Languages' },
                 'test-skill-2': { name: 'React', category: 'Web Development' },
                 'test-skill-3': { name: 'Node.js', category: 'Web Development' },
