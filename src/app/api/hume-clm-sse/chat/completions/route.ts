@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { getOrCreateUser, createConversation, addMessageToConversation } from '@/lib/db/users';
 
@@ -24,15 +26,30 @@ export async function POST(request: NextRequest) {
         let dbUser = null;
         let conversation = null;
         
-        // For now, we'll use a mock user until Clerk is integrated
-        // Later this will come from Clerk authentication
-        if (user_id || session_id) {
-          try {
-            // Mock user data - replace with Clerk data later
-            const mockClerkId = user_id || `temp_${session_id}`;
-            const mockEmail = `${mockClerkId}@quest-core.temp`;
+        // Get authenticated user from Clerk
+        try {
+          const { userId } = await auth();
+          
+          if (userId) {
+            // Get user details from Clerk
+            const clerk = await clerkClient();
+            const clerkUser = await clerk.users.getUser(userId);
             
-            dbUser = await getOrCreateUser(mockClerkId, mockEmail, 'Quest User');
+            // Use real Clerk user data
+            const primaryEmail = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId)?.emailAddress;
+            const fullName = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim();
+            
+            dbUser = await getOrCreateUser(
+              clerkUser.id,
+              primaryEmail || `${clerkUser.id}@quest-core.temp`,
+              fullName || clerkUser.username || 'Quest User'
+            );
+            
+            console.log('[CLM] Authenticated user:', { 
+              clerkId: clerkUser.id, 
+              name: dbUser.name, 
+              email: dbUser.email 
+            });
             
             // Create or get conversation
             if (session_id && dbUser) {
@@ -44,10 +61,14 @@ export async function POST(request: NextRequest) {
                 conversation = await createConversation(dbUser.id, session_id, 'voice');
               }
             }
-          } catch (error) {
-            console.error('[CLM] Database error:', error);
-            // Continue without database if there's an error
+          } else {
+            console.log('[CLM] No authenticated user found');
+            // For unauthenticated users, we could create a temporary user
+            // or require authentication - for now, we'll continue without DB
           }
+        } catch (error) {
+          console.error('[CLM] Authentication/Database error:', error);
+          // Continue without database if there's an error
         }
 
         // Get the last user message

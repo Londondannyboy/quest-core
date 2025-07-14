@@ -3,14 +3,42 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowRight, Lightbulb, Target, Shield, Mic, BookOpen, Users } from 'lucide-react'
+import { ArrowRight, Lightbulb, Target, Shield, Mic, BookOpen, Users, LogIn, UserPlus } from 'lucide-react'
+import { useUser, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 
 export default function HomePage() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
+  const { user } = useUser()
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Auth Bar */}
+      <div className="flex justify-end mb-8">
+        <SignedIn>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-slate-600">Welcome back, {user?.firstName || 'Quest Explorer'}!</span>
+            <UserButton />
+          </div>
+        </SignedIn>
+        <SignedOut>
+          <div className="flex gap-2">
+            <Link href="/sign-in">
+              <Button variant="outline" size="sm">
+                <LogIn className="h-4 w-4 mr-2" />
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/sign-up">
+              <Button size="sm">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Sign Up
+              </Button>
+            </Link>
+          </div>
+        </SignedOut>
+      </div>
+
       {/* Hero Section */}
       <div className="text-center max-w-4xl mx-auto mb-16">
         <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -23,17 +51,32 @@ export default function HomePage() {
           <span className="font-semibold text-yellow-600">What do you commit to?</span>
         </p>
         <div className="flex gap-4 justify-center">
-          <Link href="/trinity/create">
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-              Begin Your Trinity Journey
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-          <Link href="/skills">
-            <Button variant="outline" size="lg">
-              Explore Skills
-            </Button>
-          </Link>
+          <SignedIn>
+            <Link href="/trinity/create">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                Continue Your Trinity Journey
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/voice-coach">
+              <Button variant="outline" size="lg">
+                Voice Coaching
+              </Button>
+            </Link>
+          </SignedIn>
+          <SignedOut>
+            <Link href="/sign-up">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                Start Your Journey
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/sign-in">
+              <Button variant="outline" size="lg">
+                Sign In
+              </Button>
+            </Link>
+          </SignedOut>
         </div>
       </div>
 
@@ -189,17 +232,40 @@ export default function HomePage() {
 
       {/* Call to Action */}
       <div className="text-center bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-12">
-        <h2 className="text-3xl font-bold mb-4">Ready to discover your authentic professional identity?</h2>
-        <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
-          Join thousands of professionals who have discovered their true calling through the Trinity system. 
-          Your journey to authentic professional fulfillment starts here.
-        </p>
-        <Link href="/trinity/create">
-          <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-            Start Your Trinity Journey
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-        </Link>
+        <SignedIn>
+          <h2 className="text-3xl font-bold mb-4">Ready to dive deeper into your professional identity?</h2>
+          <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
+            Now that you&apos;re part of the Quest Core community, explore advanced features and deepen your Trinity understanding
+            with our AI-powered voice coaching and personalized skill development.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link href="/voice-coach">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                Try Voice Coaching
+                <Mic className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/trinity/create">
+              <Button variant="outline" size="lg">
+                Refine Your Trinity
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </SignedIn>
+        <SignedOut>
+          <h2 className="text-3xl font-bold mb-4">Ready to discover your authentic professional identity?</h2>
+          <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
+            Join thousands of professionals who have discovered their true calling through the Trinity system. 
+            Your journey to authentic professional fulfillment starts here.
+          </p>
+          <Link href="/sign-up">
+            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              Start Your Trinity Journey
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+        </SignedOut>
       </div>
     </div>
   )
