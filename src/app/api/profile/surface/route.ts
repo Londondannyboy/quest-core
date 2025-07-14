@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
                 fieldOfStudy: edu.fieldOfStudy || undefined,
                 startDate: edu.startDate ? new Date(edu.startDate) : null,
                 endDate: edu.endDate ? new Date(edu.endDate) : null,
-                grade: edu.grade || undefined
+                gpa: edu.grade || undefined
               }
             });
           }

@@ -33,7 +33,7 @@ interface Education {
   fieldOfStudy?: string;
   startDate?: string;
   endDate?: string;
-  grade?: string;
+  gpa?: string;
   institution: {
     name: string;
     type?: string;
@@ -247,8 +247,8 @@ export default function ProfilePage() {
                         )}
                       </div>
                     </div>
-                    {edu.grade && (
-                      <Badge variant="secondary">{edu.grade}</Badge>
+                    {edu.gpa && (
+                      <Badge variant="secondary">{edu.gpa}</Badge>
                     )}
                   </div>
                   {edu.fieldOfStudy && (
