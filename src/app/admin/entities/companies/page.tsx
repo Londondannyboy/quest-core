@@ -28,6 +28,27 @@ export default function CompaniesPage() {
     industry: ''
   });
 
+  const [customIndustry, setCustomIndustry] = useState('');
+  const [showCustomIndustry, setShowCustomIndustry] = useState(false);
+
+  const INDUSTRY_CATEGORIES = [
+    'Technology',
+    'Healthcare', 
+    'Finance',
+    'Education',
+    'Retail',
+    'Manufacturing',
+    'Consulting',
+    'Marketing & Advertising',
+    'Real Estate',
+    'Non-profit',
+    'Government',
+    'Media & Entertainment',
+    'Transportation',
+    'Energy',
+    'Other'
+  ];
+
   useEffect(() => {
     if (isSignedIn) {
       fetchCompanies();
@@ -60,7 +81,7 @@ export default function CompaniesPage() {
         body: JSON.stringify({
           name: newCompany.name.trim(),
           website: newCompany.website.trim() || undefined,
-          industry: newCompany.industry.trim() || undefined
+          industry: showCustomIndustry ? customIndustry.trim() : newCompany.industry || undefined
         })
       });
 
@@ -68,9 +89,16 @@ export default function CompaniesPage() {
         const company = await response.json();
         setCompanies(prev => [company, ...prev]);
         setNewCompany({ name: '', website: '', industry: '' });
+        setCustomIndustry('');
+        setShowCustomIndustry(false);
+      } else {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        alert(`Failed to create company: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error creating company:', error);
+      alert('Network error - please try again');
     } finally {
       setCreating(false);
     }
@@ -148,11 +176,45 @@ export default function CompaniesPage() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-2 block">Industry</label>
-                <Input
-                  value={newCompany.industry}
-                  onChange={(e) => setNewCompany(prev => ({ ...prev, industry: e.target.value }))}
-                  placeholder="e.g., Technology, Finance"
-                />
+                {!showCustomIndustry ? (
+                  <select
+                    value={newCompany.industry}
+                    onChange={(e) => {
+                      if (e.target.value === 'custom') {
+                        setShowCustomIndustry(true);
+                        setNewCompany(prev => ({ ...prev, industry: '' }));
+                      } else {
+                        setNewCompany(prev => ({ ...prev, industry: e.target.value }));
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">Select industry</option>
+                    {INDUSTRY_CATEGORIES.map(industry => (
+                      <option key={industry} value={industry}>{industry}</option>
+                    ))}
+                    <option value="custom">+ Create new industry</option>
+                  </select>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      value={customIndustry}
+                      onChange={(e) => setCustomIndustry(e.target.value)}
+                      placeholder="Enter custom industry"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowCustomIndustry(false);
+                        setCustomIndustry('');
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
             <Button type="submit" disabled={creating || !newCompany.name.trim()}>
