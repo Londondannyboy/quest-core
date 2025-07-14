@@ -159,7 +159,7 @@ Surface Repo → Initial Data → Deep Repo Gen → Personal Goals → AI Mentor
 **User Story**: As a professional, I want voice coaching that understands my complete professional identity across all repo layers.
 
 **Features**:
-- **Repo-Aware Coaching**: Access to all three layers for context
+- **Repo-Aware Coaching**: Access to all four layers for context
 - **Trinity Integration**: Deep repo Trinity data for personalization
 - **Goal Alignment**: Personal repo goals inform coaching
 - **Profile Enhancement**: Suggestions for Surface repo improvements
@@ -171,6 +171,52 @@ Surface Repo → Initial Data → Deep Repo Gen → Personal Goals → AI Mentor
 - Real-time coaching logic
 - Session management
 
+### **6. Professional Relationship Intelligence (Future)**
+**Status**: Not implemented ❌
+**Priority**: Medium (Future Phase)
+
+**User Story**: As a professional, I want to understand and visualize my professional relationships and have conversational access to my network context.
+
+**Key Innovation**: Transform static professional profiles into dynamic relationship maps that power both visualization and conversational intelligence.
+
+**Features**:
+
+**🕸️ Neo4j Graph Visualization**:
+- **Interactive Network Maps**: Visual representation of professional connections
+- **Relationship Strength Indicators**: Visual strength scoring (1-5 scale)
+- **Career Path Analysis**: Track career progression through connections
+- **Skill Flow Mapping**: How skills moved through professional relationships
+- **Company Network Analysis**: Connections across different companies
+- **Temporal Relationship View**: How relationships evolved over time
+
+**🤖 Conversational Relationship Intelligence**:
+- **Context-Aware Coaching**: "I saw you worked on X project at Sony, who did you report to?"
+- **Relationship Queries**: "Who were your key collaborators on that project?"
+- **Network Analysis**: "Who in your network could help with Y opportunity?"
+- **Introduction Facilitation**: "Should I remind you to reconnect with [contact]?"
+- **Professional Context**: "Tell me about your working relationship with [person]"
+
+**📊 Professional Network Analytics**:
+- **Relationship Strength Scoring**: Automatic scoring based on interaction frequency
+- **Network Diversity Analysis**: Industry, role, and skill diversity in network
+- **Influence Mapping**: Identify key connectors and influencers
+- **Opportunity Identification**: Spot potential collaborations and referrals
+- **Network Growth Tracking**: Monitor relationship building over time
+
+**🎯 Privacy-First Approach**:
+- **Consent-Based**: Only track relationships user explicitly adds
+- **Selective Sharing**: Users control what relationship data is visible
+- **No Automatic Scraping**: Manual entry ensures quality and consent
+- **Relationship Permissions**: Different visibility levels for different contacts
+
+**Technical Requirements**:
+- Neo4j integration for graph storage and queries
+- Relationship data normalization
+- Graph visualization library (D3.js or similar)
+- Real-time graph updates
+- Privacy and consent management
+- Conversational AI integration with graph context
+
 ## 🏗️ Database Schema Updates
 
 ### **Current State**
@@ -180,7 +226,9 @@ Surface Repo → Initial Data → Deep Repo Gen → Personal Goals → AI Mentor
 
 ### **Required Schema Changes - Entity-Centric Design**
 
-**Core Philosophy**: All professional entities (companies, skills, certificates, education) are normalized objects with unique identifiers, enabling rich relationship graphs and professional networking.
+**Core Philosophy**: All professional entities (companies, skills, certificates, education) are normalized objects with unique identifiers, enabling rich relationship graphs and professional networking. The system captures **professional relationships** within each experience to power Neo4j graph visualization and conversational intelligence.
+
+**Relationship Intelligence**: The system tracks "who worked with whom" on projects, "who reported to whom," "who taught whom," and "who delivered what for whom" - enabling powerful network analysis and conversational coaching insights.
 
 ```sql
 -- Core Entity Tables
@@ -291,6 +339,58 @@ CREATE TABLE user_certifications (
   expiry_date DATE,
   credential_id VARCHAR,
   credential_url VARCHAR,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Professional Relationship Tables (Neo4j Ready)
+CREATE TABLE professional_contacts (
+  id UUID PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  email VARCHAR,
+  linkedin_url VARCHAR,
+  current_company_id UUID REFERENCES companies(id),
+  current_title VARCHAR,
+  phone VARCHAR,
+  notes TEXT,
+  relationship_strength INTEGER, -- 1-5 scale
+  last_interaction_date DATE,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE work_relationships (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  work_experience_id UUID REFERENCES work_experiences(id),
+  contact_id UUID REFERENCES professional_contacts(id),
+  relationship_type VARCHAR, -- manager, direct_report, peer, client, vendor, mentor
+  relationship_description TEXT,
+  collaboration_context TEXT,
+  start_date DATE,
+  end_date DATE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE project_relationships (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  project_id UUID REFERENCES working_projects(id),
+  contact_id UUID REFERENCES professional_contacts(id),
+  relationship_type VARCHAR, -- project_manager, team_member, client, stakeholder, vendor
+  role_description TEXT,
+  collaboration_details TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE education_relationships (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  education_id UUID REFERENCES user_education(id),
+  contact_id UUID REFERENCES professional_contacts(id),
+  relationship_type VARCHAR, -- professor, mentor, classmate, advisor
+  subject_area VARCHAR,
+  interaction_context TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -456,12 +556,24 @@ CREATE TABLE trinity_core (
    - Session continuity
 
 ### **Phase 3: Advanced Features** (Future)
-1. **Skills Intelligence**
+1. **Neo4j Graph Visualization**
+   - Interactive professional network maps
+   - Relationship strength visualization
+   - Career path analysis through connections
+   - Skill flow through professional relationships
+
+2. **Conversational Relationship Intelligence**
+   - Voice coaching with relationship context
+   - "Who did you work with on X project?" queries
+   - "Who was your manager at Y company?" insights
+   - Professional network analysis through conversation
+
+3. **Skills Intelligence**
    - Market-aware skill recommendations
    - Learning path generation
    - Skill verification system
 
-2. **Social Features**
+4. **Social Features**
    - Profile sharing
    - Professional networking
    - Mentorship connections
