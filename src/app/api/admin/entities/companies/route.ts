@@ -38,6 +38,8 @@ export async function GET() {
 
 // POST - Create new company
 export async function POST(request: NextRequest) {
+  let requestBody: any = {};
+  
   try {
     const { userId } = await auth();
     
@@ -47,6 +49,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { name, website, industry } = body;
+    requestBody = { name, website, industry };
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
@@ -93,7 +96,7 @@ export async function POST(request: NextRequest) {
     console.error('Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-      requestBody: { name, website, industry }
+      requestBody
     });
     return NextResponse.json({ 
       error: 'Internal server error',
