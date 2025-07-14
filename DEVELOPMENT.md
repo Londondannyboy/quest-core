@@ -204,15 +204,15 @@ npx tsx scripts/verify-schema.ts  # Verify schema
 
 ### **Environment Variables**
 ```env
-# Database (Configured)
-DATABASE_URL=postgresql://... (Neon PostgreSQL)
-DIRECT_URL=postgresql://... (Direct connection)
+# Database (Neon PostgreSQL)
+NEON_QUEST_CORE_DATABASE_URL=postgresql://... (Neon PostgreSQL with pooling)
+NEON_QUEST_CORE_DIRECT_URL=postgresql://... (Direct connection for migrations)
 
-# Authentication (Configured) 
+# Authentication (Clerk) 
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...
 CLERK_SECRET_KEY=...
 
-# Voice AI (Configured)
+# Voice AI (Hume)
 NEXT_PUBLIC_HUME_API_KEY=...
 HUME_API_SECRET=...
 NEXT_PUBLIC_HUME_CONFIGURE_ID_QUEST_CORE=...
