@@ -7,8 +7,12 @@ async function checkUserIsolation() {
     // Check all users in the database
     const users = await prisma.user.findMany({
       include: {
-        trinityStatements: true,
-        skills: true,
+        trinityCore: true,
+        userSkills: {
+          include: {
+            skill: true
+          }
+        },
         conversations: {
           include: {
             messages: true
@@ -23,8 +27,8 @@ async function checkUserIsolation() {
       console.log(`\n${index + 1}. User: ${user.name} (${user.email})`);
       console.log(`   Clerk ID: ${user.clerkId}`);
       console.log(`   Created: ${user.createdAt.toISOString()}`);
-      console.log(`   Trinity Statements: ${user.trinityStatements.length}`);
-      console.log(`   Skills: ${user.skills.length}`);
+      console.log(`   Trinity Core: ${user.trinityCore ? 'Yes' : 'No'}`);
+      console.log(`   Skills: ${user.userSkills.length}`);
       console.log(`   Conversations: ${user.conversations.length}`);
       
       if (user.conversations.length > 0) {

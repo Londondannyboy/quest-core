@@ -46,26 +46,52 @@ export async function getOrCreateUser(clerkId: string, email: string, name?: str
 
     // Create new user if doesn't exist
     if (!user) {
-      user = await prisma.user.create({
+      const newUser = await prisma.user.create({
         data: {
           clerkId,
           email,
           name: name || email.split('@')[0],
-        },
+        }
+      });
+      
+      // Re-fetch with full include to match return type
+      user = await prisma.user.findUnique({
+        where: { id: newUser.id },
         include: {
           surfaceProfile: true,
-          workingProfile: true,
-          personalGoals: true,
+          workingProfile: {
+            include: {
+              workingProjects: {
+                include: {
+                  company: true,
+                  workingMedia: true
+                }
+              },
+              workingAchievements: {
+                include: {
+                  workingMedia: true
+                }
+              }
+            }
+          },
+          personalGoals: {
+            orderBy: { createdAt: 'desc' },
+            take: 5
+          },
           trinityCore: true,
           userSkills: {
             include: {
               skill: true
-            }
+            },
+            where: { isShowcase: true },
+            take: 10
           },
           workExperiences: {
             include: {
               company: true
-            }
+            },
+            orderBy: { startDate: 'desc' },
+            take: 3
           }
         }
       });

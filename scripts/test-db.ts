@@ -12,9 +12,9 @@ async function testDatabaseConnection() {
     // Test user creation
     const testUser = await getOrCreateUser('test_clerk_id', 'test@quest-core.com', 'Test User');
     console.log('✅ User created/retrieved:', {
-      id: testUser.id,
-      name: testUser.name,
-      email: testUser.email
+      id: testUser?.id,
+      name: testUser?.name,
+      email: testUser?.email
     });
     
     // Check tables
@@ -22,10 +22,12 @@ async function testDatabaseConnection() {
     console.log(`✅ Total users in database: ${userCount}`);
     
     // Clean up test user
-    await prisma.user.delete({
-      where: { id: testUser.id }
-    });
-    console.log('✅ Test user cleaned up');
+    if (testUser) {
+      await prisma.user.delete({
+        where: { id: testUser.id }
+      });
+      console.log('✅ Test user cleaned up');
+    }
     
   } catch (error) {
     console.error('❌ Database test failed:', error);

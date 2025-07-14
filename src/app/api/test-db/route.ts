@@ -7,8 +7,11 @@ export async function GET() {
       users: await prisma.user.count(),
       conversations: await prisma.conversation.count(),
       messages: await prisma.message.count(),
-      trinityStatements: await prisma.trinityStatement.count(),
-      skills: await prisma.skill.count()
+      trinityCore: await prisma.trinityCore.count(),
+      skills: await prisma.skill.count(),
+      companies: await prisma.company.count(),
+      workingProjects: await prisma.workingProject.count(),
+      personalGoals: await prisma.personalGoal.count()
     };
     
     return NextResponse.json({

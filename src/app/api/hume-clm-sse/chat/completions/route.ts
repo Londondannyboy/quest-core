@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
             
             console.log('[CLM] Authenticated user:', { 
               clerkId: clerkUser.id, 
-              name: dbUser.name, 
-              email: dbUser.email 
+              name: dbUser?.name, 
+              email: dbUser?.email 
             });
             
             // Create or get conversation
@@ -95,15 +95,15 @@ export async function POST(request: NextRequest) {
         } else if (userContent.toLowerCase().includes('hello') || userContent.toLowerCase().includes('hi')) {
           responseText = "Great to meet you! I'd love to learn more about your professional journey. What aspect of your career would you like to explore?";
         } else if (userContent.toLowerCase().includes('trinity')) {
-          // Check if user has Trinity statements
-          const hasTrinity = dbUser?.trinityStatements && dbUser.trinityStatements.length > 0;
+          // Check if user has Trinity core
+          const hasTrinity = dbUser?.trinityCore !== null;
           if (hasTrinity) {
             responseText = "I see you've already started working on your Trinity. Would you like to review your current statements or explore them deeper?";
           } else {
             responseText = "The Trinity System helps you discover your Quest, Service, and Pledge. Which element speaks to you most right now?";
           }
         } else if (userContent.toLowerCase().includes('skills') || userContent.toLowerCase().includes('skill')) {
-          const skillCount = dbUser?.skills?.length || 0;
+          const skillCount = dbUser?.userSkills?.length || 0;
           if (skillCount > 0) {
             responseText = `I see you've identified ${skillCount} skills so far. Would you like to explore how to develop them further or discover new ones?`;
           } else {
