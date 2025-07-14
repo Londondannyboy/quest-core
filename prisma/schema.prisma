@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String              @id @default(cuid())
+  clerkId           String              @unique
+  email             String              @unique
+  name              String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  trinityStatements TrinityStatement[]
+  skills            Skill[]
+  conversations     Conversation[]
+}
+
+model TrinityStatement {
+  id          String   @id @default(cuid())
+  userId      String
+  category    String   // 'values', 'strengths', 'purpose'
+  statement   String
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  level       String   // 'beginner', 'intermediate', 'advanced'
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+}
+
+model Conversation {
+  id          String   @id @default(cuid())
+  userId      String
+  sessionId   String   @unique
+  type        String   // 'voice', 'text'
+  summary     String?
+  emotions    Json?    // Store Hume's emotion data
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  
+  user        User     @relation(fields: [userId], references: [id])
+  messages    Message[]
+  
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           String       // 'user', 'assistant'
+  content        String
+  emotions       Json?        // Store per-message emotion data
+  createdAt      DateTime     @default(now())
+  
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  
+  @@index([conversationId])
+}
