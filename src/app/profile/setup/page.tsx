@@ -388,7 +388,7 @@ export default function ProfileSetupPage() {
               Education and skills sections are temporarily disabled while we fix profile saving.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              Focus on work experience for now - we'll add these back soon!
+              Focus on work experience for now - we&apos;ll add these back soon!
             </p>
           </div>
         </CardContent>

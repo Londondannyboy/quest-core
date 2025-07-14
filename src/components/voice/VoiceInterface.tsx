@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -63,20 +63,6 @@ export function VoiceInterface({
     confidence: 0.5
   })
 
-  // Initialize session with greeting
-  useEffect(() => {
-    const initialGreeting = getSessionGreeting(sessionType)
-    setConversation([{
-      id: '1',
-      type: 'coach',
-      content: initialGreeting,
-      timestamp: new Date()
-    }])
-    
-    // Simulate coach speaking the greeting
-    speakText(initialGreeting)
-  }, [sessionType])
-
   const getSessionGreeting = (type: string): string => {
     const greetings = {
       trinity: "Hello! I'm excited to explore your Trinity with you today. Let's start by getting comfortable. Take a deep breath, and when you're ready, tell me what's been on your mind about your professional purpose lately.",
@@ -87,7 +73,7 @@ export function VoiceInterface({
     return greetings[type as keyof typeof greetings] || greetings.trinity
   }
 
-  const speakText = async (text: string) => {
+  const speakText = useCallback(async (text: string) => {
     if ('speechSynthesis' in window) {
       setIsCoachSpeaking(true)
       const utterance = new SpeechSynthesisUtterance(text)
@@ -111,7 +97,21 @@ export function VoiceInterface({
       
       speechSynthesis.speak(utterance)
     }
-  }
+  }, [voiceSettings.speed, voiceSettings.volume])
+
+  // Initialize session with greeting
+  useEffect(() => {
+    const initialGreeting = getSessionGreeting(sessionType)
+    setConversation([{
+      id: '1',
+      type: 'coach',
+      content: initialGreeting,
+      timestamp: new Date()
+    }])
+    
+    // Simulate coach speaking the greeting
+    speakText(initialGreeting)
+  }, [sessionType, speakText])
 
   const stopSpeaking = () => {
     if ('speechSynthesis' in window) {
