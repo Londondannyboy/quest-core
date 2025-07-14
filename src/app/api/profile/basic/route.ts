@@ -37,15 +37,15 @@ export async function POST(request: NextRequest) {
     const surfaceProfile = await prisma.surfaceProfile.upsert({
       where: { userId: user.id },
       update: {
-        headline: profile.headline || undefined,
-        location: profile.location || undefined,
-        publicBio: profile.about || undefined
+        headline: profile.headline && profile.headline.trim() !== '' ? profile.headline.trim() : null,
+        location: profile.location && profile.location.trim() !== '' ? profile.location.trim() : null,
+        publicBio: profile.about && profile.about.trim() !== '' ? profile.about.trim() : null
       },
       create: {
         userId: user.id,
-        headline: profile.headline || undefined,
-        location: profile.location || undefined,
-        publicBio: profile.about || undefined
+        headline: profile.headline && profile.headline.trim() !== '' ? profile.headline.trim() : null,
+        location: profile.location && profile.location.trim() !== '' ? profile.location.trim() : null,
+        publicBio: profile.about && profile.about.trim() !== '' ? profile.about.trim() : null
       }
     });
 

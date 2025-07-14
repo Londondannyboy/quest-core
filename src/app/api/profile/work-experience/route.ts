@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
                 companyId: actualCompanyId,
                 title: exp.position,
                 startDate: exp.startDate && exp.startDate.trim() !== '' ? new Date(exp.startDate) : null,
-                endDate: exp.endDate && exp.endDate.trim() !== '' ? new Date(exp.endDate) : null,
+                endDate: exp.endDate && exp.endDate.trim() !== '' && !exp.isCurrentRole ? new Date(exp.endDate) : null,
                 description: exp.description || undefined,
                 isCurrent: exp.isCurrentRole || false
               },
