@@ -189,32 +189,111 @@ export default function ProfileSetupPage() {
     ));
   };
 
-  const saveProfile = async () => {
-    setLoading(true);
+  const [savingBasic, setSavingBasic] = useState(false);
+  const [savingWork, setSavingWork] = useState(false);
+  const [savingEducation, setSavingEducation] = useState(false);
+  const [savingSkills, setSavingSkills] = useState(false);
+
+  const saveBasicProfile = async () => {
+    setSavingBasic(true);
     try {
-      const response = await fetch('/api/profile/surface', {
+      const response = await fetch('/api/profile/basic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          profile: profileData,
-          workExperiences: workExperiences.filter(exp => exp.companyId && exp.position),
-          // TEMPORARILY DISABLED - Education and Skills
-          educations: [],
-          skills: []
+          profile: profileData
         })
       });
 
       if (response.ok) {
-        alert('Profile saved successfully!');
+        alert('Basic profile saved successfully!');
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message || 'Failed to save profile'}`);
+        alert(`Error: ${error.message || 'Failed to save basic profile'}`);
       }
     } catch (error) {
-      console.error('Error saving profile:', error);
-      alert('Error saving profile');
+      console.error('Error saving basic profile:', error);
+      alert('Error saving basic profile');
     } finally {
-      setLoading(false);
+      setSavingBasic(false);
+    }
+  };
+
+  const saveWorkExperiences = async () => {
+    setSavingWork(true);
+    try {
+      const validExperiences = workExperiences.filter(exp => exp.companyId && exp.position);
+      const response = await fetch('/api/profile/work-experience', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workExperiences: validExperiences
+        })
+      });
+
+      if (response.ok) {
+        alert('Work experiences saved successfully!');
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.message || 'Failed to save work experiences'}`);
+      }
+    } catch (error) {
+      console.error('Error saving work experiences:', error);
+      alert('Error saving work experiences');
+    } finally {
+      setSavingWork(false);
+    }
+  };
+
+  const saveEducation = async () => {
+    setSavingEducation(true);
+    try {
+      const validEducations = educations.filter(edu => edu.institutionId && edu.degree && edu.fieldOfStudy);
+      const response = await fetch('/api/profile/education', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          educations: validEducations
+        })
+      });
+
+      if (response.ok) {
+        alert('Education saved successfully!');
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.message || 'Failed to save education'}`);
+      }
+    } catch (error) {
+      console.error('Error saving education:', error);
+      alert('Error saving education');
+    } finally {
+      setSavingEducation(false);
+    }
+  };
+
+  const saveSkills = async () => {
+    setSavingSkills(true);
+    try {
+      const validSkills = userSkills.filter(skill => skill.skillId);
+      const response = await fetch('/api/profile/skills', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          skills: validSkills
+        })
+      });
+
+      if (response.ok) {
+        alert('Skills saved successfully!');
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.message || 'Failed to save skills'}`);
+      }
+    } catch (error) {
+      console.error('Error saving skills:', error);
+      alert('Error saving skills');
+    } finally {
+      setSavingSkills(false);
     }
   };
 
@@ -267,6 +346,11 @@ export default function ProfileSetupPage() {
               placeholder="Write a brief professional summary..."
               className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring min-h-[100px]"
             />
+          </div>
+          <div className="flex justify-end pt-4">
+            <Button onClick={saveBasicProfile} disabled={savingBasic} size="sm">
+              {savingBasic ? 'Saving...' : 'Save Basic Info'}
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -373,33 +457,200 @@ export default function ProfileSetupPage() {
               </div>
             </div>
           ))}
-        </CardContent>
-      </Card>
-
-      {/* TEMPORARILY DISABLED - Education and Skills */}
-      {/* TODO: Re-enable once core profile saving is working */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Education & Skills</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">
-              Education and skills sections are temporarily disabled while we fix profile saving.
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Focus on work experience for now - we&apos;ll add these back soon!
-            </p>
+          <div className="flex justify-end pt-4">
+            <Button onClick={saveWorkExperiences} disabled={savingWork} size="sm">
+              {savingWork ? 'Saving...' : 'Save Work Experience'}
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <Button onClick={saveProfile} disabled={loading} size="lg">
-          {loading ? 'Saving...' : 'Save Surface Profile'}
-        </Button>
-      </div>
+      {/* Education */}
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Education</CardTitle>
+            <Button onClick={addEducation} variant="outline" size="sm">
+              Add Education
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {educations.map((edu, index) => (
+            <div key={index} className="border rounded-lg p-4 relative">
+              {educations.length > 1 && (
+                <Button
+                  onClick={() => removeEducation(index)}
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                >
+                  Remove
+                </Button>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Institution *</label>
+                  <select
+                    value={edu.institutionId}
+                    onChange={(e) => updateEducation(index, 'institutionId', e.target.value)}
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">Select institution</option>
+                    {institutions.length === 0 ? (
+                      <>
+                        <option value="test-institution-1">University of Technology</option>
+                        <option value="test-institution-2">Tech Institute</option>
+                        <option value="test-institution-3">State University</option>
+                      </>
+                    ) : (
+                      institutions.map(institution => (
+                        <option key={institution.id} value={institution.id}>{institution.name}</option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Degree *</label>
+                  <Input
+                    value={edu.degree}
+                    onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                    placeholder="e.g., Bachelor of Science"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Field of Study *</label>
+                  <Input
+                    value={edu.fieldOfStudy}
+                    onChange={(e) => updateEducation(index, 'fieldOfStudy', e.target.value)}
+                    placeholder="e.g., Computer Science"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Grade</label>
+                  <Input
+                    value={edu.grade || ''}
+                    onChange={(e) => updateEducation(index, 'grade', e.target.value)}
+                    placeholder="e.g., 3.8 GPA, First Class"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Start Date</label>
+                  <Input
+                    type="date"
+                    value={edu.startDate}
+                    onChange={(e) => updateEducation(index, 'startDate', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">End Date</label>
+                  <Input
+                    type="date"
+                    value={edu.endDate || ''}
+                    onChange={(e) => updateEducation(index, 'endDate', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className="flex justify-end pt-4">
+            <Button onClick={saveEducation} disabled={savingEducation} size="sm">
+              {savingEducation ? 'Saving...' : 'Save Education'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Skills */}
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Skills</CardTitle>
+            <Button onClick={addSkill} variant="outline" size="sm">
+              Add Skill
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {userSkills.map((skill, index) => (
+            <div key={index} className="border rounded-lg p-4 relative">
+              {userSkills.length > 1 && (
+                <Button
+                  onClick={() => removeSkill(index)}
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                >
+                  Remove
+                </Button>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Skill *</label>
+                  <select
+                    value={skill.skillId}
+                    onChange={(e) => updateSkill(index, 'skillId', e.target.value)}
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">Select skill</option>
+                    {skills.length === 0 ? (
+                      <>
+                        <option value="test-skill-1">JavaScript</option>
+                        <option value="test-skill-2">React</option>
+                        <option value="test-skill-3">Node.js</option>
+                        <option value="test-skill-4">Python</option>
+                        <option value="test-skill-5">SQL</option>
+                      </>
+                    ) : (
+                      skills.map(skillOption => (
+                        <option key={skillOption.id} value={skillOption.id}>{skillOption.name}</option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Years of Experience</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={skill.yearsOfExperience}
+                    onChange={(e) => updateSkill(index, 'yearsOfExperience', parseInt(e.target.value) || 0)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Proficiency Level</label>
+                  <select
+                    value={skill.proficiencyLevel}
+                    onChange={(e) => updateSkill(index, 'proficiencyLevel', e.target.value)}
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="expert">Expert</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mt-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={skill.isShowcase}
+                    onChange={(e) => updateSkill(index, 'isShowcase', e.target.checked)}
+                  />
+                  <span className="text-sm">Showcase this skill on profile</span>
+                </label>
+              </div>
+            </div>
+          ))}
+          <div className="flex justify-end pt-4">
+            <Button onClick={saveSkills} disabled={savingSkills} size="sm">
+              {savingSkills ? 'Saving...' : 'Save Skills'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
