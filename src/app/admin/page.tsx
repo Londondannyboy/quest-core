@@ -264,7 +264,7 @@ export default function AdminPage() {
               </div>
               <div>
                 <p className="font-medium">Build Your Own Profile</p>
-                <p className="text-sm text-muted-foreground">Create your Surface and Working repo profiles using the entities you've added to test the complete system.</p>
+                <p className="text-sm text-muted-foreground">Create your Surface and Working repo profiles using the entities you&apos;ve added to test the complete system.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">

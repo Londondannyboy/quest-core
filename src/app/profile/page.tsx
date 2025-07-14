@@ -131,7 +131,7 @@ export default function ProfilePage() {
         <Card>
           <CardContent className="p-6 text-center">
             <h2 className="text-xl font-semibold mb-2">No Profile Found</h2>
-            <p className="text-muted-foreground mb-4">You haven't created your Surface profile yet.</p>
+            <p className="text-muted-foreground mb-4">You haven&apos;t created your Surface profile yet.</p>
             <Link href="/profile/setup">
               <Button>Create Profile</Button>
             </Link>
