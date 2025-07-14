@@ -478,7 +478,7 @@ export default function TrinityCreatePage() {
           <CardContent>
             <div className="space-y-4">
               <div className="bg-white/50 p-4 rounded-lg">
-                <h4 className="font-medium mb-2">What's Next?</h4>
+                <h4 className="font-medium mb-2">What&apos;s Next?</h4>
                 <p className="text-sm text-muted-foreground">
                   Your Trinity is now part of your Deep Repository and will enhance voice coaching personalization. 
                   Complete other repository layers to unlock the full Quest Core experience.

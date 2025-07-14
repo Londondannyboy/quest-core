@@ -104,7 +104,7 @@ export default function WorkingProfilePage() {
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
-              <p className="text-muted-foreground mb-4">You haven't created a working profile yet.</p>
+              <p className="text-muted-foreground mb-4">You haven&apos;t created a working profile yet.</p>
               <Link href="/work/setup">
                 <Button>Create Working Profile</Button>
               </Link>
