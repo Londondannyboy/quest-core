@@ -107,10 +107,49 @@ export default function ProfileSetupPage() {
         .then(data => {
           console.log('User check:', data);
           fetchEntities();
+          loadExistingProfile();
         })
         .catch(err => console.error('Error ensuring user exists:', err));
     }
   }, [isSignedIn]);
+
+  const loadExistingProfile = async () => {
+    try {
+      // Load basic profile
+      const profileRes = await fetch('/api/profile/basic');
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        if (profileData.profile) {
+          setProfileData({
+            headline: profileData.profile.headline || '',
+            location: profileData.profile.location || '',
+            about: profileData.profile.publicBio || ''
+          });
+        }
+      }
+
+      // Load work experiences
+      const workRes = await fetch('/api/profile/work-experience');
+      if (workRes.ok) {
+        const workData = await workRes.json();
+        if (workData.workExperiences && workData.workExperiences.length > 0) {
+          const mappedExperiences = workData.workExperiences.map((exp: any) => ({
+            id: exp.id,
+            companyId: exp.companyId,
+            companyName: exp.company?.name || '',
+            position: exp.title,
+            startDate: exp.startDate ? exp.startDate.split('T')[0] : '',
+            endDate: exp.endDate ? exp.endDate.split('T')[0] : '',
+            description: exp.description || '',
+            isCurrentRole: exp.isCurrent
+          }));
+          setWorkExperiences(mappedExperiences);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading existing profile:', error);
+    }
+  };
 
   const fetchEntities = async () => {
     try {
