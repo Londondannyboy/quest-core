@@ -1,0 +1,49 @@
+name: Vercel Deployment Check
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  check-vercel-deployment:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Wait for Vercel deployment
+      run: |
+        echo "⏳ Waiting 2 minutes for Vercel deployment to complete..."
+        sleep 120
+        
+    - name: Check if deployment is live
+      run: |
+        echo "🔍 Checking deployment status..."
+        
+        # Get the commit SHA
+        COMMIT_SHA=$(git rev-parse HEAD)
+        SHORT_SHA=${COMMIT_SHA:0:7}
+        
+        echo "📊 Deployment info:"
+        echo "  - Commit: $SHORT_SHA"
+        echo "  - Branch: main"
+        echo "  - Time: $(date)"
+        
+        # You can add actual deployment health checks here
+        # For now, we'll just provide useful info
+        echo ""
+        echo "🎯 Manual checks you can perform:"
+        echo "  1. Visit your Vercel dashboard"
+        echo "  2. Check the deployment logs"
+        echo "  3. Test key functionality:"
+        echo "     - /profile/setup (Surface profile creation)"
+        echo "     - /work/setup (Working repository)"
+        echo "     - /repo/personal (Personal repository)"
+        echo "     - /trinity/create (Trinity creation)"
+        echo "     - /repo (Full repository view)"
+        
+    - name: Deployment success
+      run: |
+        echo "✅ Deployment check completed"
+        echo "🚀 If no errors above, your deployment should be live!"

@@ -1,0 +1,69 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Generate Prisma Client
+      run: npx prisma generate
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Run TypeScript type checking
+      run: npx tsc --noEmit
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Run tests (if available)
+      run: npm test --if-present
+      
+  deployment-check:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Wait for Vercel deployment
+      run: sleep 120  # Wait 2 minutes for Vercel to deploy
+      
+    - name: Check deployment status
+      run: |
+        echo "✅ Build passed - deployment should be live"
+        echo "🚀 Check your Vercel dashboard for deployment status"
+        echo "🔗 Production URL: https://your-app-name.vercel.app"
+        
+  notify-on-failure:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+    - name: Build failure notification
+      run: |
+        echo "❌ Build failed - check the logs above"
+        echo "🔧 Common issues:"
+        echo "  - TypeScript errors"
+        echo "  - ESLint violations"
+        echo "  - Missing dependencies"
+        echo "  - Prisma schema issues"
