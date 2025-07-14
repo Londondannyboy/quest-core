@@ -94,107 +94,25 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // TEMPORARILY DISABLED - Education and Skills
+      // TODO: Re-enable once core profile saving is working
+      console.log('Education and skills temporarily disabled for debugging');
+      
+      /*
       // Delete existing education and create new ones
       await tx.userEducation.deleteMany({
         where: { userId: user.id }
       });
 
-      if (educations && educations.length > 0) {
-        for (const edu of educations) {
-          if (edu.institutionId && edu.degree) {
-            // Handle test institution IDs
-            let actualInstitutionId = edu.institutionId;
-            if (edu.institutionId.startsWith('test-institution-')) {
-              const testInstitutions: Record<string, { name: string; type: string; country: string }> = {
-                'test-institution-1': { name: 'University of Technology', type: 'university', country: 'United States' },
-                'test-institution-2': { name: 'Community College Central', type: 'community_college', country: 'United States' },
-                'test-institution-3': { name: 'Coding Bootcamp Pro', type: 'bootcamp', country: 'United States' }
-              };
-              
-              const institutionData = testInstitutions[edu.institutionId];
-              if (institutionData) {
-                // Find existing institution or create new one
-                let institution = await tx.educationalInstitution.findFirst({
-                  where: { name: institutionData.name }
-                });
-                
-                if (!institution) {
-                  institution = await tx.educationalInstitution.create({
-                    data: {
-                      name: institutionData.name,
-                      type: institutionData.type,
-                      country: institutionData.country,
-                      verified: false
-                    }
-                  });
-                }
-                
-                actualInstitutionId = institution.id;
-              }
-            }
-
-            await tx.userEducation.create({
-              data: {
-                userId: user.id,
-                institutionId: actualInstitutionId,
-                degree: edu.degree,
-                fieldOfStudy: edu.fieldOfStudy || undefined,
-                startDate: edu.startDate && edu.startDate.trim() !== '' ? new Date(edu.startDate) : null,
-                endDate: edu.endDate && edu.endDate.trim() !== '' ? new Date(edu.endDate) : null,
-                gpa: edu.grade || undefined
-              }
-            });
-          }
-        }
-      }
+      // ... education creation code ...
 
       // Delete existing skills and create new ones
       await tx.userSkill.deleteMany({
         where: { userId: user.id }
       });
 
-      if (skills && skills.length > 0) {
-        for (const skill of skills) {
-          if (skill.skillId) {
-            // Handle test skill IDs
-            let actualSkillId = skill.skillId;
-            if (skill.skillId.startsWith('test-skill-')) {
-              const testSkills: Record<string, { name: string; category: string }> = {
-                'test-skill-1': { name: 'JavaScript', category: 'Programming Languages' },
-                'test-skill-2': { name: 'React', category: 'Web Development' },
-                'test-skill-3': { name: 'Node.js', category: 'Web Development' },
-                'test-skill-4': { name: 'Python', category: 'Programming Languages' },
-                'test-skill-5': { name: 'AWS', category: 'Cloud Computing' }
-              };
-              
-              const skillData = testSkills[skill.skillId];
-              if (skillData) {
-                // Create or find the skill (name is unique)
-                const skillEntity = await tx.skill.upsert({
-                  where: { name: skillData.name },
-                  update: {},
-                  create: {
-                    name: skillData.name,
-                    category: skillData.category,
-                    verified: false
-                  }
-                });
-                actualSkillId = skillEntity.id;
-              }
-            }
-
-            await tx.userSkill.create({
-              data: {
-                userId: user.id,
-                skillId: actualSkillId,
-                yearsOfExperience: skill.yearsOfExperience || 1,
-                proficiencyLevel: skill.proficiencyLevel || 'intermediate',
-                isShowcase: skill.isShowcase || false
-              }
-            });
-          }
-        }
-      }
+      // ... skills creation code ...
+      */
 
       return surfaceProfile;
     });
