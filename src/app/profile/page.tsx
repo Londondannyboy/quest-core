@@ -10,7 +10,7 @@ import Link from 'next/link';
 interface SurfaceProfile {
   headline?: string;
   location?: string;
-  about?: string;
+  publicBio?: string;
 }
 
 interface WorkExperience {
@@ -171,10 +171,10 @@ export default function ProfilePage() {
                 <span>{profileData.profile.location}</span>
               </div>
             )}
-            {profileData.profile.about && (
+            {profileData.profile.publicBio && (
               <div>
                 <h3 className="text-lg font-medium mb-2">About</h3>
-                <p className="text-muted-foreground leading-relaxed">{profileData.profile.about}</p>
+                <p className="text-muted-foreground leading-relaxed">{profileData.profile.publicBio}</p>
               </div>
             )}
           </div>

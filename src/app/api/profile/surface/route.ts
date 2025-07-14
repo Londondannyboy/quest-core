@@ -31,13 +31,13 @@ export async function POST(request: NextRequest) {
         update: {
           headline: profile.headline || undefined,
           location: profile.location || undefined,
-          about: profile.about || undefined
+          publicBio: profile.about || undefined
         },
         create: {
           userId: user.id,
           headline: profile.headline || undefined,
           location: profile.location || undefined,
-          about: profile.about || undefined
+          publicBio: profile.about || undefined
         }
       });
 
