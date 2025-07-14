@@ -146,7 +146,7 @@ export function CompanySearch({ value, onSelect, placeholder = "Search companies
                   setNewCompanyName(query);
                 }}
               >
-                + Create "{query}"
+                + Create &quot;{query}&quot;
               </div>
             </>
           ) : (
@@ -158,7 +158,7 @@ export function CompanySearch({ value, onSelect, placeholder = "Search companies
                 setNewCompanyName(query);
               }}
             >
-              + Create "{query}"
+              + Create &quot;{query}&quot;
             </div>
           )}
         </div>
