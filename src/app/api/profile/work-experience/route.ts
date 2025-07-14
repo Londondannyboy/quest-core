@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrCreateUser } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 
 interface WorkExperience {
@@ -16,26 +16,13 @@ interface WorkExperience {
 // POST - Save work experiences
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
     const body = await request.json();
     const { workExperiences } = body;
 
     if (!Array.isArray(workExperiences)) {
       return NextResponse.json({ error: 'workExperiences must be an array' }, { status: 400 });
-    }
-
-    // Get user
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Use transaction to ensure data consistency
@@ -118,14 +105,10 @@ export async function POST(request: NextRequest) {
 // GET - Fetch user's work experiences
 export async function GET() {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+    const userWithExperiences = await prisma.user.findUnique({
+      where: { id: user.id },
       include: {
         workExperiences: {
           include: {
@@ -136,12 +119,8 @@ export async function GET() {
       }
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
     return NextResponse.json({
-      workExperiences: user.workExperiences
+      workExperiences: userWithExperiences?.workExperiences || []
     });
 
   } catch (error) {

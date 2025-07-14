@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrCreateUser } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 
 interface BasicProfile {
@@ -11,26 +11,13 @@ interface BasicProfile {
 // POST - Save basic profile info
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
     const body = await request.json();
     const { profile } = body;
 
     if (!profile || typeof profile !== 'object') {
       return NextResponse.json({ error: 'profile data is required' }, { status: 400 });
-    }
-
-    // Get user
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Create or update surface profile
@@ -63,25 +50,17 @@ export async function POST(request: NextRequest) {
 // GET - Fetch user's basic profile
 export async function GET() {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await getOrCreateUser();
 
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+    const userWithProfile = await prisma.user.findUnique({
+      where: { id: user.id },
       include: {
         surfaceProfile: true
       }
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
     return NextResponse.json({
-      profile: user.surfaceProfile
+      profile: userWithProfile?.surfaceProfile
     });
 
   } catch (error) {
