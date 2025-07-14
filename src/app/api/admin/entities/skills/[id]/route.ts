@@ -47,7 +47,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(body.category !== undefined && { category: body.category?.trim() || null }),
         ...(body.difficulty && { difficulty: body.difficulty }),
         ...(body.marketDemand && { marketDemand: body.marketDemand }),
-        ...(body.isVerified !== undefined && { isVerified: body.isVerified })
+        ...(body.isVerified !== undefined && { verified: body.isVerified })
       }
     });
 

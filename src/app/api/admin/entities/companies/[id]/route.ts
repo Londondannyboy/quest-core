@@ -34,7 +34,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(body.name && { name: body.name.trim() }),
         ...(body.website !== undefined && { website: body.website?.trim() || null }),
         ...(body.industry !== undefined && { industry: body.industry?.trim() || null }),
-        ...(body.isVerified !== undefined && { isVerified: body.isVerified })
+        ...(body.isVerified !== undefined && { verified: body.isVerified })
       }
     });
 

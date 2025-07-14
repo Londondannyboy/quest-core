@@ -41,7 +41,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(body.type && { type: body.type }),
         ...(body.country !== undefined && { country: body.country?.trim() || null }),
         ...(body.website !== undefined && { website: body.website?.trim() || null }),
-        ...(body.isVerified !== undefined && { isVerified: body.isVerified })
+        ...(body.isVerified !== undefined && { verified: body.isVerified })
       }
     });
 

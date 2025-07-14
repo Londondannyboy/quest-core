@@ -19,7 +19,7 @@ export async function GET() {
         website: true,
         domain: true,
         industry: true,
-        isVerified: true,
+        verified: true,
         createdAt: true,
         _count: {
           select: {
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
         website: website && typeof website === 'string' ? website.trim() : undefined,
         domain,
         industry: industry && typeof industry === 'string' ? industry.trim() : undefined,
-        isVerified: false
+        verified: false
       }
     });
 

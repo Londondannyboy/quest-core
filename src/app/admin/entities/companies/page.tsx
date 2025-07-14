@@ -12,7 +12,7 @@ interface Company {
   name: string;
   website?: string;
   domain?: string;
-  isVerified: boolean;
+  verified: boolean;
   industry?: string;
   createdAt: string;
 }
@@ -76,18 +76,18 @@ export default function CompaniesPage() {
     }
   };
 
-  const toggleVerification = async (companyId: string, isVerified: boolean) => {
+  const toggleVerification = async (companyId: string, verified: boolean) => {
     try {
       const response = await fetch(`/api/admin/entities/companies/${companyId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isVerified: !isVerified })
+        body: JSON.stringify({ isVerified: !verified })
       });
 
       if (response.ok) {
         setCompanies(prev => prev.map(company => 
           company.id === companyId 
-            ? { ...company, isVerified: !isVerified }
+            ? { ...company, verified: !verified }
             : company
         ));
       }
@@ -179,8 +179,8 @@ export default function CompaniesPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold">{company.name}</h3>
-                      <Badge variant={company.isVerified ? "default" : "secondary"}>
-                        {company.isVerified ? "Verified" : "Unverified"}
+                      <Badge variant={company.verified ? "default" : "secondary"}>
+                        {company.verified ? "Verified" : "Unverified"}
                       </Badge>
                       {company.industry && (
                         <Badge variant="outline" className="text-xs">
@@ -199,9 +199,9 @@ export default function CompaniesPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => toggleVerification(company.id, company.isVerified)}
+                    onClick={() => toggleVerification(company.id, company.verified)}
                   >
-                    {company.isVerified ? 'Unverify' : 'Verify'}
+                    {company.verified ? 'Unverify' : 'Verify'}
                   </Button>
                 </div>
               ))}

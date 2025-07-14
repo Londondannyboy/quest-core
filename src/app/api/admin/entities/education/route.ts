@@ -19,7 +19,7 @@ export async function GET() {
         type: true,
         country: true,
         website: true,
-        isVerified: true,
+        verified: true,
         createdAt: true,
         _count: {
           select: {
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         type: type || 'university',
         country: country && typeof country === 'string' ? country.trim() : undefined,
         website: website && typeof website === 'string' ? website.trim() : undefined,
-        isVerified: false
+        verified: false
       }
     });
 

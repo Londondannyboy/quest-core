@@ -13,7 +13,7 @@ interface EducationalInstitution {
   type?: 'university' | 'college' | 'community_college' | 'trade_school' | 'bootcamp' | 'online_platform' | 'other';
   country?: string;
   website?: string;
-  isVerified: boolean;
+  verified: boolean;
   createdAt: string;
   _count?: {
     userEducation: number;
@@ -109,18 +109,18 @@ export default function EducationPage() {
     }
   };
 
-  const toggleVerification = async (institutionId: string, isVerified: boolean) => {
+  const toggleVerification = async (institutionId: string, verified: boolean) => {
     try {
       const response = await fetch(`/api/admin/entities/education/${institutionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isVerified: !isVerified })
+        body: JSON.stringify({ isVerified: !verified })
       });
 
       if (response.ok) {
         setInstitutions(prev => prev.map(institution => 
           institution.id === institutionId 
-            ? { ...institution, isVerified: !isVerified }
+            ? { ...institution, verified: !verified }
             : institution
         ));
       }
@@ -278,8 +278,8 @@ export default function EducationPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold">{institution.name}</h3>
-                      <Badge variant={institution.isVerified ? "default" : "secondary"}>
-                        {institution.isVerified ? "Verified" : "Unverified"}
+                      <Badge variant={institution.verified ? "default" : "secondary"}>
+                        {institution.verified ? "Verified" : "Unverified"}
                       </Badge>
                       {institution.type && (
                         <Badge className={`text-xs ${getTypeColor(institution.type)}`}>
@@ -305,9 +305,9 @@ export default function EducationPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => toggleVerification(institution.id, institution.isVerified)}
+                    onClick={() => toggleVerification(institution.id, institution.verified)}
                   >
-                    {institution.isVerified ? 'Unverify' : 'Verify'}
+                    {institution.verified ? 'Unverify' : 'Verify'}
                   </Button>
                 </div>
               ))}

@@ -12,7 +12,7 @@ interface Skill {
   name: string;
   category?: string;
   difficulty?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  isVerified: boolean;
+  verified: boolean;
   marketDemand?: 'low' | 'medium' | 'high' | 'very_high';
   createdAt: string;
   _count?: {
@@ -103,18 +103,18 @@ export default function SkillsPage() {
     }
   };
 
-  const toggleVerification = async (skillId: string, isVerified: boolean) => {
+  const toggleVerification = async (skillId: string, verified: boolean) => {
     try {
       const response = await fetch(`/api/admin/entities/skills/${skillId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isVerified: !isVerified })
+        body: JSON.stringify({ isVerified: !verified })
       });
 
       if (response.ok) {
         setSkills(prev => prev.map(skill => 
           skill.id === skillId 
-            ? { ...skill, isVerified: !isVerified }
+            ? { ...skill, verified: !verified }
             : skill
         ));
       }
@@ -283,8 +283,8 @@ export default function SkillsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold">{skill.name}</h3>
-                      <Badge variant={skill.isVerified ? "default" : "secondary"}>
-                        {skill.isVerified ? "Verified" : "Unverified"}
+                      <Badge variant={skill.verified ? "default" : "secondary"}>
+                        {skill.verified ? "Verified" : "Unverified"}
                       </Badge>
                       {skill.category && (
                         <Badge variant="outline" className="text-xs">
@@ -312,9 +312,9 @@ export default function SkillsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => toggleVerification(skill.id, skill.isVerified)}
+                    onClick={() => toggleVerification(skill.id, skill.verified)}
                   >
-                    {skill.isVerified ? 'Unverify' : 'Verify'}
+                    {skill.verified ? 'Unverify' : 'Verify'}
                   </Button>
                 </div>
               ))}
