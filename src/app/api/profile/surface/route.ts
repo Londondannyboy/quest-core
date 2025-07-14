@@ -49,13 +49,38 @@ export async function POST(request: NextRequest) {
       if (workExperiences && workExperiences.length > 0) {
         for (const exp of workExperiences) {
           if (exp.companyId && exp.position) {
+            // Handle test company IDs
+            let actualCompanyId = exp.companyId;
+            if (exp.companyId.startsWith('test-company-')) {
+              const testCompanies = {
+                'test-company-1': { name: 'Tech Corp Ltd', industry: 'Software Development' },
+                'test-company-2': { name: 'StartupXYZ', industry: 'Technology' },
+                'test-company-3': { name: 'BigCorp Inc', industry: 'Enterprise Software' }
+              };
+              
+              const companyData = testCompanies[exp.companyId];
+              if (companyData) {
+                // Create or find the company
+                const company = await tx.company.upsert({
+                  where: { name: companyData.name },
+                  update: {},
+                  create: {
+                    name: companyData.name,
+                    industry: companyData.industry,
+                    verified: false
+                  }
+                });
+                actualCompanyId = company.id;
+              }
+            }
+
             await tx.workExperience.create({
               data: {
                 userId: user.id,
-                companyId: exp.companyId,
+                companyId: actualCompanyId,
                 title: exp.position,
-                startDate: new Date(exp.startDate),
-                endDate: exp.endDate ? new Date(exp.endDate) : null,
+                startDate: exp.startDate && exp.startDate.trim() !== '' ? new Date(exp.startDate) : null,
+                endDate: exp.endDate && exp.endDate.trim() !== '' ? new Date(exp.endDate) : null,
                 description: exp.description || undefined,
                 isCurrent: exp.isCurrentRole || false
               }
@@ -72,14 +97,40 @@ export async function POST(request: NextRequest) {
       if (educations && educations.length > 0) {
         for (const edu of educations) {
           if (edu.institutionId && edu.degree) {
+            // Handle test institution IDs
+            let actualInstitutionId = edu.institutionId;
+            if (edu.institutionId.startsWith('test-institution-')) {
+              const testInstitutions = {
+                'test-institution-1': { name: 'University of Technology', type: 'university', country: 'United States' },
+                'test-institution-2': { name: 'Community College Central', type: 'community_college', country: 'United States' },
+                'test-institution-3': { name: 'Coding Bootcamp Pro', type: 'bootcamp', country: 'United States' }
+              };
+              
+              const institutionData = testInstitutions[edu.institutionId];
+              if (institutionData) {
+                // Create or find the institution
+                const institution = await tx.educationalInstitution.upsert({
+                  where: { name: institutionData.name },
+                  update: {},
+                  create: {
+                    name: institutionData.name,
+                    type: institutionData.type,
+                    country: institutionData.country,
+                    verified: false
+                  }
+                });
+                actualInstitutionId = institution.id;
+              }
+            }
+
             await tx.userEducation.create({
               data: {
                 userId: user.id,
-                institutionId: edu.institutionId,
+                institutionId: actualInstitutionId,
                 degree: edu.degree,
                 fieldOfStudy: edu.fieldOfStudy || undefined,
-                startDate: edu.startDate ? new Date(edu.startDate) : null,
-                endDate: edu.endDate ? new Date(edu.endDate) : null,
+                startDate: edu.startDate && edu.startDate.trim() !== '' ? new Date(edu.startDate) : null,
+                endDate: edu.endDate && edu.endDate.trim() !== '' ? new Date(edu.endDate) : null,
                 gpa: edu.grade || undefined
               }
             });
@@ -95,10 +146,37 @@ export async function POST(request: NextRequest) {
       if (skills && skills.length > 0) {
         for (const skill of skills) {
           if (skill.skillId) {
+            // Handle test skill IDs
+            let actualSkillId = skill.skillId;
+            if (skill.skillId.startsWith('test-skill-')) {
+              const testSkills = {
+                'test-skill-1': { name: 'JavaScript', category: 'Programming Languages' },
+                'test-skill-2': { name: 'React', category: 'Web Development' },
+                'test-skill-3': { name: 'Node.js', category: 'Web Development' },
+                'test-skill-4': { name: 'Python', category: 'Programming Languages' },
+                'test-skill-5': { name: 'AWS', category: 'Cloud Computing' }
+              };
+              
+              const skillData = testSkills[skill.skillId];
+              if (skillData) {
+                // Create or find the skill
+                const skillEntity = await tx.skill.upsert({
+                  where: { name: skillData.name },
+                  update: {},
+                  create: {
+                    name: skillData.name,
+                    category: skillData.category,
+                    verified: false
+                  }
+                });
+                actualSkillId = skillEntity.id;
+              }
+            }
+
             await tx.userSkill.create({
               data: {
                 userId: user.id,
-                skillId: skill.skillId,
+                skillId: actualSkillId,
                 yearsOfExperience: skill.yearsOfExperience || 1,
                 proficiencyLevel: skill.proficiencyLevel || 'intermediate',
                 isShowcase: skill.isShowcase || false

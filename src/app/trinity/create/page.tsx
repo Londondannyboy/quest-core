@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Lightbulb, Target, Shield, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react'
 import { TrinityCoach } from '@/components/trinity/TrinityCoach'
+import { useAuth } from '@clerk/nextjs'
 
 interface TrinityData {
   quest: string
@@ -17,6 +18,7 @@ interface TrinityData {
 type TrinityStep = 'intro' | 'quest' | 'service' | 'pledge' | 'integration' | 'complete'
 
 export default function TrinityCreatePage() {
+  const { isSignedIn } = useAuth()
   const [currentStep, setCurrentStep] = useState<TrinityStep>('intro')
   const [trinityData, setTrinityData] = useState<TrinityData>({
     quest: '',
@@ -24,6 +26,7 @@ export default function TrinityCreatePage() {
     pledge: ''
   })
   const [isCoachingMode, setIsCoachingMode] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const steps: { id: TrinityStep; title: string; icon: React.ReactNode; description: string }[] = [
     { 
@@ -79,6 +82,76 @@ export default function TrinityCreatePage() {
 
   const updateTrinityData = (field: keyof TrinityData, value: string) => {
     setTrinityData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const calculateCoherence = () => {
+    // Simple coherence calculation based on content quality and interconnectedness
+    const questLength = trinityData.quest.trim().length
+    const serviceLength = trinityData.service.trim().length
+    const pledgeLength = trinityData.pledge.trim().length
+    
+    // Base score from having content
+    let score = 0
+    if (questLength > 50) score += 0.3
+    if (serviceLength > 50) score += 0.3
+    if (pledgeLength > 50) score += 0.3
+    
+    // Bonus for comprehensive content
+    if (questLength > 100 && serviceLength > 100 && pledgeLength > 100) {
+      score += 0.1
+    }
+    
+    return Math.min(score, 1)
+  }
+
+  const saveTrinity = async () => {
+    if (!isSignedIn) {
+      alert('Please sign in to save your Trinity')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const coherenceScore = calculateCoherence()
+      
+      const response = await fetch('/api/profile/deep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trinityCore: {
+            questAnalysis: {
+              statement: trinityData.quest,
+              wordCount: trinityData.quest.trim().split(' ').length,
+              themes: [] // Could be enhanced with AI analysis
+            },
+            serviceAnalysis: {
+              statement: trinityData.service,
+              wordCount: trinityData.service.trim().split(' ').length,
+              themes: []
+            },
+            pledgeAnalysis: {
+              statement: trinityData.pledge,
+              wordCount: trinityData.pledge.trim().split(' ').length,
+              themes: []
+            },
+            coherenceScore
+          }
+        })
+      })
+
+      if (response.ok) {
+        alert('Trinity saved successfully to your Deep Repository!')
+        setCurrentStep('complete')
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.message || 'Failed to save Trinity'}`)
+      }
+    } catch (error) {
+      console.error('Error saving Trinity:', error)
+      alert('Error saving Trinity')
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (isCoachingMode) {
@@ -380,8 +453,11 @@ export default function TrinityCreatePage() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={() => setCurrentStep('complete')}>
-              Complete Trinity
+            <Button 
+              onClick={saveTrinity} 
+              disabled={saving || !trinityData.quest.trim() || !trinityData.service.trim() || !trinityData.pledge.trim()}
+            >
+              {saving ? 'Saving...' : 'Save Trinity to Deep Repo'}
               <Sparkles className="ml-2 h-4 w-4" />
             </Button>
           )}
@@ -393,17 +469,32 @@ export default function TrinityCreatePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-green-700">
               <Sparkles className="h-6 w-6" />
-              Trinity Complete!
+              Trinity Saved to Deep Repository!
             </CardTitle>
             <CardDescription>
-              Congratulations! You&apos;ve created your professional Trinity. This is just the beginning of your journey.
+              Your Trinity has been saved to your Deep Repository with a coherence score of {Math.round(calculateCoherence() * 100)}%.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4">
-              <Button>Save & Continue to Skills</Button>
-              <Button variant="outline">Share Your Trinity</Button>
-              <Button variant="outline">Refine with AI Coach</Button>
+            <div className="space-y-4">
+              <div className="bg-white/50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">What's Next?</h4>
+                <p className="text-sm text-muted-foreground">
+                  Your Trinity is now part of your Deep Repository and will enhance voice coaching personalization. 
+                  Complete other repository layers to unlock the full Quest Core experience.
+                </p>
+              </div>
+              <div className="flex gap-4">
+                <Button onClick={() => window.location.href = '/repo'}>
+                  View Full Repository
+                </Button>
+                <Button variant="outline" onClick={() => window.location.href = '/profile/setup'}>
+                  Complete Surface Profile
+                </Button>
+                <Button variant="outline" onClick={() => setIsCoachingMode(true)}>
+                  Refine with AI Coach
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

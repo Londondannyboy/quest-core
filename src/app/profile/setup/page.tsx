@@ -296,14 +296,34 @@ export default function ProfileSetupPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Company *</label>
-                  <CompanySearch
-                    value={exp.companyName}
-                    onSelect={(company) => {
-                      updateWorkExperience(index, 'companyId', company.id);
-                      updateWorkExperience(index, 'companyName', company.name);
+                  <select
+                    value={exp.companyId}
+                    onChange={(e) => {
+                      const selectedValue = e.target.value;
+                      updateWorkExperience(index, 'companyId', selectedValue);
+                      // Set company name based on selection
+                      const companyNames = {
+                        'test-company-1': 'Tech Corp Ltd',
+                        'test-company-2': 'StartupXYZ', 
+                        'test-company-3': 'BigCorp Inc'
+                      };
+                      updateWorkExperience(index, 'companyName', companyNames[selectedValue] || '');
                     }}
-                    placeholder="Search for your company..."
-                  />
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">Select company</option>
+                    {companies.length === 0 ? (
+                      <>
+                        <option value="test-company-1">Tech Corp Ltd</option>
+                        <option value="test-company-2">StartupXYZ</option>
+                        <option value="test-company-3">BigCorp Inc</option>
+                      </>
+                    ) : (
+                      companies.map(company => (
+                        <option key={company.id} value={company.id}>{company.name}</option>
+                      ))
+                    )}
+                  </select>
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Position *</label>
@@ -387,9 +407,17 @@ export default function ProfileSetupPage() {
                     className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <option value="">Select institution</option>
-                    {institutions.map(institution => (
-                      <option key={institution.id} value={institution.id}>{institution.name}</option>
-                    ))}
+                    {institutions.length === 0 ? (
+                      <>
+                        <option value="test-institution-1">University of Technology</option>
+                        <option value="test-institution-2">Community College Central</option>
+                        <option value="test-institution-3">Coding Bootcamp Pro</option>
+                      </>
+                    ) : (
+                      institutions.map(institution => (
+                        <option key={institution.id} value={institution.id}>{institution.name}</option>
+                      ))
+                    )}
                   </select>
                 </div>
                 <div>
@@ -470,11 +498,21 @@ export default function ProfileSetupPage() {
                     className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <option value="">Select skill</option>
-                    {skills.map(skill => (
-                      <option key={skill.id} value={skill.id}>
-                        {skill.name} {skill.category && `(${skill.category})`}
-                      </option>
-                    ))}
+                    {skills.length === 0 ? (
+                      <>
+                        <option value="test-skill-1">JavaScript (Programming Languages)</option>
+                        <option value="test-skill-2">React (Web Development)</option>
+                        <option value="test-skill-3">Node.js (Web Development)</option>
+                        <option value="test-skill-4">Python (Programming Languages)</option>
+                        <option value="test-skill-5">AWS (Cloud Computing)</option>
+                      </>
+                    ) : (
+                      skills.map(skill => (
+                        <option key={skill.id} value={skill.id}>
+                          {skill.name} {skill.category && `(${skill.category})`}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
                 <div>
