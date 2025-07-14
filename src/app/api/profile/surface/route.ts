@@ -53,11 +53,11 @@ export async function POST(request: NextRequest) {
               data: {
                 userId: user.id,
                 companyId: exp.companyId,
-                position: exp.position,
+                title: exp.position,
                 startDate: new Date(exp.startDate),
                 endDate: exp.endDate ? new Date(exp.endDate) : null,
                 description: exp.description || undefined,
-                isCurrentRole: exp.isCurrentRole || false
+                isCurrent: exp.isCurrentRole || false
               }
             });
           }

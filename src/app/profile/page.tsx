@@ -15,11 +15,11 @@ interface SurfaceProfile {
 
 interface WorkExperience {
   id: string;
-  position: string;
+  title: string;
   startDate: string;
   endDate?: string;
   description?: string;
-  isCurrentRole: boolean;
+  isCurrent: boolean;
   company: {
     name: string;
     website?: string;
@@ -193,7 +193,7 @@ export default function ProfilePage() {
                 <div key={exp.id} className="border-l-2 border-blue-200 pl-4">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <h3 className="font-semibold">{exp.position}</h3>
+                      <h3 className="font-semibold">{exp.title}</h3>
                       <div className="flex items-center gap-2">
                         <p className="text-blue-600 font-medium">{exp.company.name}</p>
                         {exp.company.industry && (
@@ -203,12 +203,12 @@ export default function ProfilePage() {
                         )}
                       </div>
                     </div>
-                    {exp.isCurrentRole && (
+                    {exp.isCurrent && (
                       <Badge className="bg-green-100 text-green-800">Current</Badge>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    {formatDate(exp.startDate)} - {exp.isCurrentRole ? 'Present' : formatDate(exp.endDate)}
+                    {formatDate(exp.startDate)} - {exp.isCurrent ? 'Present' : formatDate(exp.endDate)}
                   </p>
                   {exp.description && (
                     <p className="text-sm text-muted-foreground leading-relaxed">{exp.description}</p>
