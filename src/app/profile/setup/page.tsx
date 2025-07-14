@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@clerk/nextjs';
 import { Badge } from '@/components/ui/badge';
 import { CompanySearch } from '@/components/ui/company-search';
+import { SkillSearch } from '@/components/ui/skill-search';
+import { EducationSearch } from '@/components/ui/education-search';
 
 interface Company {
   id: string;
