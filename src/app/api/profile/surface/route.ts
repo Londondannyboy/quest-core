@@ -60,16 +60,21 @@ export async function POST(request: NextRequest) {
               
               const companyData = testCompanies[exp.companyId];
               if (companyData) {
-                // Create or find the company
-                const company = await tx.company.upsert({
-                  where: { name: companyData.name },
-                  update: {},
-                  create: {
-                    name: companyData.name,
-                    industry: companyData.industry,
-                    verified: false
-                  }
+                // Find existing company or create new one
+                let company = await tx.company.findFirst({
+                  where: { name: companyData.name }
                 });
+                
+                if (!company) {
+                  company = await tx.company.create({
+                    data: {
+                      name: companyData.name,
+                      industry: companyData.industry,
+                      verified: false
+                    }
+                  });
+                }
+                
                 actualCompanyId = company.id;
               }
             }
@@ -108,17 +113,22 @@ export async function POST(request: NextRequest) {
               
               const institutionData = testInstitutions[edu.institutionId];
               if (institutionData) {
-                // Create or find the institution
-                const institution = await tx.educationalInstitution.upsert({
-                  where: { name: institutionData.name },
-                  update: {},
-                  create: {
-                    name: institutionData.name,
-                    type: institutionData.type,
-                    country: institutionData.country,
-                    verified: false
-                  }
+                // Find existing institution or create new one
+                let institution = await tx.educationalInstitution.findFirst({
+                  where: { name: institutionData.name }
                 });
+                
+                if (!institution) {
+                  institution = await tx.educationalInstitution.create({
+                    data: {
+                      name: institutionData.name,
+                      type: institutionData.type,
+                      country: institutionData.country,
+                      verified: false
+                    }
+                  });
+                }
+                
                 actualInstitutionId = institution.id;
               }
             }
@@ -159,7 +169,7 @@ export async function POST(request: NextRequest) {
               
               const skillData = testSkills[skill.skillId];
               if (skillData) {
-                // Create or find the skill
+                // Create or find the skill (name is unique)
                 const skillEntity = await tx.skill.upsert({
                   where: { name: skillData.name },
                   update: {},
