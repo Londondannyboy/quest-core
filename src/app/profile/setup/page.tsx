@@ -101,7 +101,14 @@ export default function ProfileSetupPage() {
 
   useEffect(() => {
     if (isSignedIn) {
-      fetchEntities();
+      // Ensure user exists in database first
+      fetch('/api/auth/create-user')
+        .then(res => res.json())
+        .then(data => {
+          console.log('User check:', data);
+          fetchEntities();
+        })
+        .catch(err => console.error('Error ensuring user exists:', err));
     }
   }, [isSignedIn]);
 
