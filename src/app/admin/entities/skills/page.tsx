@@ -11,9 +11,9 @@ interface Skill {
   id: string;
   name: string;
   category?: string;
-  difficulty?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  difficultyLevel?: string;
   verified: boolean;
-  marketDemand?: 'low' | 'medium' | 'high' | 'very_high';
+  marketDemandScore?: number;
   createdAt: string;
   _count?: {
     userSkills: number;
@@ -291,14 +291,14 @@ export default function SkillsPage() {
                           {skill.category}
                         </Badge>
                       )}
-                      {skill.difficulty && (
-                        <Badge className={`text-xs ${getDifficultyColor(skill.difficulty)}`}>
-                          {skill.difficulty}
+                      {skill.difficultyLevel && (
+                        <Badge className={`text-xs ${getDifficultyColor(skill.difficultyLevel)}`}>
+                          {skill.difficultyLevel}
                         </Badge>
                       )}
-                      {skill.marketDemand && (
-                        <Badge className={`text-xs ${getDemandColor(skill.marketDemand)}`}>
-                          {skill.marketDemand.replace('_', ' ')} demand
+                      {skill.marketDemandScore && (
+                        <Badge className={`text-xs ${getDemandColor(skill.marketDemandScore.toString())}`}>
+                          Score: {skill.marketDemandScore}
                         </Badge>
                       )}
                     </div>

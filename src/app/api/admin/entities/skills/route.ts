@@ -17,8 +17,8 @@ export async function GET() {
         id: true,
         name: true,
         category: true,
-        difficulty: true,
-        marketDemand: true,
+        difficultyLevel: true,
+        marketDemandScore: true,
         verified: true,
         createdAt: true,
         _count: {
@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
       data: {
         name: name.trim(),
         category: category && typeof category === 'string' ? category.trim() : undefined,
-        difficulty: difficulty || 'intermediate',
-        marketDemand: marketDemand || 'medium',
+        difficultyLevel: difficulty || 'intermediate',
+        marketDemandScore: marketDemand ? parseInt(marketDemand) : 3,
         verified: false
       }
     });

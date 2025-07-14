@@ -45,8 +45,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       data: {
         ...(body.name && { name: body.name.trim() }),
         ...(body.category !== undefined && { category: body.category?.trim() || null }),
-        ...(body.difficulty && { difficulty: body.difficulty }),
-        ...(body.marketDemand && { marketDemand: body.marketDemand }),
+        ...(body.difficulty && { difficultyLevel: body.difficulty }),
+        ...(body.marketDemand && { marketDemandScore: parseInt(body.marketDemand) || 3 }),
         ...(body.isVerified !== undefined && { verified: body.isVerified })
       }
     });
