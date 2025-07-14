@@ -94,7 +94,9 @@ export default function CompaniesPage() {
       } else {
         const errorData = await response.json();
         console.error('API Error:', errorData);
-        alert(`Failed to create company: ${errorData.error || 'Unknown error'}`);
+        console.error('Response status:', response.status);
+        console.error('Response headers:', Object.fromEntries(response.headers.entries()));
+        alert(`Failed to create company: ${errorData.error || 'Unknown error'}${errorData.details ? ` - ${errorData.details}` : ''}`);
       }
     } catch (error) {
       console.error('Error creating company:', error);
