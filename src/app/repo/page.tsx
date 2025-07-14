@@ -185,8 +185,8 @@ export default function FullRepoPage() {
     // Surface layer
     totalSections += 3; // profile, work experiences, skills
     if (repoData.surface?.profile) completedSections++;
-    if (repoData.surface?.workExperiences?.length > 0) completedSections++;
-    if (repoData.surface?.skills?.length > 0) completedSections++;
+    if (repoData.surface?.workExperiences?.length && repoData.surface.workExperiences.length > 0) completedSections++;
+    if (repoData.surface?.skills?.length && repoData.surface.skills.length > 0) completedSections++;
 
     // Working layer
     totalSections += 2; // profile, projects/achievements
@@ -195,8 +195,8 @@ export default function FullRepoPage() {
 
     // Personal layer
     totalSections += 2; // goals, notes
-    if (repoData.personal?.goals?.length > 0) completedSections++;
-    if (repoData.personal?.notes?.length > 0) completedSections++;
+    if (repoData.personal?.goals?.length && repoData.personal.goals.length > 0) completedSections++;
+    if (repoData.personal?.notes?.length && repoData.personal.notes.length > 0) completedSections++;
 
     // Deep layer
     totalSections += 1; // trinity core
