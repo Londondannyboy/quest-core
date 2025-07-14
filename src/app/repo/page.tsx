@@ -546,7 +546,7 @@ export default function FullRepoPage() {
                   </div>
                 )}
 
-                {repoData.deep?.insights?.length > 0 ? (
+                {repoData.deep?.insights?.length && repoData.deep.insights.length > 0 ? (
                   <div>
                     <h4 className="font-medium mb-2">AI Insights ({repoData.deep.insights.length})</h4>
                     <div className="space-y-2">
