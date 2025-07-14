@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 
-// GET - Fetch all companies
-export async function GET() {
+// GET - Search companies by name (for autocomplete)
+export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
     
@@ -11,32 +11,42 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('q') || '';
+    
+    if (query.length < 2) {
+      return NextResponse.json([]);
+    }
+
     const companies = await prisma.company.findMany({
-      orderBy: { createdAt: 'desc' },
+      where: {
+        name: {
+          contains: query,
+          mode: 'insensitive'
+        }
+      },
       select: {
         id: true,
         name: true,
         website: true,
-        domain: true,
         industry: true,
-        verified: true,
-        createdAt: true,
-        _count: {
-          select: {
-            workExperiences: true
-          }
-        }
-      }
+        verified: true
+      },
+      orderBy: [
+        { verified: 'desc' }, // Verified companies first
+        { name: 'asc' }
+      ],
+      take: 10 // Limit to 10 results for performance
     });
 
     return NextResponse.json(companies);
   } catch (error) {
-    console.error('Error fetching companies:', error);
+    console.error('Error searching companies:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// POST - Create new company
+// POST - Create new company from user profile (simplified)
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -46,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, website, industry } = body;
+    const { name, website } = body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
@@ -63,7 +73,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingCompany) {
-      return NextResponse.json({ error: 'Company with this name already exists' }, { status: 409 });
+      return NextResponse.json(existingCompany);
     }
 
     // Extract domain from website if provided
@@ -82,19 +92,13 @@ export async function POST(request: NextRequest) {
         name: name.trim(),
         website: website && typeof website === 'string' ? website.trim() : undefined,
         domain,
-        industry: industry && typeof industry === 'string' ? industry.trim() : undefined,
-        verified: false
+        verified: false // User-created companies start unverified
       }
     });
 
     return NextResponse.json(company, { status: 201 });
   } catch (error) {
-    console.error('Error creating company:', error);
-    console.error('Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      requestBody: { name, website, industry }
-    });
+    console.error('Error creating company from profile:', error);
     return NextResponse.json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
