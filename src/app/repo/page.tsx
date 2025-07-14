@@ -438,7 +438,7 @@ export default function FullRepoPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {repoData.personal?.goals?.length > 0 ? (
+                {repoData.personal?.goals?.length && repoData.personal.goals.length > 0 ? (
                   <div>
                     <h4 className="font-medium mb-2">Goals ({repoData.personal.goals.length})</h4>
                     <div className="space-y-2">
@@ -464,7 +464,7 @@ export default function FullRepoPage() {
                   </div>
                 )}
 
-                {repoData.personal?.notes?.length > 0 ? (
+                {repoData.personal?.notes?.length && repoData.personal.notes.length > 0 ? (
                   <div>
                     <h4 className="font-medium mb-2">Recent Notes ({repoData.personal.notes.length})</h4>
                     <div className="space-y-2">
