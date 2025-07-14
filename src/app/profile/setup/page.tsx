@@ -537,24 +537,13 @@ export default function ProfileSetupPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Institution *</label>
-                  <select
+                  <EducationSearch
                     value={edu.institutionId}
-                    onChange={(e) => updateEducation(index, 'institutionId', e.target.value)}
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="">Select institution</option>
-                    {institutions.length === 0 ? (
-                      <>
-                        <option value="test-institution-1">University of Technology</option>
-                        <option value="test-institution-2">Tech Institute</option>
-                        <option value="test-institution-3">State University</option>
-                      </>
-                    ) : (
-                      institutions.map(institution => (
-                        <option key={institution.id} value={institution.id}>{institution.name}</option>
-                      ))
-                    )}
-                  </select>
+                    onSelect={(institution) => {
+                      updateEducation(index, 'institutionId', institution.id);
+                    }}
+                    placeholder="Search for your institution..."
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Degree *</label>
@@ -633,26 +622,13 @@ export default function ProfileSetupPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Skill *</label>
-                  <select
+                  <SkillSearch
                     value={skill.skillId}
-                    onChange={(e) => updateSkill(index, 'skillId', e.target.value)}
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="">Select skill</option>
-                    {skills.length === 0 ? (
-                      <>
-                        <option value="test-skill-1">JavaScript</option>
-                        <option value="test-skill-2">React</option>
-                        <option value="test-skill-3">Node.js</option>
-                        <option value="test-skill-4">Python</option>
-                        <option value="test-skill-5">SQL</option>
-                      </>
-                    ) : (
-                      skills.map(skillOption => (
-                        <option key={skillOption.id} value={skillOption.id}>{skillOption.name}</option>
-                      ))
-                    )}
-                  </select>
+                    onSelect={(selectedSkill) => {
+                      updateSkill(index, 'skillId', selectedSkill.id);
+                    }}
+                    placeholder="Search for a skill..."
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Years of Experience</label>
