@@ -4,247 +4,517 @@
 
 ## 🎯 Product Vision
 
-Quest Core is a revolutionary professional development platform that guides users through discovering their authentic professional identity via AI-powered coaching and intelligent skill development.
+Quest Core is a revolutionary professional development platform built on a **3-layer repository system** that manages your complete professional identity journey - from public profile to private development to deep AI-generated insights.
 
 ### **Core Philosophy**
-- **Trinity System**: Quest (purpose), Service (value), Pledge (commitment)
+- **3-Layer Repo System**: Surface (Public), Personal (Private), Deep (System)
+- **Trinity System**: Quest (purpose), Service (value), Pledge (commitment) - embedded in Deep Repo
 - **Context Engineering**: Cole Medin's advanced AI methodology
 - **Voice-First Coaching**: Empathic AI conversations with emotional intelligence
-- **Skills Intelligence**: Market-aware, personalized development paths
+- **Progressive Identity**: Focus on becoming, not just being
 
-## 🏗️ Product Architecture
+## 🏗️ Quest Repo Architecture
+
+### **4-Layer Repository System**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        SURFACE REPO (Public)                   │
+│           LinkedIn-style • Basic Professional Profile          │
+│                     URL: /profile/[username]                    │
+├─────────────────────────────────────────────────────────────────┤
+│                       WORKING REPO (Selective)                 │
+│  Rich Portfolio • Detailed Achievements • Multimedia Content   │
+│   Project Showcases • Selective Access • Recruiter-Friendly    │
+│                     URL: /work/[username]                       │
+├─────────────────────────────────────────────────────────────────┤
+│                       PERSONAL REPO (Private)                  │
+│   Career Planning • Goals • OKRs • Personal Notes • Development │
+│                       URL: /repo/personal                       │
+├─────────────────────────────────────────────────────────────────┤
+│                        DEEP REPO (System)                      │
+│    AI Insights • Trinity Core • Identity Analysis • Encrypted   │
+│                    System-managed, Not User-Editable            │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ### **User Journey Flow**
 ```
-Onboarding → Trinity Discovery → Skills Assessment → Voice Coaching → Continuous Development
-     ↓              ↓                ↓               ↓                    ↓
-User Setup → Personal Identity → Capability Map → AI Mentorship → Growth Tracking
+Registration → Profile Setup → Trinity Discovery → Personal Repo → Voice Coaching → Continuous Development
+     ↓              ↓              ↓               ↓               ↓                    ↓
+Surface Repo → Initial Data → Deep Repo Gen → Personal Goals → AI Mentorship → Growth Tracking
 ```
 
 ## 🎯 Core Features
 
-### **1. Trinity System**
-**Status**: Foundation implemented ✅
+### **1. Surface Repo (Public Profile)**
+**Status**: Not implemented ❌
+**Priority**: High
 
-**User Story**: As a professional, I want to discover my authentic professional identity through guided self-discovery.
-
-**Features**:
-- **Quest Discovery**: Uncover deepest professional motivation and purpose
-- **Service Definition**: Identify unique value contribution to others
-- **Pledge Articulation**: Define meaningful commitments and standards
-- **AI Integration**: Sophisticated coaching to bring elements together
-
-**Success Criteria**:
-- Users complete Trinity in single session
-- 90% report clarity increase
-- Trinity elements show coherence scores >80%
-
-### **2. Voice Coaching**
-**Status**: Interface ready, needs Hume EVI integration 🔄
-
-**User Story**: As someone seeking guidance, I want natural voice conversations with an empathic AI coach.
+**User Story**: As a professional, I want a LinkedIn-style public profile that provides basic professional information to anyone who finds me.
 
 **Features**:
-- **Empathic Conversations**: Natural voice interaction with emotional intelligence
-- **Real-Time Coaching**: Immediate guidance and feedback during conversations
-- **Session Continuity**: Memory preservation across interactions
-- **Multiple Coaching Modes**: Trinity, Skills, Career, Wellness
+- **Basic Professional Info**: Name, headline, location, contact
+- **Work History**: Job titles, companies, dates (basic level)
+- **Education**: Degrees and institutions
+- **Skills**: Core competencies (high-level)
+- **Public URL**: Shareable profile at `/profile/[username]`
+- **SEO Optimized**: Discoverable through search engines
+
+**Philosophy**: Clean, professional, safe to share publicly - like a business card that's always available.
+
+### **2. Working Repo (Selective Portfolio)**
+**Status**: Not implemented ❌
+**Priority**: High - **This is our unique value proposition**
+
+**User Story**: As a professional, I want a rich portfolio space where I can share detailed achievements, project showcases, and multimedia content with selected people like recruiters, potential collaborators, or close professional connections.
+
+**Key Innovation**: The missing layer between public LinkedIn profiles and private career planning. Solves the problem of LinkedIn being too basic while avoiding the arrogance of oversharing publicly.
+
+**Features**:
+
+**🎯 Selective Access Control**:
+- **Granular Permissions**: Grant access to specific individuals or groups
+- **Access Levels**: Recruiter view, collaborator view, mentor view
+- **Time-Limited Access**: Temporary access for specific opportunities
+- **Access Analytics**: Track who viewed what and when
+
+**🎨 Rich Portfolio Content**:
+- **Project Showcases**: Detailed project descriptions with context
+- **Achievement Stories**: Narrative-driven accomplishments with impact
+- **Multimedia Support**: Videos, graphics, presentations, documents
+- **Work Samples**: Code repositories, design portfolios, writing samples
+- **Company Projects**: Internal project names, program details, case studies
+
+**📊 Professional Depth**:
+- **Quantified Impact**: Detailed metrics and business outcomes
+- **Challenge-Solution Stories**: Problem-solving narratives
+- **Collaboration Examples**: Team leadership and partnership stories
+- **Skills in Context**: How skills were applied in real situations
+- **Growth Trajectory**: Professional evolution and learning journey
+
+**🤖 AI-Enhanced Content**:
+- **Story Crafting**: AI coaching to create compelling narratives
+- **Impact Amplification**: Help articulate achievements without arrogance
+- **Content Optimization**: Tailor content for different audiences
+- **Suggestion Engine**: Recommend content based on goals and opportunities
 
 **Technical Requirements**:
-- Hume EVI integration for voice I/O
-- Server-sent events for real-time responses
-- Database integration for user context
-- Multi-agent orchestration system
+- **Media Storage**: Secure cloud storage for multimedia content
+- **Access Management**: Role-based permissions system
+- **Content Versioning**: Track changes and updates
+- **Analytics Dashboard**: Usage and engagement metrics
+- **Mobile-Responsive**: Full functionality on mobile devices
+- **Export Options**: PDF/presentation generation for specific audiences
 
 **Success Criteria**:
-- <2 second response latency
-- Natural conversation flow (no robotic responses)
-- Emotion detection accuracy >85%
-- User satisfaction >4.5/5
+- **Adoption Rate**: >80% of users create Working Repo content
+- **Access Grants**: Average 5+ people granted access per user
+- **Engagement**: >60% of shared content is viewed/interacted with
+- **Professional Outcomes**: >50% report improved professional opportunities
 
-### **3. Skills Intelligence**
-**Status**: Framework implemented, needs API connections 🔄
+**URL Structure**: `/work/[username]` with access-controlled sections
 
-**User Story**: As a professional, I want strategic skill development guidance aligned with my Trinity and market demand.
+### **3. Personal Repo (Private Development)**
+**Status**: Not implemented ❌
+**Priority**: High
+
+**User Story**: As a professional, I want a private space to plan my career development and track my progress.
 
 **Features**:
-- **Strategic Assessment**: Evidence-based evaluation of current capabilities
-- **Market Intelligence**: Real-time insights about skill demand and trends
-- **Personalized Learning Paths**: AI-designed development journeys
-- **Trinity Alignment**: Skills development supporting authentic purpose
+- **Career Planning**: Future goals and development paths
+- **OKRs Management**: Personal objectives and key results
+- **Private Notes**: Personal reflections and insights
+- **Development Tracking**: Progress monitoring and analytics
+- **Goal Setting**: SMART goals with AI assistance
 
-**API Integrations Needed**:
-- Job market APIs (LinkedIn, Indeed, Glassdoor)
-- Learning platform APIs (Coursera, Udemy, Pluralsight)
-- Skill assessment APIs (HackerRank, GitHub)
+**Technical Requirements**:
+- Private dashboard interface
+- Goal tracking system
+- Progress analytics
+- Data encryption
 
-**Success Criteria**:
-- Skill recommendations 80% relevance
-- Learning path completion >60%
-- Market insights updated daily
-- Trinity alignment scores >75%
+### **4. Deep Repo (AI-Generated Insights)**
+**Status**: Partial (Trinity foundation) 🔄
+**Priority**: High
 
-## 🧩 Technical Requirements
+**User Story**: As a user, I want AI-generated insights about my professional identity that I can't see directly but that powers my coaching.
 
-### **Performance Standards**
-- **Page Load**: <3 seconds first contentful paint
-- **Voice Latency**: <2 seconds response time
-- **Uptime**: 99.5% availability
-- **Mobile Responsive**: All features work on mobile
+**Features**:
+- **Trinity Core**: AI-managed Quest, Service, Pledge
+- **Identity Analysis**: Deep professional identity insights
+- **Behavioral Patterns**: AI-detected career patterns
+- **Predictive Modeling**: Future career trajectory insights
+- **Encrypted Storage**: System-managed, secure data
 
-### **Security & Privacy**
-- **Four-Layer Privacy**: Surface, Working, Personal, Deep repositories
-- **User Control**: Complete data ownership and deletion rights
-- **Encryption**: All conversation and context data encrypted
-- **GDPR Compliance**: Right to deletion and data export
+**Technical Requirements**:
+- AI insight generation
+- Encrypted data storage
+- System-only access controls
+- Background processing
 
-### **Scalability**
-- **Database**: PostgreSQL with connection pooling
-- **Hosting**: Vercel with edge functions
-- **CDN**: Static asset optimization
-- **Caching**: Redis for session and API response caching
+### **5. Voice Coaching (Cross-Repo Integration)**
+**Status**: Interface ready, needs full repo integration 🔄
+**Priority**: High
 
-## 👥 User Personas
+**User Story**: As a professional, I want voice coaching that understands my complete professional identity across all repo layers.
 
-### **Primary: The Seeking Professional**
-- **Demographics**: 25-45, knowledge worker, career-focused
-- **Pain Points**: Unclear career direction, skill gap anxiety, imposter syndrome
-- **Goals**: Authentic professional identity, strategic skill development
-- **Usage**: Weekly voice coaching, monthly Trinity review, daily skill tracking
+**Features**:
+- **Repo-Aware Coaching**: Access to all three layers for context
+- **Trinity Integration**: Deep repo Trinity data for personalization
+- **Goal Alignment**: Personal repo goals inform coaching
+- **Profile Enhancement**: Suggestions for Surface repo improvements
+- **Session Continuity**: Memory across coaching sessions
 
-### **Secondary: The Career Changer** 
-- **Demographics**: 30-50, transitioning careers or industries
-- **Pain Points**: Skill transferability, network rebuilding, confidence
-- **Goals**: Clear transition plan, relevant skill acquisition
-- **Usage**: Intensive Trinity work, focused skill development, voice coaching for confidence
+**Technical Requirements**:
+- Cross-repo data access
+- Voice interface with Hume EVI
+- Real-time coaching logic
+- Session management
 
-### **Tertiary: The High Performer**
-- **Demographics**: 35-55, senior roles, high achievers
-- **Pain Points**: Burnout, purpose drift, leadership challenges
-- **Goals**: Sustainable excellence, authentic leadership, purpose clarity
-- **Usage**: Leadership coaching, Trinity refinement, strategic skill planning
+## 🏗️ Database Schema Updates
 
-## 🎨 User Experience Principles
+### **Current State**
+- Basic user, trinity, skills, conversations tables
+- Authentication with Clerk
+- Voice coaching infrastructure
 
-### **Voice-First Design**
-- Conversation over clicking
-- Natural language interaction
-- Emotional intelligence awareness
-- Context preservation across sessions
+### **Required Schema Changes - Entity-Centric Design**
 
-### **Progressive Disclosure**
-- Start simple, reveal complexity gradually
-- Trinity before skills before advanced features
-- Guided onboarding with clear next steps
+**Core Philosophy**: All professional entities (companies, skills, certificates, education) are normalized objects with unique identifiers, enabling rich relationship graphs and professional networking.
 
-### **Empathic Intelligence**
-- Understand user emotional state
-- Adapt coaching style to user needs
-- Celebrate progress and breakthroughs
-- Provide support during challenges
+```sql
+-- Core Entity Tables
+CREATE TABLE companies (
+  id UUID PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  website VARCHAR UNIQUE,
+  domain VARCHAR, -- extracted from website
+  industry VARCHAR,
+  size_range VARCHAR,
+  logo_url VARCHAR,
+  description TEXT,
+  verified BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE skills (
+  id UUID PRIMARY KEY,
+  name VARCHAR UNIQUE NOT NULL,
+  category VARCHAR,
+  subcategory VARCHAR,
+  difficulty_level VARCHAR,
+  market_demand_score INTEGER,
+  description TEXT,
+  verified BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE educational_institutions (
+  id UUID PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  website VARCHAR,
+  type VARCHAR, -- university, college, bootcamp, online
+  country VARCHAR,
+  verified BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE certifications (
+  id UUID PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  issuing_organization VARCHAR,
+  website VARCHAR,
+  category VARCHAR,
+  validity_period INTEGER, -- months
+  description TEXT,
+  verified BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Surface Repo Tables
+CREATE TABLE surface_profiles (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  username VARCHAR UNIQUE,
+  public_bio TEXT,
+  headline VARCHAR,
+  location VARCHAR,
+  website VARCHAR,
+  is_public BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE work_experiences (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  company_id UUID REFERENCES companies(id),
+  title VARCHAR NOT NULL,
+  employment_type VARCHAR, -- full-time, part-time, contract
+  start_date DATE,
+  end_date DATE,
+  is_current BOOLEAN DEFAULT false,
+  description TEXT,
+  achievements TEXT[],
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE user_skills (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  skill_id UUID REFERENCES skills(id),
+  proficiency_level VARCHAR, -- beginner, intermediate, advanced, expert
+  years_of_experience INTEGER,
+  is_showcase BOOLEAN DEFAULT false, -- show on public profile
+  endorsements_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, skill_id)
+);
+
+CREATE TABLE user_education (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  institution_id UUID REFERENCES educational_institutions(id),
+  degree VARCHAR,
+  field_of_study VARCHAR,
+  start_date DATE,
+  end_date DATE,
+  gpa VARCHAR,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE user_certifications (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  certification_id UUID REFERENCES certifications(id),
+  issued_date DATE,
+  expiry_date DATE,
+  credential_id VARCHAR,
+  credential_url VARCHAR,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Working Repo Tables (Selective Portfolio)
+CREATE TABLE working_profiles (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  title VARCHAR NOT NULL,
+  description TEXT,
+  banner_image VARCHAR,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE working_projects (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  working_profile_id UUID REFERENCES working_profiles(id),
+  title VARCHAR NOT NULL,
+  company_id UUID REFERENCES companies(id),
+  description TEXT,
+  challenge TEXT,
+  solution TEXT,
+  impact TEXT,
+  technologies JSONB,
+  start_date DATE,
+  end_date DATE,
+  project_type VARCHAR, -- internal, client, personal, open-source
+  display_order INTEGER,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE working_achievements (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  working_profile_id UUID REFERENCES working_profiles(id),
+  title VARCHAR NOT NULL,
+  description TEXT,
+  context TEXT,
+  quantified_impact JSONB, -- metrics, numbers, percentages
+  skills_demonstrated JSONB, -- skill IDs and how they were used
+  recognition TEXT,
+  date_achieved DATE,
+  display_order INTEGER,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE working_media (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  working_profile_id UUID REFERENCES working_profiles(id),
+  project_id UUID REFERENCES working_projects(id),
+  achievement_id UUID REFERENCES working_achievements(id),
+  media_type VARCHAR, -- video, image, document, presentation, code
+  title VARCHAR,
+  description TEXT,
+  file_url VARCHAR,
+  file_size INTEGER,
+  mime_type VARCHAR,
+  thumbnail_url VARCHAR,
+  display_order INTEGER,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE working_access_permissions (
+  id UUID PRIMARY KEY,
+  working_profile_id UUID REFERENCES working_profiles(id),
+  granted_to_email VARCHAR,
+  granted_to_name VARCHAR,
+  access_level VARCHAR, -- recruiter, collaborator, mentor, full
+  granted_by UUID REFERENCES users(id),
+  granted_at TIMESTAMP DEFAULT NOW(),
+  expires_at TIMESTAMP,
+  is_revoked BOOLEAN DEFAULT false,
+  access_token VARCHAR UNIQUE -- for secure access without signup
+);
+
+CREATE TABLE working_access_logs (
+  id UUID PRIMARY KEY,
+  working_profile_id UUID REFERENCES working_profiles(id),
+  accessed_by_email VARCHAR,
+  accessed_by_name VARCHAR,
+  access_token VARCHAR,
+  accessed_at TIMESTAMP DEFAULT NOW(),
+  ip_address VARCHAR,
+  user_agent TEXT,
+  pages_viewed JSONB -- track what sections were viewed
+);
+
+-- Personal Repo Tables  
+CREATE TABLE personal_goals (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  goal_type VARCHAR, -- career, skill, personal
+  title VARCHAR,
+  description TEXT,
+  target_date DATE,
+  progress_percentage INTEGER,
+  okrs JSONB
+);
+
+CREATE TABLE personal_notes (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  note_type VARCHAR,
+  content TEXT,
+  tags JSONB,
+  created_at TIMESTAMP
+);
+
+-- Deep Repo Tables (System-managed)
+CREATE TABLE deep_insights (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  insight_type VARCHAR,
+  ai_analysis JSONB,
+  confidence_score FLOAT,
+  generated_at TIMESTAMP
+);
+
+CREATE TABLE trinity_core (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  quest_analysis JSONB,
+  service_analysis JSONB,
+  pledge_analysis JSONB,
+  coherence_score FLOAT,
+  last_updated TIMESTAMP
+);
+```
+
+## 🎯 Implementation Roadmap
+
+### **Phase 1: Core Repo Architecture** (Immediate Priority)
+1. **Database Schema Migration**
+   - Create all repo tables
+   - Migrate existing Trinity data to Deep Repo
+   - Set up proper access controls
+
+2. **Surface Repo Implementation**
+   - Public profile creation interface
+   - Username system
+   - Public profile display
+   - Privacy controls
+
+3. **Personal Repo Implementation**
+   - Private dashboard
+   - Goal setting interface
+   - Note-taking system
+   - Progress tracking
+
+### **Phase 2: Deep Repo & AI Integration** (Next Priority)
+1. **Trinity System Enhancement**
+   - Move Trinity to Deep Repo
+   - AI-powered Trinity analysis
+   - Coherence scoring
+   - Automated insights
+
+2. **Voice Coaching Integration**
+   - Repo-aware coaching system
+   - Cross-layer data access
+   - Personalized coaching prompts
+   - Session continuity
+
+### **Phase 3: Advanced Features** (Future)
+1. **Skills Intelligence**
+   - Market-aware skill recommendations
+   - Learning path generation
+   - Skill verification system
+
+2. **Social Features**
+   - Profile sharing
+   - Professional networking
+   - Mentorship connections
+
+## 🔄 Migration Strategy
+
+### **Existing Data Preservation**
+- Current Trinity statements → Deep Repo trinity_core
+- User profiles → Enhanced users table
+- Conversations → Enhanced with repo context
+- Skills → Integrated across Surface/Personal repos
+
+### **New User Onboarding**
+1. **Account Creation** (Clerk authentication)
+2. **Surface Repo Setup** (Public profile creation)
+3. **Trinity Discovery** (Deep Repo population)
+4. **Personal Repo Initialization** (Goal setting)
+5. **Voice Coaching Introduction** (Cross-repo integration)
 
 ## 📊 Success Metrics
 
-### **User Engagement**
-- **Monthly Active Users**: Target 1,000 within 6 months
-- **Session Duration**: Average >15 minutes voice coaching
-- **Return Rate**: >70% return within 7 days
-- **Completion Rate**: >80% Trinity completion
+### **Repo Engagement**
+- **Surface Repo**: Public profile completion rate >80%
+- **Personal Repo**: Active goal management >60%
+- **Deep Repo**: Trinity coherence scores >85%
+- **Cross-Repo**: Voice coaching utilization >70%
 
-### **Product Impact**
-- **Trinity Clarity**: 90% report increased purpose clarity
-- **Skill Development**: 60% complete recommended learning paths
-- **Career Progress**: 40% report career advancement within 6 months
-- **User Satisfaction**: >4.5/5 NPS score
+### **User Journey**
+- **Onboarding Completion**: >90% complete all repo setup
+- **Return Engagement**: >75% return within 7 days
+- **Feature Adoption**: >60% use all three repo layers
+- **Professional Growth**: >40% report career advancement
 
-### **Technical Performance**
-- **Voice Response**: <2 second latency 95th percentile
-- **Uptime**: 99.5% availability
-- **Error Rate**: <1% critical errors
-- **Load Time**: <3 seconds first contentful paint
+## 🚀 Technical Requirements
 
-## 🗓️ Development Roadmap
+### **Performance**
+- **Repo Access**: <500ms cross-repo queries
+- **Voice Coaching**: <2s response with full repo context
+- **Profile Loading**: <3s public profile display
+- **Data Sync**: Real-time updates across repo layers
 
-### **Phase 1: Foundation** (Current Status ✅)
-- ✅ Trinity system implementation
-- ✅ Skills framework
-- ✅ Voice interface preparation
-- ✅ Production deployment
+### **Security**
+- **Layer Isolation**: Strict access controls between repos
+- **Encryption**: All Personal and Deep repo data encrypted
+- **Privacy**: Granular privacy controls for Surface repo
+- **Audit Trail**: Complete access logging for Deep repo
 
-### **Phase 2: Voice Integration** (Next Priority)
-- 🔄 Hume EVI voice coaching integration
-- 🔄 Database setup for user context
-- 🔄 Authentication with Clerk
-- 🔄 Voice coaching prompts and agents
-
-### **Phase 3: Intelligence** (Future)
-- Skills market API integrations
-- Advanced Trinity analytics
-- Multi-agent coaching system
-- Real-time collaboration features
-
-### **Phase 4: Scale** (Future)
-- Mobile app development
-- Enterprise features
-- API for third-party integrations
-- Advanced analytics and insights
-
-## 🎯 Feature Priorities
-
-### **Must Have (MVP)**
-1. Working voice coaching with Hume EVI
-2. Complete Trinity discovery process
-3. User authentication and profiles
-4. Basic skills assessment
-5. Session memory and continuity
-
-### **Should Have (V1.1)**
-1. Skills market intelligence
-2. Learning path recommendations
-3. Progress tracking and analytics
-4. Mobile-responsive design
-5. Export and sharing features
-
-### **Could Have (Future)**
-1. Group coaching sessions
-2. Corporate team features
-3. Integration with HR systems
-4. Advanced analytics dashboard
-5. Third-party platform connections
-
-## 🔬 Research & Validation
-
-### **User Research Needs**
-- Trinity system effectiveness validation
-- Voice coaching preference studies
-- Skills development behavior analysis
-- Career progression impact measurement
-
-### **A/B Testing Opportunities**
-- Trinity discovery flow variations
-- Voice coaching conversation styles
-- Skills recommendation algorithms
-- Onboarding process optimization
-
-## 🚀 Go-to-Market Strategy
-
-### **Target Market**
-- **Primary**: Individual professionals seeking career clarity
-- **Secondary**: Career coaches and HR professionals
-- **Tertiary**: Corporate L&D departments
-
-### **Distribution Channels**
-- Direct web application
-- Professional network referrals
-- Content marketing and SEO
-- Partnership with career coaches
-
-### **Monetization**
-- Freemium model with basic Trinity access
-- Premium voice coaching subscription
-- Enterprise team licensing
-- Professional coach platform fees
+### **Scalability**
+- **Multi-tenant**: Support for enterprise repo systems
+- **Data Partitioning**: Efficient cross-repo queries
+- **Caching**: Intelligent caching for each repo layer
+- **API Design**: RESTful APIs for each repo layer
 
 ---
 
-**Quest Core Product Requirements** - Building the future of professional development through authentic identity discovery and AI-powered coaching.
+**Quest Core Product Requirements** - Building the future of professional development through a comprehensive 3-layer repository system that manages your complete professional identity journey.
