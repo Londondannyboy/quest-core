@@ -4,12 +4,12 @@
   "private": true,
   "description": "Quest Core - Professional development platform using Cole Medin's context engineering methodology",
   "scripts": {
-    "dev": "node server.js",
-    "dev:next": "next dev",
+    "dev": "next dev",
+    "dev:socket": "node server.js",
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
-    "start": "NODE_ENV=production node server.js",
-    "start:next": "next start",
+    "start": "next start",
+    "start:socket": "NODE_ENV=production node server.js",
     "lint": "next lint",
     "type-check": "tsc --noEmit"
   },

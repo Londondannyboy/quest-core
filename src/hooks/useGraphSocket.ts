@@ -39,8 +39,10 @@ export const useGraphSocket = (userId?: string) => {
     if (!isSignedIn || !userId) return;
 
     const socketInstance = io({
-      path: '/api/socket',
-      addTrailingSlash: false
+      path: '/socket.io/',
+      transports: ['websocket', 'polling'],
+      autoConnect: true,
+      forceNew: true
     });
 
     setSocket(socketInstance);

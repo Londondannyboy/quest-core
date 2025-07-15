@@ -5,7 +5,7 @@ import { useAuth, useUser } from '@clerk/nextjs';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useGraphSocket } from '@/hooks/useGraphSocket';
+import { useGraphSocketSimple } from '@/hooks/useGraphSocketSimple';
 
 // Dynamic import to avoid SSR issues with 3D components
 const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), {
@@ -64,7 +64,7 @@ export function ProfessionalNetworkGraph() {
     }
   }, [isSignedIn, user]);
 
-  // Use real-time socket for graph data
+  // Use simplified socket for graph data
   const { 
     connected, 
     graphData: socketGraphData, 
@@ -72,7 +72,7 @@ export function ProfessionalNetworkGraph() {
     error, 
     initializeGraphData,
     sendConversationAction 
-  } = useGraphSocket(userId || undefined);
+  } = useGraphSocketSimple(userId || undefined);
 
   // Update connection status
   useEffect(() => {
