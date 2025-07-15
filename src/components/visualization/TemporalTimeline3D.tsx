@@ -232,23 +232,53 @@ export function TemporalTimeline3D() {
     fetchTimelineData();
   }, [fetchTimelineData]);
   
-  // Fix node positions based on temporal data
+  // Fix node positions based on temporal data with linear arrangement
   useEffect(() => {
     if (timelineData && graphRef.current) {
       const graph = graphRef.current;
       
-      // Update node positions based on their temporal metadata
-      timelineData.nodes.forEach(node => {
-        const nodeData = graph.graphData().nodes.find((n: any) => n.id === node.id);
-        if (nodeData) {
-          const year = new Date(node.temporalMetadata.t_valid).getFullYear();
-          const z = ((year - 2021) / 3) * 100; // Map year to Z position
-          
-          // Fix node position
-          nodeData.fx = node.position.x;
-          nodeData.fy = node.position.y;
-          nodeData.fz = z;
-        }
+      // Sort nodes by date for linear arrangement
+      const sortedNodes = [...timelineData.nodes].sort((a, b) => 
+        new Date(a.temporalMetadata.t_valid).getTime() - new Date(b.temporalMetadata.t_valid).getTime()
+      );
+      
+      // Group nodes by year for organized layout
+      const nodesByYear = sortedNodes.reduce((acc, node) => {
+        const year = new Date(node.temporalMetadata.t_valid).getFullYear();
+        if (!acc[year]) acc[year] = [];
+        acc[year].push(node);
+        return acc;
+      }, {} as Record<number, typeof sortedNodes>);
+      
+      // Position nodes in an organized grid per year
+      Object.entries(nodesByYear).forEach(([year, nodes]) => {
+        const yearNum = parseInt(year);
+        const z = ((yearNum - 2021) / 3) * 100; // Map year to Z position
+        
+        nodes.forEach((node, index) => {
+          const nodeData = graph.graphData().nodes.find((n: any) => n.id === node.id);
+          if (nodeData) {
+            // Create a linear arrangement with slight type-based offset
+            const typeOffset = {
+              'education': -80,
+              'skill': -40,
+              'job': 0,
+              'project': 40,
+              'certification': 80,
+              'okr': 120,
+              'todo': 160
+            }[node.type] || 0;
+            
+            // Arrange nodes in rows by type, columns by sequence
+            const x = typeOffset + (index % 3) * 60 - 60;
+            const y = Math.floor(index / 3) * 80 - 40;
+            
+            // Fix node position with linear timeline arrangement
+            nodeData.fx = x;
+            nodeData.fy = y;
+            nodeData.fz = z;
+          }
+        });
       });
       
       // Refresh the graph
@@ -270,21 +300,78 @@ export function TemporalTimeline3D() {
     setSelectedNode(node);
   };
 
-  // Custom node rendering
+  // Custom node rendering with date labels
   const renderNode = (node: TemporalNode) => {
     if (typeof window === 'undefined' || !(window as any).THREE) {
       return null;
     }
     
     try {
+      const THREE = (window as any).THREE;
+      const group = new THREE.Group();
+      
+      // Create the main node geometry
       const geometry = getNodeGeometry(node.type);
-      const material = new (window as any).THREE.MeshLambertMaterial({ 
+      const material = new THREE.MeshLambertMaterial({ 
         color: node.visualProperties.color,
         transparent: true,
-        opacity: node.visualProperties.opacity
+        opacity: node.visualProperties.opacity,
+        emissive: node.visualProperties.color,
+        emissiveIntensity: 0.2
       });
       
-      return new (window as any).THREE.Mesh(geometry, material);
+      const mesh = new THREE.Mesh(geometry, material);
+      group.add(mesh);
+      
+      // Add date label sprite
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (context) {
+        canvas.width = 256;
+        canvas.height = 128;
+        context.font = 'bold 20px Arial';
+        context.fillStyle = '#ffffff';
+        context.strokeStyle = '#000000';
+        context.lineWidth = 3;
+        
+        const date = new Date(node.temporalMetadata.t_valid);
+        const dateStr = `${date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
+        const typeStr = node.type.charAt(0).toUpperCase() + node.type.slice(1);
+        
+        // Draw text with outline for better visibility
+        context.strokeText(node.name, 10, 40);
+        context.fillText(node.name, 10, 40);
+        
+        context.font = '16px Arial';
+        context.strokeText(`${typeStr} • ${dateStr}`, 10, 70);
+        context.fillText(`${typeStr} • ${dateStr}`, 10, 70);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMaterial = new THREE.SpriteMaterial({ 
+          map: texture,
+          opacity: 0.9
+        });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.position.set(2, 2, 0);
+        sprite.scale.set(8, 4, 1);
+        group.add(sprite);
+      }
+      
+      // Add glow effect for active nodes
+      if (node.temporalMetadata.isActive) {
+        const glowGeometry = geometry.clone();
+        const glowMaterial = new THREE.MeshBasicMaterial({
+          color: node.visualProperties.color,
+          transparent: true,
+          opacity: 0.3,
+          side: THREE.BackSide
+        });
+        const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+        glowMesh.scale.multiplyScalar(1.3);
+        group.add(glowMesh);
+      }
+      
+      return group;
     } catch (error) {
       console.error('Error creating 3D node:', error);
       return null;
@@ -360,11 +447,11 @@ export function TemporalTimeline3D() {
     const axisLine = new THREE.Line(axisGeometry, axisMaterial);
     axisGroup.add(axisLine);
     
-    // Add year labels and grid
+    // Add year labels, grids, and visual planes
     const years = [2018, 2019, 2020, 2021, 2022, 2023, 2024];
     const gridMaterial = new THREE.LineBasicMaterial({ color: 0x2a2a2a, opacity: 0.3, transparent: true });
     
-    years.forEach(year => {
+    years.forEach((year, index) => {
       const z = ((year - 2021) / 3) * 100; // Map years to Z position
       
       // Add tick mark
@@ -375,25 +462,48 @@ export function TemporalTimeline3D() {
       const tickLine = new THREE.Line(tickGeometry, axisMaterial);
       axisGroup.add(tickLine);
       
-      // Add year text (using sprite for simplicity)
+      // Add year text with larger, more prominent styling
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       if (context) {
-        canvas.width = 128;
-        canvas.height = 64;
-        context.font = '24px Arial';
-        context.fillStyle = 'white';
-        context.fillText(year.toString(), 10, 40);
+        canvas.width = 256;
+        canvas.height = 128;
+        context.font = 'bold 36px Arial';
+        context.fillStyle = year === 2024 ? '#ffffff' : '#888888';
+        context.strokeStyle = '#000000';
+        context.lineWidth = 2;
+        
+        // Add glow effect for current year
+        if (year === 2024) {
+          context.shadowColor = '#4fc3f7';
+          context.shadowBlur = 10;
+        }
+        
+        context.strokeText(year.toString(), 20, 70);
+        context.fillText(year.toString(), 20, 70);
         
         const texture = new THREE.CanvasTexture(canvas);
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
         const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.position.set(-230, -100, z);
-        sprite.scale.set(20, 10, 1);
+        sprite.position.set(-250, -80, z);
+        sprite.scale.set(30, 15, 1);
         axisGroup.add(sprite);
       }
       
-      // Add grid plane for each year
+      // Add semi-transparent year plane for visual effect
+      const planeGeometry = new THREE.PlaneGeometry(400, 300);
+      const planeMaterial = new THREE.MeshBasicMaterial({
+        color: year === 2024 ? 0x4fc3f7 : 0x333366,
+        transparent: true,
+        opacity: year === 2024 ? 0.15 : 0.05,
+        side: THREE.DoubleSide
+      });
+      const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+      plane.position.set(0, 0, z);
+      plane.rotation.y = Math.PI / 2;
+      axisGroup.add(plane);
+      
+      // Add grid wireframe for each year
       const gridGeometry = new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(-150, -150, z),
         new THREE.Vector3(150, -150, z),
@@ -403,6 +513,25 @@ export function TemporalTimeline3D() {
       ]);
       const gridLine = new THREE.Line(gridGeometry, gridMaterial);
       axisGroup.add(gridLine);
+      
+      // Add cross-grid lines for better depth perception
+      for (let i = -150; i <= 150; i += 50) {
+        // Vertical grid lines
+        const vGridGeometry = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(i, -150, z),
+          new THREE.Vector3(i, 150, z)
+        ]);
+        const vGridLine = new THREE.Line(vGridGeometry, gridMaterial);
+        axisGroup.add(vGridLine);
+        
+        // Horizontal grid lines
+        const hGridGeometry = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(-150, i, z),
+          new THREE.Vector3(150, i, z)
+        ]);
+        const hGridLine = new THREE.Line(hGridGeometry, gridMaterial);
+        axisGroup.add(hGridLine);
+      }
     });
     
     // Add axis labels
@@ -426,6 +555,73 @@ export function TemporalTimeline3D() {
     });
     
     scene.add(axisGroup);
+  };
+
+  // Add progression lines showing career timeline flow
+  const addProgressionLines = () => {
+    if (!graphRef.current || typeof window === 'undefined' || !(window as any).THREE || !timelineData) return;
+    
+    const THREE = (window as any).THREE;
+    const scene = graphRef.current.scene();
+    
+    // Remove existing progression lines
+    const existingLines = scene.getObjectByName('progressionLines');
+    if (existingLines) scene.remove(existingLines);
+    
+    const lineGroup = new THREE.Group();
+    lineGroup.name = 'progressionLines';
+    
+    // Sort nodes by date to create chronological flow
+    const sortedNodes = [...timelineData.nodes].sort((a, b) => 
+      new Date(a.temporalMetadata.t_valid).getTime() - new Date(b.temporalMetadata.t_valid).getTime()
+    );
+    
+    // Create flowing timeline spine
+    const spinePoints = sortedNodes.map(node => {
+      const year = new Date(node.temporalMetadata.t_valid).getFullYear();
+      const z = ((year - 2021) / 3) * 100;
+      return new THREE.Vector3(-300, 0, z);
+    });
+    
+    if (spinePoints.length > 1) {
+      const spineGeometry = new THREE.BufferGeometry().setFromPoints(spinePoints);
+      const spineMaterial = new THREE.LineBasicMaterial({ 
+        color: 0x4fc3f7, 
+        linewidth: 5,
+        opacity: 0.8,
+        transparent: true
+      });
+      const spineLine = new THREE.Line(spineGeometry, spineMaterial);
+      lineGroup.add(spineLine);
+    }
+    
+    // Add pulsing particles along the timeline
+    const particleCount = 50;
+    const particles = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    
+    for (let i = 0; i < particleCount; i++) {
+      const progress = i / particleCount;
+      const z = -200 + (progress * 400); // Spread along timeline
+      positions[i * 3] = -300 + Math.sin(progress * Math.PI * 4) * 20;
+      positions[i * 3 + 1] = Math.cos(progress * Math.PI * 6) * 10;
+      positions[i * 3 + 2] = z;
+    }
+    
+    particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    
+    const particleMaterial = new THREE.PointsMaterial({
+      color: 0x4fc3f7,
+      size: 2,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.6
+    });
+    
+    const particleSystem = new THREE.Points(particles, particleMaterial);
+    lineGroup.add(particleSystem);
+    
+    scene.add(lineGroup);
   };
 
   // Animate to time period
@@ -582,9 +778,18 @@ export function TemporalTimeline3D() {
                 nodeColor={(node: any) => node.visualProperties?.color || '#666'}
                 nodeVal={(node: any) => node.visualProperties?.size || 1}
                 nodeOpacity={0.9}
-                linkColor={() => '#ffffff'}
-                linkOpacity={0.4}
-                linkWidth={2}
+                linkColor={(link: any) => {
+                  // Color links based on relationship type
+                  const colors: Record<string, string> = {
+                    'skill_to_job': '#00ff88',
+                    'education_to_skill': '#ffaa00', 
+                    'job_to_project': '#ff4488',
+                    'default': '#ffffff'
+                  };
+                  return colors[link.type] || colors.default;
+                }}
+                linkOpacity={0.6}
+                linkWidth={3}
                 // Custom node rendering
                 nodeThreeObject={renderNode}
                 nodeThreeObjectExtend={true}
@@ -605,8 +810,9 @@ export function TemporalTimeline3D() {
                 // Custom scene modifications
                 onEngineStop={() => {
                   if (graphRef.current) {
-                    // Add time axis labels
+                    // Add time axis labels and progression lines
                     addTimeAxisLabels();
+                    addProgressionLines();
                   }
                 }}
               />
