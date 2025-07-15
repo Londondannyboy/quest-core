@@ -80,25 +80,8 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // TEMPORARILY DISABLED - Education and Skills
-      // TODO: Re-enable once core profile saving is working
-      console.log('Education and skills temporarily disabled for debugging');
-      
-      /*
-      // Delete existing education and create new ones
-      await tx.userEducation.deleteMany({
-        where: { userId: user.id }
-      });
-
-      // ... education creation code ...
-
-      // Delete existing skills and create new ones
-      await tx.userSkill.deleteMany({
-        where: { userId: user.id }
-      });
-
-      // ... skills creation code ...
-      */
+      // Note: Education and skills are handled by their respective dedicated API routes
+      // /api/profile/education and /api/profile/skills
 
       return surfaceProfile;
     });
