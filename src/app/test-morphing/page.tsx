@@ -300,7 +300,7 @@ export default function MorphingTimeline() {
       <div className="absolute top-4 left-4 z-20 bg-black/80 text-white p-4 rounded max-w-sm">
         <h2 className="text-xl font-bold mb-2">Morphing Geometry Background</h2>
         <div className="text-sm space-y-1">
-          <div>🌊 Dynamic morphing spheres</div>
+          <div>🌊 Dynamic morphing spheres (fixed)</div>
           <div>✨ Temporal gradient shaders</div>
           <div>🎥 Animated camera movements</div>
           <div>📊 Transparent graph overlay</div>
