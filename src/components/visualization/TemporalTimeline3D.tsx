@@ -167,11 +167,11 @@ export function TemporalTimeline3D() {
   }, [fetchTimelineData]);
 
   // Node interaction handlers
-  const handleNodeHover = (node: TemporalNode | null) => {
+  const handleNodeHover = (node: any) => {
     setHoveredNode(node);
   };
 
-  const handleNodeClick = (node: TemporalNode) => {
+  const handleNodeClick = (node: any) => {
     setSelectedNode(node);
   };
 
@@ -369,7 +369,7 @@ export function TemporalTimeline3D() {
               nodeLabel="name"
               nodeColor={(node: any) => node.visualProperties.color}
               nodeVal={(node: any) => node.visualProperties.size}
-              nodeOpacity={(node: any) => node.visualProperties.opacity}
+              nodeOpacity={0.9}
               linkColor={() => '#ffffff'}
               linkOpacity={0.4}
               linkWidth={2}
@@ -378,10 +378,6 @@ export function TemporalTimeline3D() {
               // Interactions
               onNodeHover={handleNodeHover}
               onNodeClick={handleNodeClick}
-              // Layout
-              enableZoomInteraction={true}
-              enablePanInteraction={true}
-              enablePointerInteraction={true}
               // Performance
               warmupTicks={100}
               cooldownTicks={200}
@@ -412,7 +408,7 @@ export function TemporalTimeline3D() {
               {(hoveredNode || selectedNode)?.temporalMetadata.t_invalid && (
                 <div>
                   <span className="text-muted-foreground">Ended:</span>
-                  <div>{(hoveredNode || selectedNode)?.temporalMetadata.t_invalid.toLocaleDateString()}</div>
+                  <div>{(hoveredNode || selectedNode)?.temporalMetadata.t_invalid?.toLocaleDateString()}</div>
                 </div>
               )}
               {(hoveredNode || selectedNode)?.temporalMetadata.duration && (

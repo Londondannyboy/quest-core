@@ -191,7 +191,7 @@ export class TemporalGraphManager {
       };
     }
 
-    return this.transformToTemporalGraph(result[0].timeline, userId);
+    return this.transformToTemporalGraph(result[0].get('timeline'), userId);
   }
 
   /**
@@ -495,7 +495,7 @@ export class TemporalGraphManager {
       return { skillProgression: [], careerPath: [], educationImpact: [] };
     }
 
-    const progression = result[0].progression;
+    const progression = result[0].get('progression');
     
     // Process skill progression
     const skillProgression = progression.skillHistory
