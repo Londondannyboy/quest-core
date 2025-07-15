@@ -133,8 +133,66 @@ export function TemporalTimeline3D() {
         setError(result.error || 'Failed to fetch timeline data');
       }
     } catch (err) {
-      setError('Network error while fetching timeline data');
       console.error('Timeline fetch error:', err);
+      // Provide fallback sample data for demonstration
+      const sampleData: TemporalGraphData = {
+        nodes: [
+          {
+            id: 'sample-skill-1',
+            name: 'TypeScript',
+            type: 'skill',
+            position: { x: 50, y: 100, z: -200 },
+            temporalMetadata: {
+              t_valid: new Date('2020-01-01'),
+              t_created: new Date('2020-01-01'),
+              duration: 48,
+              isActive: true
+            },
+            visualProperties: {
+              color: '#3b82f6',
+              size: 5,
+              opacity: 0.8
+            }
+          },
+          {
+            id: 'sample-job-1',
+            name: 'Software Engineer',
+            type: 'job',
+            position: { x: 75, y: 150, z: -100 },
+            temporalMetadata: {
+              t_valid: new Date('2022-01-01'),
+              t_created: new Date('2022-01-01'),
+              duration: 24,
+              isActive: true
+            },
+            visualProperties: {
+              color: '#10b981',
+              size: 8,
+              opacity: 0.9
+            }
+          }
+        ],
+        links: [
+          {
+            source: 'sample-skill-1',
+            target: 'sample-job-1',
+            type: 'skill_to_job',
+            strength: 0.8,
+            temporalMetadata: {
+              t_valid: new Date('2022-01-01'),
+              overlapDuration: 24
+            }
+          }
+        ],
+        timeRange: {
+          start: new Date('2020-01-01'),
+          end: new Date('2024-12-31')
+        }
+      };
+      
+      setTimelineData(sampleData);
+      setStats(calculateStats(sampleData));
+      setError('Using sample data - Connect your profile to see real timeline');
     } finally {
       setIsLoading(false);
     }
@@ -177,31 +235,55 @@ export function TemporalTimeline3D() {
 
   // Custom node rendering
   const renderNode = (node: TemporalNode) => {
-    const geometry = getNodeGeometry(node.type);
-    const material = new (window as any).THREE.MeshLambertMaterial({ 
-      color: node.visualProperties.color,
-      transparent: true,
-      opacity: node.visualProperties.opacity
-    });
+    if (typeof window === 'undefined' || !(window as any).THREE) {
+      return null;
+    }
     
-    return new (window as any).THREE.Mesh(geometry, material);
+    try {
+      const geometry = getNodeGeometry(node.type);
+      const material = new (window as any).THREE.MeshLambertMaterial({ 
+        color: node.visualProperties.color,
+        transparent: true,
+        opacity: node.visualProperties.opacity
+      });
+      
+      return new (window as any).THREE.Mesh(geometry, material);
+    } catch (error) {
+      console.error('Error creating 3D node:', error);
+      return null;
+    }
   };
 
   // Get node geometry based on type
   const getNodeGeometry = (type: string) => {
+    if (typeof window === 'undefined' || !(window as any).THREE) {
+      return null;
+    }
+    
     const THREE = (window as any).THREE;
     
-    switch (type) {
-      case 'user':
-        return new THREE.SphereGeometry(8, 16, 16);
-      case 'company':
-        return new THREE.BoxGeometry(10, 10, 10);
-      case 'skill':
-        return new THREE.SphereGeometry(5, 12, 12);
-      case 'institution':
-        return new THREE.ConeGeometry(6, 12, 8);
-      default:
-        return new THREE.SphereGeometry(5, 8, 8);
+    try {
+      switch (type) {
+        case 'skill':
+          return new THREE.SphereGeometry(0.5, 16, 16);
+        case 'job':
+          return new THREE.BoxGeometry(1, 1, 1);
+        case 'education':
+          return new THREE.ConeGeometry(0.5, 1, 8);
+        case 'certification':
+          return new THREE.CylinderGeometry(0.3, 0.3, 0.8, 8);
+        case 'project':
+          return new THREE.OctahedronGeometry(0.6);
+        case 'okr':
+          return new THREE.TetrahedronGeometry(0.7);
+        case 'todo':
+          return new THREE.IcosahedronGeometry(0.4);
+        default:
+          return new THREE.SphereGeometry(0.4, 12, 12);
+      }
+    } catch (error) {
+      console.error('Error creating geometry:', error);
+      return new THREE.SphereGeometry(0.4, 12, 12);
     }
   };
 
@@ -362,30 +444,41 @@ export function TemporalTimeline3D() {
 
         {/* 3D Timeline Visualization */}
         <div style={{ height: graphHeight }}>
-          {timelineData && (
-            <ForceGraph3D
-              ref={graphRef}
-              graphData={timelineData}
-              nodeLabel="name"
-              nodeColor={(node: any) => node.visualProperties.color}
-              nodeVal={(node: any) => node.visualProperties.size}
-              nodeOpacity={0.9}
-              linkColor={() => '#ffffff'}
-              linkOpacity={0.4}
-              linkWidth={2}
-              // Custom node rendering
-              nodeThreeObject={renderNode}
-              // Interactions
-              onNodeHover={handleNodeHover}
-              onNodeClick={handleNodeClick}
-              // Performance
-              warmupTicks={100}
-              cooldownTicks={200}
-              // Custom forces
-              numDimensions={3}
-              // Background
-              backgroundColor="#000015"
-            />
+          {timelineData ? (
+            <div className="relative">
+              <ForceGraph3D
+                ref={graphRef}
+                graphData={timelineData}
+                nodeLabel="name"
+                nodeColor={(node: any) => node.visualProperties?.color || '#666'}
+                nodeVal={(node: any) => node.visualProperties?.size || 1}
+                nodeOpacity={0.9}
+                linkColor={() => '#ffffff'}
+                linkOpacity={0.4}
+                linkWidth={2}
+                // Custom node rendering
+                nodeThreeObject={renderNode}
+                // Interactions
+                onNodeHover={handleNodeHover}
+                onNodeClick={handleNodeClick}
+                // Performance
+                warmupTicks={100}
+                cooldownTicks={200}
+                // Custom forces
+                numDimensions={3}
+                // Background
+                backgroundColor="#000015"
+              />
+              {error && (
+                <div className="absolute top-4 right-4 bg-yellow-500/20 text-yellow-200 px-3 py-2 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              No timeline data available
+            </div>
           )}
         </div>
 
