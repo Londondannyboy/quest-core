@@ -4,6 +4,8 @@ import { useAuth } from '@clerk/nextjs';
 import { WorkExperienceTimeline } from '@/components/visualization/WorkExperienceTimeline';
 import { ProfessionalNetworkGraph } from '@/components/visualization/ProfessionalNetworkGraph';
 import { ConversationGraphTest } from '@/components/conversation/ConversationGraphTest';
+import { TemporalTimeline3D } from '@/components/visualization/TemporalTimeline3D';
+import { TemporalBankingSidebar } from '@/components/temporal/TemporalBankingSidebar';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function VisualizationPage() {
@@ -52,6 +54,14 @@ export default function VisualizationPage() {
       <div className="space-y-8">
         {/* Conversation Graph Test */}
         <ConversationGraphTest />
+
+        {/* 3D Temporal Timeline with Banking System */}
+        <div className="flex gap-6">
+          <div className="flex-1">
+            <TemporalTimeline3D />
+          </div>
+          <TemporalBankingSidebar />
+        </div>
 
         {/* 3D Professional Network Graph */}
         <ProfessionalNetworkGraph />

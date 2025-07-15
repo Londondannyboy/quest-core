@@ -1,0 +1,458 @@
+'use client';
+
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useAuth, useUser } from '@clerk/nextjs';
+import dynamic from 'next/dynamic';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
+import { Calendar, Clock, Users, Award, BookOpen, Briefcase } from 'lucide-react';
+
+// Dynamic import to avoid SSR issues
+const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-96">Loading 3D Timeline...</div>
+});
+
+interface TemporalNode {
+  id: string;
+  name: string;
+  type: string;
+  position: { x: number; y: number; z: number };
+  temporalMetadata: {
+    t_valid: Date;
+    t_invalid?: Date;
+    t_created: Date;
+    duration?: number;
+    isActive: boolean;
+  };
+  visualProperties: {
+    color: string;
+    size: number;
+    opacity: number;
+  };
+}
+
+interface TemporalLink {
+  source: string;
+  target: string;
+  type: string;
+  strength: number;
+  temporalMetadata: {
+    t_valid: Date;
+    t_invalid?: Date;
+    overlapDuration?: number;
+  };
+}
+
+interface TemporalGraphData {
+  nodes: TemporalNode[];
+  links: TemporalLink[];
+  timeRange: {
+    start: Date;
+    end: Date;
+  };
+}
+
+interface TimelineStats {
+  totalNodes: number;
+  totalLinks: number;
+  timeSpan: number; // in years
+  activeNodes: number;
+  nodeTypes: Record<string, number>;
+}
+
+export function TemporalTimeline3D() {
+  const { isSignedIn } = useAuth();
+  const { user } = useUser();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [timelineData, setTimelineData] = useState<TemporalGraphData | null>(null);
+  const [stats, setStats] = useState<TimelineStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [selectedTimeRange, setSelectedTimeRange] = useState<[number, number]>([2010, 2024]);
+  const [hoveredNode, setHoveredNode] = useState<TemporalNode | null>(null);
+  const [selectedNode, setSelectedNode] = useState<TemporalNode | null>(null);
+  const graphRef = useRef<any>();
+
+  // Initialize user ID
+  useEffect(() => {
+    if (isSignedIn && user) {
+      setUserId(user.id);
+    }
+  }, [isSignedIn, user]);
+
+  // Fetch temporal timeline data
+  const fetchTimelineData = useCallback(async () => {
+    if (!userId) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const params = new URLSearchParams({
+        startDate: new Date(selectedTimeRange[0], 0, 1).toISOString(),
+        endDate: new Date(selectedTimeRange[1], 11, 31).toISOString()
+      });
+
+      const response = await fetch(`/api/temporal/timeline?${params}`);
+      const result = await response.json();
+
+      if (result.success) {
+        // Convert date strings back to Date objects
+        const processedData = {
+          ...result.data,
+          nodes: result.data.nodes.map((node: any) => ({
+            ...node,
+            temporalMetadata: {
+              ...node.temporalMetadata,
+              t_valid: new Date(node.temporalMetadata.t_valid),
+              t_invalid: node.temporalMetadata.t_invalid ? new Date(node.temporalMetadata.t_invalid) : undefined,
+              t_created: new Date(node.temporalMetadata.t_created)
+            }
+          })),
+          links: result.data.links.map((link: any) => ({
+            ...link,
+            temporalMetadata: {
+              ...link.temporalMetadata,
+              t_valid: new Date(link.temporalMetadata.t_valid),
+              t_invalid: link.temporalMetadata.t_invalid ? new Date(link.temporalMetadata.t_invalid) : undefined
+            }
+          })),
+          timeRange: {
+            start: new Date(result.data.timeRange.start),
+            end: new Date(result.data.timeRange.end)
+          }
+        };
+
+        setTimelineData(processedData);
+        setStats(calculateStats(processedData));
+      } else {
+        setError(result.error || 'Failed to fetch timeline data');
+      }
+    } catch (err) {
+      setError('Network error while fetching timeline data');
+      console.error('Timeline fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, selectedTimeRange]);
+
+  // Calculate statistics
+  const calculateStats = (data: TemporalGraphData): TimelineStats => {
+    const nodeTypes: Record<string, number> = {};
+    let activeNodes = 0;
+
+    data.nodes.forEach(node => {
+      nodeTypes[node.type] = (nodeTypes[node.type] || 0) + 1;
+      if (node.temporalMetadata.isActive) activeNodes++;
+    });
+
+    const timeSpan = data.timeRange.end.getFullYear() - data.timeRange.start.getFullYear();
+
+    return {
+      totalNodes: data.nodes.length,
+      totalLinks: data.links.length,
+      timeSpan,
+      activeNodes,
+      nodeTypes
+    };
+  };
+
+  // Fetch data when component mounts or time range changes
+  useEffect(() => {
+    fetchTimelineData();
+  }, [fetchTimelineData]);
+
+  // Node interaction handlers
+  const handleNodeHover = (node: TemporalNode | null) => {
+    setHoveredNode(node);
+  };
+
+  const handleNodeClick = (node: TemporalNode) => {
+    setSelectedNode(node);
+  };
+
+  // Custom node rendering
+  const renderNode = (node: TemporalNode) => {
+    const geometry = getNodeGeometry(node.type);
+    const material = new (window as any).THREE.MeshLambertMaterial({ 
+      color: node.visualProperties.color,
+      transparent: true,
+      opacity: node.visualProperties.opacity
+    });
+    
+    return new (window as any).THREE.Mesh(geometry, material);
+  };
+
+  // Get node geometry based on type
+  const getNodeGeometry = (type: string) => {
+    const THREE = (window as any).THREE;
+    
+    switch (type) {
+      case 'user':
+        return new THREE.SphereGeometry(8, 16, 16);
+      case 'company':
+        return new THREE.BoxGeometry(10, 10, 10);
+      case 'skill':
+        return new THREE.SphereGeometry(5, 12, 12);
+      case 'institution':
+        return new THREE.ConeGeometry(6, 12, 8);
+      default:
+        return new THREE.SphereGeometry(5, 8, 8);
+    }
+  };
+
+  // Time range slider handler
+  const handleTimeRangeChange = (newRange: number[]) => {
+    setSelectedTimeRange([newRange[0], newRange[1]]);
+  };
+
+  // Reset camera position
+  const resetCamera = () => {
+    if (graphRef.current) {
+      graphRef.current.cameraPosition({ x: 0, y: 0, z: 400 });
+    }
+  };
+
+  // Animate to time period
+  const animateToTimePeriod = (year: number) => {
+    if (!timelineData || !graphRef.current) return;
+    
+    const targetNodes = timelineData.nodes.filter(node => 
+      node.temporalMetadata.t_valid.getFullYear() === year
+    );
+    
+    if (targetNodes.length > 0) {
+      const avgPosition = targetNodes.reduce(
+        (acc, node) => ({
+          x: acc.x + node.position.x,
+          y: acc.y + node.position.y,
+          z: acc.z + node.position.z
+        }),
+        { x: 0, y: 0, z: 0 }
+      );
+      
+      avgPosition.x /= targetNodes.length;
+      avgPosition.y /= targetNodes.length;
+      avgPosition.z /= targetNodes.length;
+      
+      graphRef.current.cameraPosition(
+        { x: avgPosition.x, y: avgPosition.y, z: avgPosition.z + 200 },
+        { x: avgPosition.x, y: avgPosition.y, z: avgPosition.z },
+        1000
+      );
+    }
+  };
+
+  if (!isSignedIn) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            Please sign in to view your temporal timeline
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="text-lg font-medium mb-2">Building your temporal timeline...</div>
+              <div className="text-sm text-muted-foreground">
+                Processing career events across time
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <div className="text-lg font-medium mb-2">Error loading timeline</div>
+            <div className="text-sm">{error}</div>
+            <Button onClick={fetchTimelineData} variant="outline" className="mt-4">
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const graphHeight = isFullscreen ? '100vh' : '600px';
+
+  return (
+    <Card className={isFullscreen ? 'fixed inset-0 z-50' : 'w-full'}>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="flex items-center gap-3">
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            3D Temporal Timeline
+          </CardTitle>
+          {stats && (
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{stats.totalNodes} events</Badge>
+              <Badge variant="secondary">{stats.timeSpan} years</Badge>
+              <Badge variant="secondary">{stats.activeNodes} active</Badge>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button onClick={resetCamera} variant="outline" size="sm">
+            Reset View
+          </Button>
+          <Button 
+            onClick={() => setIsFullscreen(!isFullscreen)} 
+            variant="outline" 
+            size="sm"
+          >
+            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+          </Button>
+        </div>
+      </CardHeader>
+      
+      <CardContent>
+        {/* Time Range Controls */}
+        <div className="mb-4 p-4 bg-muted rounded-lg">
+          <div className="flex items-center gap-4 mb-2">
+            <Calendar className="h-4 w-4" />
+            <span className="text-sm font-medium">Time Range:</span>
+            <span className="text-sm text-muted-foreground">
+              {selectedTimeRange[0]} - {selectedTimeRange[1]}
+            </span>
+          </div>
+          <Slider
+            value={selectedTimeRange}
+            onValueChange={handleTimeRangeChange}
+            min={2000}
+            max={2030}
+            step={1}
+            className="w-full"
+          />
+          <div className="flex justify-between mt-2">
+            <Button 
+              onClick={() => animateToTimePeriod(selectedTimeRange[0])} 
+              variant="outline" 
+              size="sm"
+            >
+              Go to {selectedTimeRange[0]}
+            </Button>
+            <Button 
+              onClick={() => animateToTimePeriod(selectedTimeRange[1])} 
+              variant="outline" 
+              size="sm"
+            >
+              Go to {selectedTimeRange[1]}
+            </Button>
+          </div>
+        </div>
+
+        {/* 3D Timeline Visualization */}
+        <div style={{ height: graphHeight }}>
+          {timelineData && (
+            <ForceGraph3D
+              ref={graphRef}
+              graphData={timelineData}
+              nodeLabel="name"
+              nodeColor={(node: any) => node.visualProperties.color}
+              nodeVal={(node: any) => node.visualProperties.size}
+              nodeOpacity={(node: any) => node.visualProperties.opacity}
+              linkColor={() => '#ffffff'}
+              linkOpacity={0.4}
+              linkWidth={2}
+              // Custom node rendering
+              nodeThreeObject={renderNode}
+              // Interactions
+              onNodeHover={handleNodeHover}
+              onNodeClick={handleNodeClick}
+              // Layout
+              enableZoomInteraction={true}
+              enablePanInteraction={true}
+              enablePointerInteraction={true}
+              // Performance
+              warmupTicks={100}
+              cooldownTicks={200}
+              // Custom forces
+              numDimensions={3}
+              // Background
+              backgroundColor="#000015"
+            />
+          )}
+        </div>
+
+        {/* Node Details Panel */}
+        {(hoveredNode || selectedNode) && (
+          <div className="mt-4 p-4 bg-muted rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              {((hoveredNode || selectedNode)?.type === 'company') && <Briefcase className="h-4 w-4" />}
+              {((hoveredNode || selectedNode)?.type === 'skill') && <Award className="h-4 w-4" />}
+              {((hoveredNode || selectedNode)?.type === 'institution') && <BookOpen className="h-4 w-4" />}
+              {((hoveredNode || selectedNode)?.type === 'user') && <Users className="h-4 w-4" />}
+              <span className="font-medium">{(hoveredNode || selectedNode)?.name}</span>
+              <Badge variant="outline">{(hoveredNode || selectedNode)?.type}</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Started:</span>
+                <div>{(hoveredNode || selectedNode)?.temporalMetadata.t_valid.toLocaleDateString()}</div>
+              </div>
+              {(hoveredNode || selectedNode)?.temporalMetadata.t_invalid && (
+                <div>
+                  <span className="text-muted-foreground">Ended:</span>
+                  <div>{(hoveredNode || selectedNode)?.temporalMetadata.t_invalid.toLocaleDateString()}</div>
+                </div>
+              )}
+              {(hoveredNode || selectedNode)?.temporalMetadata.duration && (
+                <div>
+                  <span className="text-muted-foreground">Duration:</span>
+                  <div>{(hoveredNode || selectedNode)?.temporalMetadata.duration} months</div>
+                </div>
+              )}
+              <div>
+                <span className="text-muted-foreground">Status:</span>
+                <Badge variant={(hoveredNode || selectedNode)?.temporalMetadata.isActive ? 'default' : 'secondary'}>
+                  {(hoveredNode || selectedNode)?.temporalMetadata.isActive ? 'Active' : 'Completed'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Timeline Statistics */}
+        {stats && (
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.totalNodes}</div>
+              <div className="text-sm text-muted-foreground">Total Events</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.timeSpan}</div>
+              <div className="text-sm text-muted-foreground">Years Tracked</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.activeNodes}</div>
+              <div className="text-sm text-muted-foreground">Active Events</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.totalLinks}</div>
+              <div className="text-sm text-muted-foreground">Connections</div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

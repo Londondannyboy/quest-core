@@ -101,3 +101,9 @@ dist
 .vscode/
 .idea/
 /generated/prisma
+
+# Python virtual environments
+graphiti-env/
+venv/
+env/
+.venv/
