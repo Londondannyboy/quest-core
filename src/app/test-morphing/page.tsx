@@ -250,8 +250,9 @@ export default function MorphingTimeline() {
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      if (containerRef.current && renderer.domElement) {
-        containerRef.current.removeChild(renderer.domElement);
+      const container = containerRef.current;
+      if (container && renderer.domElement) {
+        container.removeChild(renderer.domElement);
       }
       renderer.dispose();
     };

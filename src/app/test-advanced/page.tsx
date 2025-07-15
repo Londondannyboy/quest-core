@@ -185,7 +185,7 @@ export default function AdvancedTimeline() {
       new THREE.IcosahedronGeometry(18)
     ];
 
-    const floatingShapes = [];
+    const floatingShapes: THREE.Mesh[] = [];
     for (let i = 0; i < 20; i++) {
       const geometry = geometries[Math.floor(Math.random() * geometries.length)];
       const material = new THREE.MeshPhongMaterial({
@@ -282,8 +282,9 @@ export default function AdvancedTimeline() {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
-      if (containerRef.current && renderer.domElement) {
-        containerRef.current.removeChild(renderer.domElement);
+      const container = containerRef.current;
+      if (container && renderer.domElement) {
+        container.removeChild(renderer.domElement);
       }
       renderer.dispose();
     };
