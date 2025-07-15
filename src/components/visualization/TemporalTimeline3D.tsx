@@ -97,8 +97,16 @@ export function TemporalTimeline3D() {
         endDate: new Date(selectedTimeRange[1], 11, 31).toISOString()
       });
 
-      const response = await fetch(`/api/temporal/timeline?${params}`);
-      const result = await response.json();
+      // Try authenticated endpoint first, fallback to debug endpoint
+      let response = await fetch(`/api/temporal/timeline?${params}`);
+      let result = await response.json();
+      
+      // If unauthorized or no userId, use debug endpoint
+      if (!response.ok || !userId) {
+        console.log('Using debug endpoint for temporal timeline');
+        response = await fetch('/api/debug/temporal-timeline');
+        result = await response.json();
+      }
 
       if (result.success) {
         // Convert date strings back to Date objects
