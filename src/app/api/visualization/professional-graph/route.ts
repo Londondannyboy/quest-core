@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { getOrCreateUser } from '@/lib/auth-helpers';
 import { Neo4jSchemaManager } from '@/lib/neo4j-schema';
+import { isNeo4jConfigured } from '@/lib/neo4j';
 
 interface GraphNode {
   id: string;
@@ -72,11 +73,12 @@ export async function GET() {
 
     const user = await getOrCreateUser();
 
-    // Try to get data from Neo4j first
-    try {
-      const neo4jData = await Neo4jSchemaManager.getProfessionalNetworkData(user.user.id);
-      
-      if (neo4jData.nodes.length > 0) {
+    // Try to get data from Neo4j first (only if configured)
+    if (isNeo4jConfigured()) {
+      try {
+        const neo4jData = await Neo4jSchemaManager.getProfessionalNetworkData(user.user.id);
+        
+        if (neo4jData.nodes.length > 0) {
         // Convert Neo4j data to the expected format
         const nodes: GraphNode[] = neo4jData.nodes.map(node => ({
           id: node.id,
@@ -108,10 +110,13 @@ export async function GET() {
           source: 'neo4j'
         };
 
-        return NextResponse.json(graphData);
+          return NextResponse.json(graphData);
+        }
+      } catch (neo4jError) {
+        console.log('Neo4j data not available, falling back to PostgreSQL:', neo4jError);
       }
-    } catch (neo4jError) {
-      console.log('Neo4j data not available, falling back to PostgreSQL:', neo4jError);
+    } else {
+      console.log('Neo4j not configured, using PostgreSQL data');
     }
 
     // Fallback to PostgreSQL data

@@ -21,6 +21,7 @@ class Neo4jConnection {
     const password = process.env.NEO4J_PASSWORD;
 
     if (!uri || !username || !password) {
+      console.warn('Neo4j environment variables are not configured, Neo4j features will be disabled');
       throw new Error('Neo4j environment variables are not configured');
     }
 
@@ -418,6 +419,14 @@ export class ProfessionalGraphQueries {
     
     return await neo4jConnection.executeWriteQuery(query, { userId });
   }
+}
+
+// Global singleton instance
+export const neo4jConnection = new Neo4jConnection();
+
+// Helper function to check if Neo4j is configured
+export function isNeo4jConfigured(): boolean {
+  return !!(process.env.NEO4J_URI && process.env.NEO4J_USERNAME && process.env.NEO4J_PASSWORD);
 }
 
 export default neo4jConnection;
