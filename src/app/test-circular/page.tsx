@@ -13,8 +13,8 @@ const generateCircularData = () => {
   const radius = 300;
   const centerY = 0;
   
-  const nodes = [];
-  const links = [];
+  const nodes: any[] = [];
+  const links: any[] = [];
   
   // Years as concentric circles
   const years = [2018, 2019, 2020, 2021, 2022, 2023, 2024];

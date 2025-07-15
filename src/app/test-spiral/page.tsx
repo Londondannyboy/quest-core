@@ -10,8 +10,8 @@ const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), {
 
 // Spiral timeline - time flows in 3D spiral
 const generateSpiralData = () => {
-  const nodes = [];
-  const links = [];
+  const nodes: any[] = [];
+  const links: any[] = [];
   
   // Create timeline events
   const events = [
