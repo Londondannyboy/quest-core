@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOrCreateUser } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
+import { GraphEventBroadcaster } from '@/lib/graph-events';
+import { Neo4jSchemaManager } from '@/lib/neo4j-schema';
+import { isNeo4jConfigured } from '@/lib/neo4j';
 
 interface UserSkill {
   id?: string;
@@ -88,6 +91,45 @@ export async function POST(request: NextRequest) {
 
       return savedSkills;
     });
+
+    // Broadcast real-time updates for each skill
+    for (const savedSkill of result) {
+      try {
+        // Broadcast to WebSocket clients
+        await GraphEventBroadcaster.skillAdded(
+          user.id,
+          savedSkill.skill.name,
+          savedSkill.skillId,
+          savedSkill.proficiencyLevel || 'intermediate',
+          savedSkill.yearsOfExperience || 0
+        );
+
+        // Sync to Neo4j if configured
+        if (isNeo4jConfigured()) {
+          await Neo4jSchemaManager.syncUserData({
+            id: user.id,
+            clerkId: user.clerkId,
+            email: user.email,
+            name: user.name || undefined,
+            userSkills: result.map(skill => ({
+              id: skill.id,
+              skillId: skill.skillId,
+              skill: {
+                name: skill.skill.name,
+                category: skill.skill.category || undefined,
+                difficultyLevel: skill.skill.difficultyLevel || undefined
+              },
+              proficiencyLevel: skill.proficiencyLevel || 'intermediate',
+              yearsOfExperience: skill.yearsOfExperience || 0,
+              isShowcase: skill.isShowcase
+            }))
+          });
+        }
+      } catch (broadcastError) {
+        console.error('Error broadcasting skill update:', broadcastError);
+        // Don't fail the request if broadcasting fails
+      }
+    }
 
     return NextResponse.json({ 
       message: 'Skills saved successfully',

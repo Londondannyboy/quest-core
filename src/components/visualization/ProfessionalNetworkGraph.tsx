@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useAuth, useUser } from '@clerk/nextjs';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useGraphSocket } from '@/hooks/useGraphSocket';
 
 // Dynamic import to avoid SSR issues with 3D components
 const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), {
@@ -41,9 +43,9 @@ interface GraphData {
 }
 
 export function ProfessionalNetworkGraph() {
-  const [graphData, setGraphData] = useState<GraphData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isSignedIn } = useAuth();
+  const { user } = useUser();
+  const [userId, setUserId] = useState<string | null>(null);
   const [showNodeTypes, setShowNodeTypes] = useState({
     user: true,
     company: true,
@@ -51,25 +53,69 @@ export function ProfessionalNetworkGraph() {
     institution: true
   });
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   const graphRef = useRef<any>();
 
+  // Initialize user ID from Clerk user
   useEffect(() => {
-    fetchGraphData();
-  }, []);
-
-  const fetchGraphData = async () => {
-    try {
-      const response = await fetch('/api/visualization/professional-graph');
-      if (!response.ok) {
-        throw new Error('Failed to fetch graph data');
-      }
-      const data = await response.json();
-      setGraphData(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
+    if (isSignedIn && user) {
+      // Use Clerk user ID directly - this will be handled by getOrCreateUser on the server side
+      setUserId(user.id);
     }
+  }, [isSignedIn, user]);
+
+  // Use real-time socket for graph data
+  const { 
+    connected, 
+    graphData: socketGraphData, 
+    isLoading, 
+    error, 
+    initializeGraphData,
+    sendConversationAction 
+  } = useGraphSocket(userId || undefined);
+
+  // Update connection status
+  useEffect(() => {
+    if (connected) {
+      setConnectionStatus('connected');
+    } else if (userId) {
+      setConnectionStatus('connecting');
+    } else {
+      setConnectionStatus('disconnected');
+    }
+  }, [connected, userId]);
+
+  // Initialize graph data when user ID is available
+  useEffect(() => {
+    if (userId && connected) {
+      initializeGraphData();
+    }
+  }, [userId, connected, initializeGraphData]);
+
+  // Convert socket graph data to component format
+  const graphData: GraphData | null = socketGraphData ? {
+    nodes: socketGraphData.nodes,
+    links: socketGraphData.links.map(link => ({
+      ...link,
+      type: link.type as 'works_at' | 'has_skill' | 'studied_at'
+    })),
+    stats: {
+      totalNodes: socketGraphData.nodes.length,
+      totalLinks: socketGraphData.links.length,
+      companies: socketGraphData.nodes.filter(n => n.type === 'company').length,
+      skills: socketGraphData.nodes.filter(n => n.type === 'skill').length,
+      institutions: socketGraphData.nodes.filter(n => n.type === 'institution').length
+    }
+  } : null;
+
+  // Test conversation actions
+  const testConversationActions = () => {
+    if (!sendConversationAction) return;
+    
+    sendConversationAction('add_skill', 'React', { proficiency: 'expert', experience: 5 });
+    setTimeout(() => {
+      sendConversationAction('add_company', 'Meta', { role: 'Senior Developer', industry: 'Technology' });
+    }, 1000);
   };
 
   const getFilteredData = () => {
@@ -122,12 +168,17 @@ export function ProfessionalNetworkGraph() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-center h-96">
-            <div className="text-muted-foreground">Loading 3D professional network...</div>
+            <div className="text-muted-foreground">
+              Loading 3D professional network...
+              <div className="text-sm mt-2">
+                Connection: {connectionStatus}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -165,8 +216,23 @@ export function ProfessionalNetworkGraph() {
   return (
     <Card className={isFullscreen ? 'fixed inset-0 z-50' : 'w-full'}>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>3D Professional Network</CardTitle>
+        <div className="flex items-center gap-3">
+          <CardTitle>3D Professional Network</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${
+              connectionStatus === 'connected' ? 'bg-green-500' : 
+              connectionStatus === 'connecting' ? 'bg-yellow-500' : 'bg-red-500'
+            }`}></div>
+            <span className="text-sm text-muted-foreground">
+              {connectionStatus === 'connected' ? 'Live' : 
+               connectionStatus === 'connecting' ? 'Connecting...' : 'Offline'}
+            </span>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
+          <Button onClick={testConversationActions} variant="outline" size="sm">
+            Test Live Update
+          </Button>
           <Button onClick={resetCamera} variant="outline" size="sm">
             Reset View
           </Button>

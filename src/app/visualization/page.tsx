@@ -3,6 +3,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { WorkExperienceTimeline } from '@/components/visualization/WorkExperienceTimeline';
 import { ProfessionalNetworkGraph } from '@/components/visualization/ProfessionalNetworkGraph';
+import { ConversationGraphTest } from '@/components/conversation/ConversationGraphTest';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function VisualizationPage() {
@@ -49,6 +50,9 @@ export default function VisualizationPage() {
       </div>
 
       <div className="space-y-8">
+        {/* Conversation Graph Test */}
+        <ConversationGraphTest />
+
         {/* 3D Professional Network Graph */}
         <ProfessionalNetworkGraph />
 

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOrCreateUser } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
+import { GraphEventBroadcaster } from '@/lib/graph-events';
+import { Neo4jSchemaManager } from '@/lib/neo4j-schema';
+import { isNeo4jConfigured } from '@/lib/neo4j';
 
 interface Education {
   id?: string;
@@ -90,6 +93,47 @@ export async function POST(request: NextRequest) {
 
       return savedEducations;
     });
+
+    // Broadcast real-time updates for each education entry
+    for (const savedEdu of result) {
+      try {
+        // Broadcast to WebSocket clients
+        await GraphEventBroadcaster.educationAdded(
+          user.id,
+          savedEdu.institution.name,
+          savedEdu.institutionId,
+          savedEdu.degree || 'Unknown',
+          savedEdu.fieldOfStudy || 'Unknown'
+        );
+
+        // Sync to Neo4j if configured
+        if (isNeo4jConfigured()) {
+          await Neo4jSchemaManager.syncUserData({
+            id: user.id,
+            clerkId: user.clerkId,
+            email: user.email,
+            name: user.name || undefined,
+            userEducation: result.map(edu => ({
+              id: edu.id,
+              institutionId: edu.institutionId,
+              institution: {
+                name: edu.institution.name,
+                type: edu.institution.type || undefined,
+                country: edu.institution.country || undefined
+              },
+              degree: edu.degree || 'Unknown',
+              fieldOfStudy: edu.fieldOfStudy || 'Unknown',
+              startDate: edu.startDate || undefined,
+              endDate: edu.endDate || undefined,
+              gpa: edu.gpa || undefined
+            }))
+          });
+        }
+      } catch (broadcastError) {
+        console.error('Error broadcasting education update:', broadcastError);
+        // Don't fail the request if broadcasting fails
+      }
+    }
 
     return NextResponse.json({ 
       message: 'Education saved successfully',

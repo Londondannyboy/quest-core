@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOrCreateUser } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
+import { GraphEventBroadcaster } from '@/lib/graph-events';
+import { Neo4jSchemaManager } from '@/lib/neo4j-schema';
+import { isNeo4jConfigured } from '@/lib/neo4j';
 
 interface WorkExperience {
   id?: string;
@@ -90,6 +93,47 @@ export async function POST(request: NextRequest) {
 
       return savedExperiences;
     });
+
+    // Broadcast real-time updates for each work experience
+    for (const savedExp of result) {
+      try {
+        // Broadcast to WebSocket clients
+        await GraphEventBroadcaster.companyAdded(
+          user.id,
+          savedExp.company.name,
+          savedExp.companyId,
+          savedExp.title,
+          savedExp.company.industry || undefined
+        );
+
+        // Sync to Neo4j if configured
+        if (isNeo4jConfigured()) {
+          await Neo4jSchemaManager.syncUserData({
+            id: user.id,
+            clerkId: user.clerkId,
+            email: user.email,
+            name: user.name || undefined,
+            workExperiences: result.map(exp => ({
+              id: exp.id,
+              companyId: exp.companyId,
+              company: {
+                name: exp.company.name,
+                industry: exp.company.industry || undefined,
+                website: exp.company.website || undefined
+              },
+              title: exp.title,
+              startDate: exp.startDate || undefined,
+              endDate: exp.endDate || undefined,
+              isCurrent: exp.isCurrent,
+              description: exp.description || undefined
+            }))
+          });
+        }
+      } catch (broadcastError) {
+        console.error('Error broadcasting work experience update:', broadcastError);
+        // Don't fail the request if broadcasting fails
+      }
+    }
 
     return NextResponse.json({ 
       message: 'Work experiences saved successfully',
