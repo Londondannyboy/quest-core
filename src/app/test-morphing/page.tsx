@@ -211,7 +211,7 @@ export default function MorphingTimeline() {
       
       // Update morph targets with smooth transitions
       morphObjects.forEach((mesh, index) => {
-        const material = mesh.material as THREE.ShaderMaterial;
+        const material = mesh.material as any;
         material.uniforms.time.value = time;
         
         // Cycle through morph targets
