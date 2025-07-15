@@ -185,7 +185,7 @@ export default function AdvancedTimeline() {
       new THREE.IcosahedronGeometry(18)
     ];
 
-    const floatingShapes: THREE.Mesh[] = [];
+    const floatingShapes: any[] = [];
     for (let i = 0; i < 20; i++) {
       const geometry = geometries[Math.floor(Math.random() * geometries.length)];
       const material = new THREE.MeshPhongMaterial({
