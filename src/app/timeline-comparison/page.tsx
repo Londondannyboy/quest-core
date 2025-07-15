@@ -46,6 +46,14 @@ const timelineVariants = [
     color: 'bg-yellow-500/20 border-yellow-500/30'
   },
   {
+    id: 'test-background',
+    name: 'Animated Background Demo',
+    description: 'Temporal background effects with color-coded time progression',
+    features: ['Gradient background plane', 'Color-coded particle flow', 'Time zone indicators', 'Animated wave effects'],
+    url: '/test-background',
+    color: 'bg-orange-500/20 border-orange-500/30'
+  },
+  {
     id: 'visualization',
     name: 'Main Temporal Timeline',
     description: 'Our revolutionary horizontal temporal knowledge graph',
