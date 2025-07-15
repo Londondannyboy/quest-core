@@ -185,7 +185,7 @@ export default function MorphingTimeline() {
     });
 
     // Create multiple morphing spheres
-    const morphObjects = [];
+    const morphObjects: any[] = [];
     for (let i = 0; i < 3; i++) {
       const mesh = new THREE.Mesh(morphGeometry.clone(), morphMaterial.clone());
       mesh.position.set(
