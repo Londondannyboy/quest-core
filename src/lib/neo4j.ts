@@ -421,9 +421,6 @@ export class ProfessionalGraphQueries {
   }
 }
 
-// Global singleton instance
-export const neo4jConnection = new Neo4jConnection();
-
 // Helper function to check if Neo4j is configured
 export function isNeo4jConfigured(): boolean {
   return !!(process.env.NEO4J_URI && process.env.NEO4J_USERNAME && process.env.NEO4J_PASSWORD);
