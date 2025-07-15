@@ -811,7 +811,7 @@ export function TemporalTimeline3D() {
                 // Custom forces
                 numDimensions={3}
                 // Background
-                backgroundColor="#000015"
+                backgroundColor="transparent"
                 // Camera controls
                 enableNavigationControls={true}
                 showNavInfo={true}

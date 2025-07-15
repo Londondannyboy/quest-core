@@ -54,6 +54,22 @@ const timelineVariants = [
     color: 'bg-orange-500/20 border-orange-500/30'
   },
   {
+    id: 'test-layered',
+    name: 'Layered Timeline',
+    description: 'HTML5 Canvas background with transparent 3D graph overlay',
+    features: ['HTML5 Canvas background layer', 'Transparent 3D graph overlay', 'Animated curve with particles', 'Two-layer visualization'],
+    url: '/test-layered',
+    color: 'bg-pink-500/20 border-pink-500/30'
+  },
+  {
+    id: 'test-curved',
+    name: 'Curved Life Timeline',
+    description: 'Expanding spiral timeline inspired by geological timelines',
+    features: ['Expanding spiral path', '12 chronological events', 'Era-based color coding', 'Milestone markers'],
+    url: '/test-curved',
+    color: 'bg-indigo-500/20 border-indigo-500/30'
+  },
+  {
     id: 'visualization',
     name: 'Main Temporal Timeline',
     description: 'Our revolutionary horizontal temporal knowledge graph',

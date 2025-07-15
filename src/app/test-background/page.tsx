@@ -38,7 +38,11 @@ export default function BackgroundDemo() {
     if (!graphRef.current || typeof window === 'undefined') return;
     
     const THREE = (window as any).THREE;
-    if (!THREE) return;
+    if (!THREE) {
+      console.log('THREE.js not available, retrying in 1 second...');
+      setTimeout(addTimeBackground, 1000);
+      return;
+    }
 
     const scene = graphRef.current.scene();
     
@@ -263,7 +267,7 @@ export default function BackgroundDemo() {
         nodeVal={12}
         linkColor={() => '#ffffff'}
         linkWidth={4}
-        backgroundColor="transparent"
+        backgroundColor="rgba(0,0,0,0.1)"
         warmupTicks={0}
         cooldownTicks={0}
         cooldownTime={Infinity}
