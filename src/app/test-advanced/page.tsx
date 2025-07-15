@@ -251,10 +251,10 @@ export default function AdvancedTimeline() {
 
       // Animate lights
       lights.forEach((lightConfig, index) => {
-        const light = scene.children.find(child => 
+        const light = scene.children.find((child: any) => 
           child instanceof THREE.PointLight && 
           child.color.getHex() === lightConfig.color
-        ) as THREE.PointLight;
+        ) as any;
         
         if (light) {
           light.intensity = 0.5 + Math.sin(time + index * 2) * 0.3;
