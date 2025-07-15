@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { getOrCreateUser } from '@/lib/auth-helpers';
 import { ConversationParser } from '@/lib/conversation-parser';
+import { ConversationActions } from '@/lib/conversation-actions';
 
 // POST - Parse conversation input and trigger graph updates
 export async function POST(request: NextRequest) {
@@ -23,13 +24,14 @@ export async function POST(request: NextRequest) {
     // Parse the conversation input
     const actions = ConversationParser.parseUserInput(input);
     
-    // Process the actions (broadcast to WebSocket clients)
-    await ConversationParser.processConversationActions(user.user.id, actions);
+    // Process the actions (create actual data using server-side version)
+    const results = await ConversationActions.processConversationActions(user.user.id, actions);
 
     return NextResponse.json({
       input,
       actions,
-      message: `Parsed ${actions.length} actions from conversation`,
+      results,
+      message: `Parsed ${actions.length} actions from conversation and created ${results.filter(r => r && 'success' in r && r.success).length} entries`,
       timestamp: new Date().toISOString()
     });
 

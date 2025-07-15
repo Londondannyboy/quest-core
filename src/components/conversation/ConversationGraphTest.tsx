@@ -53,6 +53,13 @@ export function ConversationGraphTest() {
       const result = await response.json();
       setActions(result.actions || []);
       setLastResult(result);
+      
+      // Trigger a page refresh to update the graph
+      if (result.results && result.results.some((r: any) => r.success)) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
     } catch (error) {
       console.error('Error parsing conversation:', error);
       setActions([]);
@@ -167,6 +174,21 @@ export function ConversationGraphTest() {
                                 </span>
                                 <span className="font-medium">{value}</span>
                               </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Show creation result */}
+                        {lastResult?.results && (
+                          <div className="mt-2 text-xs">
+                            {lastResult.results.map((result: any, idx: number) => (
+                              result.type === action.type.replace('add_', '') && result.entity === action.entity && (
+                                <div key={idx} className={`px-2 py-1 rounded ${
+                                  result.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {result.success ? '✓ Created successfully' : `✗ ${result.message || 'Failed to create'}`}
+                                </div>
+                              )
                             ))}
                           </div>
                         )}
