@@ -231,6 +231,35 @@ export function TemporalTimeline3D() {
   useEffect(() => {
     fetchTimelineData();
   }, [fetchTimelineData]);
+  
+  // Fix node positions based on temporal data
+  useEffect(() => {
+    if (timelineData && graphRef.current) {
+      const graph = graphRef.current;
+      
+      // Update node positions based on their temporal metadata
+      timelineData.nodes.forEach(node => {
+        const nodeData = graph.graphData().nodes.find((n: any) => n.id === node.id);
+        if (nodeData) {
+          const year = new Date(node.temporalMetadata.t_valid).getFullYear();
+          const z = ((year - 2021) / 3) * 100; // Map year to Z position
+          
+          // Fix node position
+          nodeData.fx = node.position.x;
+          nodeData.fy = node.position.y;
+          nodeData.fz = z;
+        }
+      });
+      
+      // Refresh the graph
+      graph.refresh();
+      
+      // Add visual elements after a short delay
+      setTimeout(() => {
+        addTimeAxisLabels();
+      }, 1000);
+    }
+  }, [timelineData]);
 
   // Node interaction handlers
   const handleNodeHover = (node: any) => {
@@ -305,6 +334,94 @@ export function TemporalTimeline3D() {
     if (graphRef.current) {
       graphRef.current.cameraPosition({ x: 0, y: 0, z: 400 });
     }
+  };
+
+  // Add time axis labels to the 3D scene
+  const addTimeAxisLabels = () => {
+    if (!graphRef.current || typeof window === 'undefined' || !(window as any).THREE) return;
+    
+    const THREE = (window as any).THREE;
+    const scene = graphRef.current.scene();
+    
+    // Remove existing axis group if any
+    const existingAxis = scene.getObjectByName('timeAxis');
+    if (existingAxis) scene.remove(existingAxis);
+    
+    // Create axis group
+    const axisGroup = new THREE.Group();
+    axisGroup.name = 'timeAxis';
+    
+    // Add time axis line
+    const axisGeometry = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-200, -100, -500),
+      new THREE.Vector3(-200, -100, 500)
+    ]);
+    const axisMaterial = new THREE.LineBasicMaterial({ color: 0x4a5568 });
+    const axisLine = new THREE.Line(axisGeometry, axisMaterial);
+    axisGroup.add(axisLine);
+    
+    // Add year labels and grid
+    const years = [2018, 2019, 2020, 2021, 2022, 2023, 2024];
+    const gridMaterial = new THREE.LineBasicMaterial({ color: 0x2a2a2a, opacity: 0.3, transparent: true });
+    
+    years.forEach(year => {
+      const z = ((year - 2021) / 3) * 100; // Map years to Z position
+      
+      // Add tick mark
+      const tickGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-200, -100, z),
+        new THREE.Vector3(-210, -100, z)
+      ]);
+      const tickLine = new THREE.Line(tickGeometry, axisMaterial);
+      axisGroup.add(tickLine);
+      
+      // Add year text (using sprite for simplicity)
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = 128;
+      canvas.height = 64;
+      context.font = '24px Arial';
+      context.fillStyle = 'white';
+      context.fillText(year.toString(), 10, 40);
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.position.set(-230, -100, z);
+      sprite.scale.set(20, 10, 1);
+      axisGroup.add(sprite);
+      
+      // Add grid plane for each year
+      const gridGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-150, -150, z),
+        new THREE.Vector3(150, -150, z),
+        new THREE.Vector3(150, 150, z),
+        new THREE.Vector3(-150, 150, z),
+        new THREE.Vector3(-150, -150, z)
+      ]);
+      const gridLine = new THREE.Line(gridGeometry, gridMaterial);
+      axisGroup.add(gridLine);
+    });
+    
+    // Add axis labels
+    ['Past', 'Present', 'Future'].forEach((label, i) => {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = 256;
+      canvas.height = 64;
+      context.font = '32px Arial';
+      context.fillStyle = '#4a5568';
+      context.fillText(label, 10, 40);
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({ map: texture, opacity: 0.7 });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.position.set(0, -200, (i - 1) * 300);
+      sprite.scale.set(40, 10, 1);
+      axisGroup.add(sprite);
+    });
+    
+    scene.add(axisGroup);
   };
 
   // Animate to time period
@@ -457,7 +574,7 @@ export function TemporalTimeline3D() {
               <ForceGraph3D
                 ref={graphRef}
                 graphData={timelineData}
-                nodeLabel="name"
+                nodeLabel={(node: any) => `${node.name} (${new Date(node.temporalMetadata?.t_valid).getFullYear()})`}
                 nodeColor={(node: any) => node.visualProperties?.color || '#666'}
                 nodeVal={(node: any) => node.visualProperties?.size || 1}
                 nodeOpacity={0.9}
@@ -466,22 +583,50 @@ export function TemporalTimeline3D() {
                 linkWidth={2}
                 // Custom node rendering
                 nodeThreeObject={renderNode}
+                nodeThreeObjectExtend={true}
                 // Interactions
                 onNodeHover={handleNodeHover}
                 onNodeClick={handleNodeClick}
                 // Performance
-                warmupTicks={100}
-                cooldownTicks={200}
+                warmupTicks={0}
+                cooldownTicks={0}
+                cooldownTime={Infinity}
                 // Custom forces
                 numDimensions={3}
                 // Background
                 backgroundColor="#000015"
+                // Camera controls
+                enableNavigationControls={true}
+                showNavInfo={true}
+                // Custom scene modifications
+                onEngineStop={() => {
+                  if (graphRef.current) {
+                    // Add time axis labels
+                    addTimeAxisLabels();
+                  }
+                }}
               />
               {error && (
                 <div className="absolute top-4 right-4 bg-yellow-500/20 text-yellow-200 px-3 py-2 rounded-md text-sm">
                   {error}
                 </div>
               )}
+              
+              {/* Debug Panel */}
+              <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-2 rounded-md text-xs max-w-xs">
+                <div className="font-semibold mb-1">Debug Info</div>
+                <div>Data Source: {error?.includes('sample data') ? 'Sample Data' : userId ? 'User Data' : 'Debug Endpoint'}</div>
+                <div>Nodes: {timelineData.nodes.length}</div>
+                <div>Links: {timelineData.links.length}</div>
+                <div>Time Range: {new Date(timelineData.timeRange.start).getFullYear()} - {new Date(timelineData.timeRange.end).getFullYear()}</div>
+                <div className="mt-2">
+                  <div className="font-semibold">Legend:</div>
+                  <div className="flex items-center gap-1"><span className="w-3 h-3 bg-blue-500 rounded-full inline-block"></span> Skills</div>
+                  <div className="flex items-center gap-1"><span className="w-3 h-3 bg-green-500 rounded-full inline-block"></span> Jobs</div>
+                  <div className="flex items-center gap-1"><span className="w-3 h-3 bg-yellow-500 rounded-full inline-block"></span> Education</div>
+                  <div className="flex items-center gap-1"><span className="w-3 h-3 bg-purple-500 rounded-full inline-block"></span> Projects</div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground">

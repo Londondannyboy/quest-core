@@ -10,7 +10,7 @@ export async function GET() {
           id: 'skill-typescript',
           name: 'TypeScript',
           type: 'skill',
-          position: { x: 50, y: 100, z: -200 },
+          position: { x: 50, y: 100, z: -100 }, // 2020 = -100 on Z axis
           temporalMetadata: {
             t_valid: '2020-01-01T00:00:00.000Z',
             t_created: '2020-01-01T00:00:00.000Z',
@@ -27,7 +27,7 @@ export async function GET() {
           id: 'job-software-engineer',
           name: 'Software Engineer',
           type: 'job',
-          position: { x: 75, y: 150, z: -100 },
+          position: { x: 75, y: 150, z: 50 }, // 2022 = 50 on Z axis
           temporalMetadata: {
             t_valid: '2022-01-01T00:00:00.000Z',
             t_created: '2022-01-01T00:00:00.000Z',
@@ -44,7 +44,7 @@ export async function GET() {
           id: 'education-computer-science',
           name: 'Computer Science Degree',
           type: 'education',
-          position: { x: 25, y: 75, z: -300 },
+          position: { x: 25, y: 75, z: -200 }, // 2018 = -200 on Z axis
           temporalMetadata: {
             t_valid: '2018-09-01T00:00:00.000Z',
             t_invalid: '2022-05-01T00:00:00.000Z',
@@ -62,7 +62,7 @@ export async function GET() {
           id: 'project-quest-core',
           name: 'Quest Core Platform',
           type: 'project',
-          position: { x: 100, y: 175, z: 0 },
+          position: { x: 100, y: 175, z: 200 }, // 2024 = 200 on Z axis
           temporalMetadata: {
             t_valid: '2024-01-01T00:00:00.000Z',
             t_created: '2024-01-01T00:00:00.000Z',
