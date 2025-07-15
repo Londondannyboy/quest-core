@@ -70,6 +70,22 @@ const timelineVariants = [
     color: 'bg-indigo-500/20 border-indigo-500/30'
   },
   {
+    id: 'test-morphing',
+    name: 'Morphing Geometry Background',
+    description: 'Three.js morphing spheres inspired by webgl_camera example',
+    features: ['Dynamic morphing geometry', 'Temporal gradient shaders', 'Animated camera movements', 'Real-time deformation'],
+    url: '/test-morphing',
+    color: 'bg-emerald-500/20 border-emerald-500/30'
+  },
+  {
+    id: 'test-advanced',
+    name: 'Advanced Temporal Experience',
+    description: 'Revolutionary multi-layer visualization with particles and shaders',
+    features: ['2000 flowing particles', 'Dynamic shader waves', 'Floating geometric shapes', 'Multi-colored lighting'],
+    url: '/test-advanced',
+    color: 'bg-violet-500/20 border-violet-500/30'
+  },
+  {
     id: 'visualization',
     name: 'Main Temporal Timeline',
     description: 'Our revolutionary horizontal temporal knowledge graph',
@@ -93,6 +109,7 @@ export default function TimelineComparison() {
           <div className="text-sm text-gray-400">
             <p>🚀 Built with react-force-graph-3d + Three.js + Neo4j</p>
             <p>🎯 Revolutionary temporal positioning algorithms</p>
+            <p>✨ Now featuring advanced Three.js backgrounds!</p>
           </div>
         </div>
 
