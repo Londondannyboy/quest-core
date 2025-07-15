@@ -284,9 +284,10 @@ export function TemporalTimeline3D() {
       // Refresh the graph
       graph.refresh();
       
-      // Add visual elements after a short delay
+      // Add visual elements after a short delay and set camera
       setTimeout(() => {
         addTimeAxisLabels();
+        resetCamera(); // Ensure proper camera positioning
       }, 1000);
     }
   }, [timelineData]);
@@ -420,7 +421,7 @@ export function TemporalTimeline3D() {
   const resetCamera = () => {
     if (graphRef.current) {
       // Position camera to view the horizontal timeline from above and angled
-      graphRef.current.cameraPosition({ x: 800, y: 400, z: 600 }, { x: 800, y: 0, z: 0 });
+      graphRef.current.cameraPosition({ x: 400, y: 300, z: 800 }, { x: 400, y: 0, z: 0 });
     }
   };
 
@@ -715,6 +716,18 @@ export function TemporalTimeline3D() {
             Reset View
           </Button>
           <Button 
+            onClick={() => {
+              if (graphRef.current) {
+                console.log('Current camera:', graphRef.current.cameraPosition());
+                console.log('Graph data:', graphRef.current.graphData());
+              }
+            }} 
+            variant="outline" 
+            size="sm"
+          >
+            Debug Info
+          </Button>
+          <Button 
             onClick={() => setIsFullscreen(!isFullscreen)} 
             variant="outline" 
             size="sm"
@@ -789,10 +802,12 @@ export function TemporalTimeline3D() {
                 // Interactions
                 onNodeHover={handleNodeHover}
                 onNodeClick={handleNodeClick}
-                // Performance
+                // Performance and force simulation
                 warmupTicks={0}
                 cooldownTicks={0}
                 cooldownTime={Infinity}
+                d3AlphaDecay={1}
+                d3VelocityDecay={1}
                 // Custom forces
                 numDimensions={3}
                 // Background
