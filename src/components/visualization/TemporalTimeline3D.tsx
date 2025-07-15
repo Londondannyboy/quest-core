@@ -250,31 +250,31 @@ export function TemporalTimeline3D() {
         return acc;
       }, {} as Record<number, typeof sortedNodes>);
       
-      // Position nodes in an organized grid per year
+      // Position nodes in year frames from left to right (X-axis timeline)
       Object.entries(nodesByYear).forEach(([year, nodes]) => {
         const yearNum = parseInt(year);
-        const z = ((yearNum - 2021) / 3) * 100; // Map year to Z position
+        const x = (yearNum - 2020) * 25000; // 25k units apart from left to right
         
         nodes.forEach((node, index) => {
           const nodeData = graph.graphData().nodes.find((n: any) => n.id === node.id);
           if (nodeData) {
-            // Create a linear arrangement with slight type-based offset
+            // Create vertical arrangement within each year frame
             const typeOffset = {
-              'education': -80,
-              'skill': -40,
+              'education': -200,
+              'skill': -100,
               'job': 0,
-              'project': 40,
-              'certification': 80,
-              'okr': 120,
-              'todo': 160
+              'project': 100,
+              'certification': 200,
+              'okr': 300,
+              'todo': 400
             }[node.type] || 0;
             
-            // Arrange nodes in rows by type, columns by sequence
-            const x = typeOffset + (index % 3) * 60 - 60;
-            const y = Math.floor(index / 3) * 80 - 40;
+            // Arrange nodes vertically by type, spread horizontally by sequence within year
+            const y = typeOffset + (Math.floor(index / 2) * 150) - 75;
+            const z = (index % 2) * 200 - 100; // Depth variation for better visibility
             
-            // Fix node position with linear timeline arrangement
-            nodeData.fx = x;
+            // Fix node position in year frame
+            nodeData.fx = x + ((index % 4) * 1000 - 1500); // Small horizontal spread within year
             nodeData.fy = y;
             nodeData.fz = z;
           }
@@ -416,10 +416,11 @@ export function TemporalTimeline3D() {
     setSelectedTimeRange([newRange[0], newRange[1]]);
   };
 
-  // Reset camera position
+  // Reset camera position for horizontal timeline view
   const resetCamera = () => {
     if (graphRef.current) {
-      graphRef.current.cameraPosition({ x: 0, y: 0, z: 400 });
+      // Position camera to view the horizontal timeline from above and angled
+      graphRef.current.cameraPosition({ x: 50000, y: 2000, z: 8000 }, { x: 50000, y: 0, z: 0 });
     }
   };
 
@@ -438,10 +439,10 @@ export function TemporalTimeline3D() {
     const axisGroup = new THREE.Group();
     axisGroup.name = 'timeAxis';
     
-    // Add time axis line
+    // Add horizontal time axis line (left to right)
     const axisGeometry = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-200, -100, -500),
-      new THREE.Vector3(-200, -100, 500)
+      new THREE.Vector3(-10000, -500, 0),
+      new THREE.Vector3(110000, -500, 0)
     ]);
     const axisMaterial = new THREE.LineBasicMaterial({ color: 0x4a5568 });
     const axisLine = new THREE.Line(axisGeometry, axisMaterial);
@@ -452,12 +453,12 @@ export function TemporalTimeline3D() {
     const gridMaterial = new THREE.LineBasicMaterial({ color: 0x2a2a2a, opacity: 0.3, transparent: true });
     
     years.forEach((year, index) => {
-      const z = ((year - 2021) / 3) * 100; // Map years to Z position
+      const x = (year - 2020) * 25000; // Map years to X position (25k apart)
       
       // Add tick mark
       const tickGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(-200, -100, z),
-        new THREE.Vector3(-210, -100, z)
+        new THREE.Vector3(x, -500, 0),
+        new THREE.Vector3(x, -600, 0)
       ]);
       const tickLine = new THREE.Line(tickGeometry, axisMaterial);
       axisGroup.add(tickLine);
@@ -485,13 +486,13 @@ export function TemporalTimeline3D() {
         const texture = new THREE.CanvasTexture(canvas);
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
         const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.position.set(-250, -80, z);
-        sprite.scale.set(30, 15, 1);
+        sprite.position.set(x, -800, 0);
+        sprite.scale.set(3000, 1500, 1);
         axisGroup.add(sprite);
       }
       
-      // Add semi-transparent year plane for visual effect
-      const planeGeometry = new THREE.PlaneGeometry(400, 300);
+      // Add vertical year plane for visual effect
+      const planeGeometry = new THREE.PlaneGeometry(4000, 1200);
       const planeMaterial = new THREE.MeshBasicMaterial({
         color: year === 2024 ? 0x4fc3f7 : 0x333366,
         transparent: true,
@@ -499,57 +500,57 @@ export function TemporalTimeline3D() {
         side: THREE.DoubleSide
       });
       const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-      plane.position.set(0, 0, z);
-      plane.rotation.y = Math.PI / 2;
+      plane.position.set(x, 0, 0);
+      plane.rotation.y = 0; // Keep vertical for left-right timeline
       axisGroup.add(plane);
       
-      // Add grid wireframe for each year
+      // Add vertical grid wireframe for each year
       const gridGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(-150, -150, z),
-        new THREE.Vector3(150, -150, z),
-        new THREE.Vector3(150, 150, z),
-        new THREE.Vector3(-150, 150, z),
-        new THREE.Vector3(-150, -150, z)
+        new THREE.Vector3(x - 2000, -600, -300),
+        new THREE.Vector3(x + 2000, -600, -300),
+        new THREE.Vector3(x + 2000, 600, -300),
+        new THREE.Vector3(x - 2000, 600, -300),
+        new THREE.Vector3(x - 2000, -600, -300)
       ]);
       const gridLine = new THREE.Line(gridGeometry, gridMaterial);
       axisGroup.add(gridLine);
       
-      // Add cross-grid lines for better depth perception
-      for (let i = -150; i <= 150; i += 50) {
+      // Add cross-grid lines for better depth perception within year frame
+      for (let i = -600; i <= 600; i += 200) {
         // Vertical grid lines
         const vGridGeometry = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(i, -150, z),
-          new THREE.Vector3(i, 150, z)
+          new THREE.Vector3(x - 2000, i, -300),
+          new THREE.Vector3(x + 2000, i, -300)
         ]);
         const vGridLine = new THREE.Line(vGridGeometry, gridMaterial);
         axisGroup.add(vGridLine);
         
-        // Horizontal grid lines
-        const hGridGeometry = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(-150, i, z),
-          new THREE.Vector3(150, i, z)
+        // Frame boundary lines
+        const fGridGeometry = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(x - 2000, -600, i / 2),
+          new THREE.Vector3(x - 2000, 600, i / 2)
         ]);
-        const hGridLine = new THREE.Line(hGridGeometry, gridMaterial);
-        axisGroup.add(hGridLine);
+        const fGridLine = new THREE.Line(fGridGeometry, gridMaterial);
+        axisGroup.add(fGridLine);
       }
     });
     
-    // Add axis labels
+    // Add horizontal axis labels
     ['Past', 'Present', 'Future'].forEach((label, i) => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       if (context) {
-        canvas.width = 256;
-        canvas.height = 64;
-        context.font = '32px Arial';
+        canvas.width = 512;
+        canvas.height = 128;
+        context.font = 'bold 48px Arial';
         context.fillStyle = '#4a5568';
-        context.fillText(label, 10, 40);
+        context.fillText(label, 20, 80);
         
         const texture = new THREE.CanvasTexture(canvas);
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture, opacity: 0.7 });
         const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.position.set(0, -200, (i - 1) * 300);
-        sprite.scale.set(40, 10, 1);
+        sprite.position.set(i * 50000, -1000, 0); // Spread along X-axis
+        sprite.scale.set(8000, 2000, 1);
         axisGroup.add(sprite);
       }
     });
@@ -576,11 +577,11 @@ export function TemporalTimeline3D() {
       new Date(a.temporalMetadata.t_valid).getTime() - new Date(b.temporalMetadata.t_valid).getTime()
     );
     
-    // Create flowing timeline spine
+    // Create flowing timeline spine (left to right)
     const spinePoints = sortedNodes.map(node => {
       const year = new Date(node.temporalMetadata.t_valid).getFullYear();
-      const z = ((year - 2021) / 3) * 100;
-      return new THREE.Vector3(-300, 0, z);
+      const x = (year - 2020) * 25000;
+      return new THREE.Vector3(x, -300, 0);
     });
     
     if (spinePoints.length > 1) {
@@ -602,10 +603,10 @@ export function TemporalTimeline3D() {
     
     for (let i = 0; i < particleCount; i++) {
       const progress = i / particleCount;
-      const z = -200 + (progress * 400); // Spread along timeline
-      positions[i * 3] = -300 + Math.sin(progress * Math.PI * 4) * 20;
-      positions[i * 3 + 1] = Math.cos(progress * Math.PI * 6) * 10;
-      positions[i * 3 + 2] = z;
+      const x = progress * 100000; // Spread along X-axis timeline
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = -300 + Math.sin(progress * Math.PI * 8) * 50;
+      positions[i * 3 + 2] = Math.cos(progress * Math.PI * 6) * 30;
     }
     
     particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
