@@ -253,7 +253,7 @@ export function TemporalTimeline3D() {
       // Position nodes in year frames from left to right (X-axis timeline)
       Object.entries(nodesByYear).forEach(([year, nodes]) => {
         const yearNum = parseInt(year);
-        const x = (yearNum - 2020) * 25000; // 25k units apart from left to right
+        const x = (yearNum - 2020) * 400; // Much smaller spacing for visibility
         
         nodes.forEach((node, index) => {
           const nodeData = graph.graphData().nodes.find((n: any) => n.id === node.id);
@@ -274,7 +274,7 @@ export function TemporalTimeline3D() {
             const z = (index % 2) * 200 - 100; // Depth variation for better visibility
             
             // Fix node position in year frame
-            nodeData.fx = x + ((index % 4) * 1000 - 1500); // Small horizontal spread within year
+            nodeData.fx = x + ((index % 4) * 50 - 75); // Small horizontal spread within year
             nodeData.fy = y;
             nodeData.fz = z;
           }
@@ -420,7 +420,7 @@ export function TemporalTimeline3D() {
   const resetCamera = () => {
     if (graphRef.current) {
       // Position camera to view the horizontal timeline from above and angled
-      graphRef.current.cameraPosition({ x: 50000, y: 2000, z: 8000 }, { x: 50000, y: 0, z: 0 });
+      graphRef.current.cameraPosition({ x: 800, y: 400, z: 600 }, { x: 800, y: 0, z: 0 });
     }
   };
 
@@ -441,8 +441,8 @@ export function TemporalTimeline3D() {
     
     // Add horizontal time axis line (left to right)
     const axisGeometry = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-10000, -500, 0),
-      new THREE.Vector3(110000, -500, 0)
+      new THREE.Vector3(-1000, -400, 0),
+      new THREE.Vector3(2000, -400, 0)
     ]);
     const axisMaterial = new THREE.LineBasicMaterial({ color: 0x4a5568 });
     const axisLine = new THREE.Line(axisGeometry, axisMaterial);
@@ -453,12 +453,12 @@ export function TemporalTimeline3D() {
     const gridMaterial = new THREE.LineBasicMaterial({ color: 0x2a2a2a, opacity: 0.3, transparent: true });
     
     years.forEach((year, index) => {
-      const x = (year - 2020) * 25000; // Map years to X position (25k apart)
+      const x = (year - 2020) * 400; // Map years to X position (400 units apart)
       
       // Add tick mark
       const tickGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x, -500, 0),
-        new THREE.Vector3(x, -600, 0)
+        new THREE.Vector3(x, -400, 0),
+        new THREE.Vector3(x, -450, 0)
       ]);
       const tickLine = new THREE.Line(tickGeometry, axisMaterial);
       axisGroup.add(tickLine);
@@ -486,13 +486,13 @@ export function TemporalTimeline3D() {
         const texture = new THREE.CanvasTexture(canvas);
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
         const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.position.set(x, -800, 0);
-        sprite.scale.set(3000, 1500, 1);
+        sprite.position.set(x, -500, 0);
+        sprite.scale.set(60, 30, 1);
         axisGroup.add(sprite);
       }
       
       // Add vertical year plane for visual effect
-      const planeGeometry = new THREE.PlaneGeometry(4000, 1200);
+      const planeGeometry = new THREE.PlaneGeometry(100, 600);
       const planeMaterial = new THREE.MeshBasicMaterial({
         color: year === 2024 ? 0x4fc3f7 : 0x333366,
         transparent: true,
@@ -506,32 +506,24 @@ export function TemporalTimeline3D() {
       
       // Add vertical grid wireframe for each year
       const gridGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x - 2000, -600, -300),
-        new THREE.Vector3(x + 2000, -600, -300),
-        new THREE.Vector3(x + 2000, 600, -300),
-        new THREE.Vector3(x - 2000, 600, -300),
-        new THREE.Vector3(x - 2000, -600, -300)
+        new THREE.Vector3(x - 50, -300, -200),
+        new THREE.Vector3(x + 50, -300, -200),
+        new THREE.Vector3(x + 50, 300, -200),
+        new THREE.Vector3(x - 50, 300, -200),
+        new THREE.Vector3(x - 50, -300, -200)
       ]);
       const gridLine = new THREE.Line(gridGeometry, gridMaterial);
       axisGroup.add(gridLine);
       
       // Add cross-grid lines for better depth perception within year frame
-      for (let i = -600; i <= 600; i += 200) {
-        // Vertical grid lines
-        const vGridGeometry = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(x - 2000, i, -300),
-          new THREE.Vector3(x + 2000, i, -300)
+      for (let i = -300; i <= 300; i += 100) {
+        // Horizontal grid lines
+        const hGridGeometry = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(x - 50, i, -200),
+          new THREE.Vector3(x + 50, i, -200)
         ]);
-        const vGridLine = new THREE.Line(vGridGeometry, gridMaterial);
-        axisGroup.add(vGridLine);
-        
-        // Frame boundary lines
-        const fGridGeometry = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(x - 2000, -600, i / 2),
-          new THREE.Vector3(x - 2000, 600, i / 2)
-        ]);
-        const fGridLine = new THREE.Line(fGridGeometry, gridMaterial);
-        axisGroup.add(fGridLine);
+        const hGridLine = new THREE.Line(hGridGeometry, gridMaterial);
+        axisGroup.add(hGridLine);
       }
     });
     
@@ -549,8 +541,8 @@ export function TemporalTimeline3D() {
         const texture = new THREE.CanvasTexture(canvas);
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture, opacity: 0.7 });
         const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.position.set(i * 50000, -1000, 0); // Spread along X-axis
-        sprite.scale.set(8000, 2000, 1);
+        sprite.position.set(-800 + (i * 800), -600, 0); // Spread along X-axis
+        sprite.scale.set(120, 30, 1);
         axisGroup.add(sprite);
       }
     });
@@ -580,7 +572,7 @@ export function TemporalTimeline3D() {
     // Create flowing timeline spine (left to right)
     const spinePoints = sortedNodes.map(node => {
       const year = new Date(node.temporalMetadata.t_valid).getFullYear();
-      const x = (year - 2020) * 25000;
+      const x = (year - 2020) * 400;
       return new THREE.Vector3(x, -300, 0);
     });
     
@@ -603,7 +595,7 @@ export function TemporalTimeline3D() {
     
     for (let i = 0; i < particleCount; i++) {
       const progress = i / particleCount;
-      const x = progress * 100000; // Spread along X-axis timeline
+      const x = -800 + (progress * 2400); // Spread along X-axis timeline (from -800 to 1600)
       positions[i * 3] = x;
       positions[i * 3 + 1] = -300 + Math.sin(progress * Math.PI * 8) * 50;
       positions[i * 3 + 2] = Math.cos(progress * Math.PI * 6) * 30;
