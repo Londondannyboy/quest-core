@@ -378,18 +378,20 @@ export function TemporalTimeline3D() {
       // Add year text (using sprite for simplicity)
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
-      canvas.width = 128;
-      canvas.height = 64;
-      context.font = '24px Arial';
-      context.fillStyle = 'white';
-      context.fillText(year.toString(), 10, 40);
-      
-      const texture = new THREE.CanvasTexture(canvas);
-      const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
-      const sprite = new THREE.Sprite(spriteMaterial);
-      sprite.position.set(-230, -100, z);
-      sprite.scale.set(20, 10, 1);
-      axisGroup.add(sprite);
+      if (context) {
+        canvas.width = 128;
+        canvas.height = 64;
+        context.font = '24px Arial';
+        context.fillStyle = 'white';
+        context.fillText(year.toString(), 10, 40);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.position.set(-230, -100, z);
+        sprite.scale.set(20, 10, 1);
+        axisGroup.add(sprite);
+      }
       
       // Add grid plane for each year
       const gridGeometry = new THREE.BufferGeometry().setFromPoints([
@@ -407,18 +409,20 @@ export function TemporalTimeline3D() {
     ['Past', 'Present', 'Future'].forEach((label, i) => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
-      canvas.width = 256;
-      canvas.height = 64;
-      context.font = '32px Arial';
-      context.fillStyle = '#4a5568';
-      context.fillText(label, 10, 40);
-      
-      const texture = new THREE.CanvasTexture(canvas);
-      const spriteMaterial = new THREE.SpriteMaterial({ map: texture, opacity: 0.7 });
-      const sprite = new THREE.Sprite(spriteMaterial);
-      sprite.position.set(0, -200, (i - 1) * 300);
-      sprite.scale.set(40, 10, 1);
-      axisGroup.add(sprite);
+      if (context) {
+        canvas.width = 256;
+        canvas.height = 64;
+        context.font = '32px Arial';
+        context.fillStyle = '#4a5568';
+        context.fillText(label, 10, 40);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture, opacity: 0.7 });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.position.set(0, -200, (i - 1) * 300);
+        sprite.scale.set(40, 10, 1);
+        axisGroup.add(sprite);
+      }
     });
     
     scene.add(axisGroup);
