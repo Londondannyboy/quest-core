@@ -332,7 +332,7 @@ export default function AdvancedTimeline() {
       
       {/* Enhanced UI */}
       <div className="absolute top-4 left-4 z-20 bg-black/80 backdrop-blur-sm text-white p-4 rounded-lg max-w-sm border border-white/20">
-        <h2 className="text-xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-gold-400">
+        <h2 className="text-xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-yellow-400">
           Advanced Temporal Experience
         </h2>
         <div className="text-sm space-y-1">
