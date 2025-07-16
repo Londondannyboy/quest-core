@@ -48,7 +48,7 @@ export default function TrinityHeadPage() {
 
       // Scene setup
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x1a1a1a);
+      scene.background = null; // Make background transparent
       sceneRef.current = scene;
 
       // Camera setup
@@ -61,12 +61,12 @@ export default function TrinityHeadPage() {
       camera.position.set(0, 0, 8);
 
       // Renderer setup
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(containerRef.current!.clientWidth, containerRef.current!.clientHeight);
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.setClearColor(0x1a1a1a, 1);
+      renderer.setClearColor(0x000000, 0); // Transparent background
       containerRef.current!.appendChild(renderer.domElement);
       rendererRef.current = renderer;
 
@@ -369,7 +369,7 @@ export default function TrinityHeadPage() {
             <CardContent>
               <div 
                 ref={containerRef}
-                className="w-full h-[600px] bg-black rounded-lg relative"
+                className="w-full h-[600px] bg-gray-900 rounded-lg relative"
               />
               
               {showControls && (

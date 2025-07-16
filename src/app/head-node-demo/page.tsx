@@ -321,7 +321,7 @@ export default function HeadNodeDemo() {
                   nodeThreeObjectExtend={true}
                   linkColor={() => '#ffffff'}
                   linkOpacity={0.6}
-                  backgroundColor="transparent"
+                  backgroundColor="rgba(0,0,0,0.1)"
                   showNavInfo={false}
                   nodeLabel={(node: any) => `${node.name} (${node.type})`}
                   onNodeHover={(node: any) => {
