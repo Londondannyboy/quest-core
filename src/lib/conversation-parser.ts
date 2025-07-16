@@ -1,7 +1,7 @@
 import { GraphEventBroadcaster } from './graph-events';
 
 export interface ConversationAction {
-  type: 'add_skill' | 'add_company' | 'add_education' | 'update_profile' | 'none';
+  type: 'add_skill' | 'add_company' | 'add_education' | 'add_objective' | 'add_key_result' | 'update_profile' | 'none';
   entity: string;
   details: {
     proficiency?: string;
@@ -12,6 +12,15 @@ export interface ConversationAction {
     fieldOfStudy?: string;
     startDate?: string;
     endDate?: string;
+    // OKR-specific fields
+    category?: string;
+    priority?: string;
+    timeframe?: string;
+    targetDate?: string;
+    targetValue?: number;
+    unit?: string;
+    measurementType?: string;
+    parentObjective?: string;
   };
 }
 
@@ -124,6 +133,63 @@ export class ConversationParser {
               entity: institution,
               details: {
                 degree: degree
+              }
+            });
+          }
+        }
+      }
+    });
+
+    // OKR and Goal patterns
+    const objectivePatterns = [
+      /(?:my goal is to|i want to|i aim to|objective:|goal:|target:|my objective is to)\s+([^.!?]+)/gi,
+      /(?:i'm working towards|i'm trying to|i plan to|i intend to)\s+([^.!?]+)/gi,
+      /(?:by\s+(\w+\s+\d{4}|next\s+\w+|this\s+\w+)\s+i\s+want\s+to|i\s+want\s+to\s+achieve)\s+([^.!?]+)/gi
+    ];
+
+    objectivePatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(input)) !== null) {
+        const objectiveText = match[match.length - 1].trim();
+        if (objectiveText.length > 3) {
+          actions.push({
+            type: 'add_objective',
+            entity: objectiveText,
+            details: {
+              category: this.extractCategory(objectiveText),
+              priority: this.extractPriority(input, objectiveText),
+              timeframe: this.extractTimeframe(input, objectiveText),
+              targetDate: this.extractTargetDate(input, objectiveText)
+            }
+          });
+        }
+      }
+    });
+
+    // Key Results patterns
+    const keyResultPatterns = [
+      /(?:key result|kr|measure|metric|target):\s*([^.!?]+)/gi,
+      /(?:increase|decrease|improve|achieve|reach|hit|get\s+to)\s+([^.!?]+?)\s+(?:by|to)\s+(\d+(?:\.\d+)?)\s*(%|percent|users|customers|dollars?|\$|points?|hours?|days?|weeks?|months?)/gi,
+      /(?:complete|finish|deliver|launch|ship)\s+([^.!?]+)/gi
+    ];
+
+    keyResultPatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(input)) !== null) {
+        if (match.length >= 2) {
+          const keyResultText = match[1].trim();
+          const targetValue = match[2] ? parseFloat(match[2]) : undefined;
+          const unit = match[3] || '';
+          
+          if (keyResultText.length > 3) {
+            actions.push({
+              type: 'add_key_result',
+              entity: keyResultText,
+              details: {
+                targetValue: targetValue,
+                unit: unit,
+                measurementType: this.extractMeasurementType(unit),
+                targetDate: this.extractTargetDate(input, keyResultText)
               }
             });
           }
@@ -455,6 +521,94 @@ export class ConversationParser {
     }
   }
 
+  // Extract category from objective text
+  private static extractCategory(objectiveText: string): string {
+    const lowerText = objectiveText.toLowerCase();
+    
+    if (lowerText.includes('learn') || lowerText.includes('study') || lowerText.includes('course') || lowerText.includes('skill')) {
+      return 'learning';
+    } else if (lowerText.includes('career') || lowerText.includes('job') || lowerText.includes('work') || lowerText.includes('promotion')) {
+      return 'professional';
+    } else if (lowerText.includes('health') || lowerText.includes('fitness') || lowerText.includes('exercise')) {
+      return 'health';
+    } else if (lowerText.includes('personal') || lowerText.includes('family') || lowerText.includes('relationship')) {
+      return 'personal';
+    }
+    
+    return 'professional'; // default
+  }
+
+  // Extract priority from context
+  private static extractPriority(input: string, objectiveText: string): string {
+    const lowerInput = input.toLowerCase();
+    
+    if (lowerInput.includes('urgent') || lowerInput.includes('critical') || lowerInput.includes('important') || lowerInput.includes('high priority')) {
+      return 'high';
+    } else if (lowerInput.includes('medium') || lowerInput.includes('moderate')) {
+      return 'medium';
+    } else if (lowerInput.includes('low') || lowerInput.includes('when i have time') || lowerInput.includes('eventually')) {
+      return 'low';
+    }
+    
+    return 'medium'; // default
+  }
+
+  // Extract timeframe from context
+  private static extractTimeframe(input: string, objectiveText: string): string {
+    const lowerInput = input.toLowerCase();
+    
+    if (lowerInput.includes('quarter') || lowerInput.includes('q1') || lowerInput.includes('q2') || lowerInput.includes('q3') || lowerInput.includes('q4')) {
+      return 'quarter';
+    } else if (lowerInput.includes('year') || lowerInput.includes('annual') || lowerInput.includes('2024') || lowerInput.includes('2025')) {
+      return 'year';
+    } else if (lowerInput.includes('month') || lowerInput.includes('30 days') || lowerInput.includes('this month') || lowerInput.includes('next month')) {
+      return 'month';
+    } else if (lowerInput.includes('ongoing') || lowerInput.includes('continuous') || lowerInput.includes('long term')) {
+      return 'ongoing';
+    }
+    
+    return 'quarter'; // default
+  }
+
+  // Extract target date from context
+  private static extractTargetDate(input: string, text: string): string | undefined {
+    const lowerInput = input.toLowerCase();
+    
+    // Look for specific dates or time periods
+    const datePatterns = [
+      /by\s+(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2}),?\s+(\d{4})/gi,
+      /by\s+(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{4})/gi,
+      /by\s+(\d{1,2}\/\d{1,2}\/\d{4})/gi,
+      /by\s+the\s+end\s+of\s+(january|february|march|april|may|june|july|august|september|october|november|december)/gi,
+      /by\s+next\s+(week|month|quarter|year)/gi,
+      /within\s+(\d+)\s+(days?|weeks?|months?)/gi
+    ];
+
+    for (const pattern of datePatterns) {
+      const match = pattern.exec(input);
+      if (match) {
+        return match[0]; // Return the matched date string for parsing later
+      }
+    }
+
+    return undefined;
+  }
+
+  // Extract measurement type from unit
+  private static extractMeasurementType(unit: string): string {
+    if (unit.includes('%') || unit.includes('percent')) {
+      return 'percentage';
+    } else if (unit.includes('$') || unit.includes('dollar')) {
+      return 'currency';
+    } else if (unit.match(/\d/)) {
+      return 'number';
+    } else if (unit.includes('yes') || unit.includes('no') || unit.includes('done') || unit.includes('complete')) {
+      return 'boolean';
+    }
+    
+    return 'number'; // default
+  }
+
   // Quick test method for conversation parsing
   static testParsing() {
     const testInputs = [
@@ -462,7 +616,10 @@ export class ConversationParser {
       "I have 5 years of experience with Python and I'm an expert in machine learning",
       "I studied Computer Science at MIT and got my Masters from Stanford",
       "I worked at Google for 3 years as a Software Engineer in the AI team",
-      "My skills include Java, Spring Boot, and I'm proficient in AWS cloud services"
+      "My skills include Java, Spring Boot, and I'm proficient in AWS cloud services",
+      "My goal is to become a senior developer by the end of this year",
+      "I want to achieve 10,000 users by next quarter",
+      "Key result: increase revenue by 25% this quarter"
     ];
     
     testInputs.forEach(input => {

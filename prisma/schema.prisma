@@ -111,6 +111,7 @@ model User {
   // Personal Repo
   personalGoals     PersonalGoal[]
   personalNotes     PersonalNote[]
+  objectives        Objective[]
 
   // Deep Repo
   deepInsights      DeepInsight[]
@@ -420,6 +421,49 @@ model PersonalNote {
   user User @relation(fields: [userId], references: [id])
 
   @@map("personal_notes")
+}
+
+// OKR Models (Objectives and Key Results)
+model Objective {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  title         String
+  description   String?
+  category      String?  // professional, personal, learning, etc.
+  priority      String?  // high, medium, low
+  timeframe     String?  // quarter, year, etc.
+  targetDate    DateTime? @map("target_date")
+  status        String   @default("active") // active, completed, cancelled, on_hold
+  progressScore Float?   @map("progress_score") // 0-100
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relationships
+  user        User        @relation(fields: [userId], references: [id])
+  keyResults  KeyResult[]
+
+  @@map("objectives")
+}
+
+model KeyResult {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  objectiveId    String   @map("objective_id") @db.Uuid
+  title          String
+  description    String?
+  measurementType String? @map("measurement_type") // percentage, number, boolean, etc.
+  targetValue    Float?   @map("target_value")
+  currentValue   Float?   @map("current_value")
+  unit           String?  // units, %, etc.
+  status         String   @default("active") // active, completed, cancelled
+  dueDate        DateTime? @map("due_date")
+  completedAt    DateTime? @map("completed_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relationships
+  objective Objective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+
+  @@map("key_results")
 }
 
 // Deep Repo Models (System-managed)
