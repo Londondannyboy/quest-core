@@ -63,55 +63,65 @@ export default function HeadNodeDemo() {
     ]
   };
 
-  // Create head geometry - adapted from Trinity Head code
-  const createHeadGeometry = (size = 1, color = 0x8B7355) => {
+  // Professional isometric head geometry - gender/racial neutral
+  const createIsometricHeadGeometry = (size = 1, role = 'default') => {
     const THREE = (window as any).THREE;
     if (!THREE) {
       console.log('THREE.js not available for head geometry creation');
       return null;
     }
 
-    // Create head shape (modified sphere)
-    const headGeometry = new THREE.SphereGeometry(size, 32, 32);
-    
-    // Modify vertices to make it more head-like
-    const position = headGeometry.attributes.position;
-    for (let i = 0; i < position.count; i++) {
-      const x = position.getX(i);
-      const y = position.getY(i);
-      const z = position.getZ(i);
-      
-      // Flatten back of head
-      if (z < -0.3) {
-        position.setZ(i, z * 0.7);
-      }
-      
-      // Create chin
-      if (y < -0.5) {
-        position.setY(i, y * 1.2);
-      }
-      
-      // Narrow at top
-      if (y > 0.3) {
-        position.setX(i, x * 0.9);
-        position.setZ(i, z * 0.9);
-      }
-    }
-    
-    headGeometry.attributes.position.needsUpdate = true;
-    headGeometry.computeVertexNormals();
+    const group = new THREE.Group();
 
-    // Create material
-    const headMaterial = new THREE.MeshLambertMaterial({
-      color: color,
+    // Professional color palette
+    const colorPalette = {
+      primary: 0x2C3E50,    // Deep blue-gray
+      secondary: 0x34495E,  // Darker blue-gray
+      accent: 0x3498DB,     // Professional blue
+      neutral: 0x95A5A6,    // Light gray
+      highlight: 0xE74C3C   // Professional red
+    };
+
+    // Base head - geometric isometric style using rounded box
+    const headGeometry = new THREE.BoxGeometry(size * 1.2, size * 1.4, size * 1.0);
+    const headMaterial = new THREE.MeshPhongMaterial({
+      color: colorPalette.primary,
       transparent: true,
-      opacity: 0.9
+      opacity: 0.9,
+      shininess: 30
     });
+    
+    // Round the edges using EdgesGeometry for professional look
+    const headMesh = new THREE.Mesh(headGeometry, headMaterial);
+    headMesh.position.y = size * 0.1;
+    group.add(headMesh);
 
-    return new THREE.Mesh(headGeometry, headMaterial);
+    // Add subtle wireframe overlay for professional tech aesthetic
+    const wireframeGeometry = new THREE.EdgesGeometry(headGeometry);
+    const wireframeMaterial = new THREE.LineBasicMaterial({
+      color: colorPalette.accent,
+      transparent: true,
+      opacity: 0.3
+    });
+    const wireframe = new THREE.LineSegments(wireframeGeometry, wireframeMaterial);
+    wireframe.position.y = size * 0.1;
+    group.add(wireframe);
+
+    // Professional base platform
+    const baseGeometry = new THREE.CylinderGeometry(size * 0.8, size * 0.8, size * 0.2, 8);
+    const baseMaterial = new THREE.MeshPhongMaterial({
+      color: colorPalette.secondary,
+      transparent: true,
+      opacity: 0.8
+    });
+    const base = new THREE.Mesh(baseGeometry, baseMaterial);
+    base.position.y = -size * 0.8;
+    group.add(base);
+
+    return group;
   };
 
-  // Create different node shapes based on type
+  // Create professional isometric nodes based on role
   const createNodeObject = (node: any) => {
     const THREE = (window as any).THREE;
     if (!THREE) {
@@ -121,121 +131,173 @@ export default function HeadNodeDemo() {
 
     const group = new THREE.Group();
     
+    // Professional color palette
+    const colorPalette = {
+      executive: { primary: 0x8E44AD, secondary: 0x9B59B6, accent: 0xF1C40F }, // Purple with gold
+      manager: { primary: 0x2980B9, secondary: 0x3498DB, accent: 0x1ABC9C },   // Blue with teal
+      developer: { primary: 0x27AE60, secondary: 0x2ECC71, accent: 0x16A085 }, // Green with teal
+      designer: { primary: 0xE67E22, secondary: 0xF39C12, accent: 0xE74C3C },  // Orange with red
+      intern: { primary: 0x7F8C8D, secondary: 0x95A5A6, accent: 0x3498DB }     // Gray with blue
+    };
+
+    const nodeColors = colorPalette[node.type as keyof typeof colorPalette] || colorPalette.developer;
+    
+    // Base isometric head for all roles
+    const baseHead = createIsometricHeadGeometry(node.val * 0.06, node.type);
+    if (baseHead) {
+      // Apply role-specific coloring to base head
+      baseHead.children.forEach((child: any) => {
+        if (child.material) {
+          if (child.type === 'Mesh') {
+            child.material.color.setHex(nodeColors.primary);
+          } else if (child.type === 'LineSegments') {
+            child.material.color.setHex(nodeColors.accent);
+          }
+        }
+      });
+      group.add(baseHead);
+    }
+    
     switch (node.type) {
       case 'executive':
-        // Head with crown/halo effect
-        const executiveHead = createHeadGeometry(node.val * 0.8, 0x8B4513);
-        if (executiveHead) {
-          group.add(executiveHead);
-          
-          // Add crown/halo
-          const crownGeometry = new THREE.RingGeometry(node.val * 0.9, node.val * 1.1, 16);
-          const crownMaterial = new THREE.MeshLambertMaterial({ 
-            color: 0xFFD700, 
+        // Executive crown - geometric diamond pattern
+        const crownGeometry = new THREE.ConeGeometry(node.val * 0.8, node.val * 0.4, 6);
+        const crownMaterial = new THREE.MeshPhongMaterial({ 
+          color: nodeColors.accent, 
+          transparent: true, 
+          opacity: 0.8,
+          shininess: 100
+        });
+        const crown = new THREE.Mesh(crownGeometry, crownMaterial);
+        crown.position.y = node.val * 1.2;
+        crown.rotation.y = Math.PI / 6; // Slight rotation for dynamics
+        group.add(crown);
+
+        // Executive ring indicators
+        for (let i = 0; i < 3; i++) {
+          const ringGeometry = new THREE.RingGeometry(
+            node.val * (0.9 + i * 0.2), 
+            node.val * (1.0 + i * 0.2), 
+            16
+          );
+          const ringMaterial = new THREE.MeshPhongMaterial({ 
+            color: nodeColors.accent, 
             transparent: true, 
-            opacity: 0.6 
+            opacity: 0.3 - i * 0.1
           });
-          const crown = new THREE.Mesh(crownGeometry, crownMaterial);
-          crown.rotation.x = -Math.PI / 2;
-          crown.position.y = node.val * 1.2;
-          group.add(crown);
+          const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+          ring.rotation.x = -Math.PI / 2;
+          ring.position.y = node.val * 1.3 + i * 0.1;
+          group.add(ring);
         }
         break;
         
       case 'manager':
-        // Standard head with badge
-        const managerHead = createHeadGeometry(node.val * 0.7, 0x8B7355);
-        if (managerHead) {
-          group.add(managerHead);
-          
-          // Add badge
-          const badgeGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.1, 8);
-          const badgeMaterial = new THREE.MeshLambertMaterial({ color: 0x4169E1 });
-          const badge = new THREE.Mesh(badgeGeometry, badgeMaterial);
-          badge.position.set(0, -node.val * 0.4, node.val * 0.5);
-          group.add(badge);
+        // Manager badge - professional hexagonal badge
+        const badgeGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.1, 6);
+        const badgeMaterial = new THREE.MeshPhongMaterial({ 
+          color: nodeColors.accent,
+          shininess: 50
+        });
+        const badge = new THREE.Mesh(badgeGeometry, badgeMaterial);
+        badge.position.set(0, -node.val * 0.3, node.val * 0.7);
+        badge.rotation.y = Math.PI / 6;
+        group.add(badge);
+
+        // Authority indicators - corner markers
+        for (let i = 0; i < 4; i++) {
+          const markerGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+          const markerMaterial = new THREE.MeshPhongMaterial({ color: nodeColors.secondary });
+          const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+          const angle = (i / 4) * Math.PI * 2;
+          marker.position.set(
+            Math.cos(angle) * node.val * 0.8,
+            node.val * 0.2,
+            Math.sin(angle) * node.val * 0.8
+          );
+          group.add(marker);
         }
         break;
         
       case 'developer':
-        // Head with glasses
-        const developerHead = createHeadGeometry(node.val * 0.6, 0x8B7355);
-        if (developerHead) {
-          group.add(developerHead);
-          
-          // Add glasses
-          const glassesGeometry = new THREE.TorusGeometry(0.25, 0.05, 8, 16);
-          const glassesMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
-          
-          const leftGlass = new THREE.Mesh(glassesGeometry, glassesMaterial);
-          leftGlass.position.set(-0.3, 0.1, node.val * 0.5);
-          leftGlass.rotation.y = Math.PI / 2;
-          group.add(leftGlass);
-          
-          const rightGlass = new THREE.Mesh(glassesGeometry, glassesMaterial);
-          rightGlass.position.set(0.3, 0.1, node.val * 0.5);
-          rightGlass.rotation.y = Math.PI / 2;
-          group.add(rightGlass);
-          
-          // Bridge
-          const bridgeGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.4, 8);
-          const bridge = new THREE.Mesh(bridgeGeometry, glassesMaterial);
-          bridge.position.set(0, 0.1, node.val * 0.5);
-          bridge.rotation.z = Math.PI / 2;
-          group.add(bridge);
+        // Developer interface elements - geometric HUD
+        const screenGeometry = new THREE.PlaneGeometry(0.8, 0.6);
+        const screenMaterial = new THREE.MeshPhongMaterial({ 
+          color: nodeColors.accent, 
+          transparent: true, 
+          opacity: 0.7
+        });
+        const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+        screen.position.set(0, 0.2, node.val * 0.8);
+        group.add(screen);
+
+        // Code blocks visualization
+        for (let i = 0; i < 3; i++) {
+          const blockGeometry = new THREE.BoxGeometry(0.15, 0.05, 0.02);
+          const blockMaterial = new THREE.MeshPhongMaterial({ color: nodeColors.secondary });
+          const block = new THREE.Mesh(blockGeometry, blockMaterial);
+          block.position.set(-0.2 + i * 0.2, 0.15 + i * 0.1, node.val * 0.81);
+          group.add(block);
         }
         break;
         
       case 'designer':
-        // Head with creative flair
-        const designerHead = createHeadGeometry(node.val * 0.6, 0x8B7355);
-        if (designerHead) {
-          group.add(designerHead);
-          
-          // Add creative "thought bubbles"
-          for (let i = 0; i < 3; i++) {
-            const bubbleGeometry = new THREE.SphereGeometry(0.1 + i * 0.05, 8, 8);
-            const bubbleMaterial = new THREE.MeshLambertMaterial({ 
-              color: 0xFF69B4, 
-              transparent: true, 
-              opacity: 0.7 
-            });
-            const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
-            bubble.position.set(
-              Math.sin(i * 0.8) * 0.8,
-              node.val * 0.8 + i * 0.3,
-              Math.cos(i * 0.8) * 0.8
-            );
-            group.add(bubble);
-          }
-        }
+        // Designer creative geometry - artistic floating elements
+        const paletteGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.05, 8);
+        const paletteMaterial = new THREE.MeshPhongMaterial({ color: nodeColors.primary });
+        const palette = new THREE.Mesh(paletteGeometry, paletteMaterial);
+        palette.position.set(-0.6, 0.3, 0.4);
+        palette.rotation.z = Math.PI / 6;
+        group.add(palette);
+
+        // Color swatches
+        const colors = [nodeColors.accent, nodeColors.secondary, 0xF39C12, 0xE74C3C];
+        colors.forEach((color, i) => {
+          const swatchGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.02);
+          const swatchMaterial = new THREE.MeshPhongMaterial({ color });
+          const swatch = new THREE.Mesh(swatchGeometry, swatchMaterial);
+          swatch.position.set(
+            0.5 + (i % 2) * 0.15,
+            0.4 + Math.floor(i / 2) * 0.15,
+            0.3
+          );
+          group.add(swatch);
+        });
         break;
         
       case 'intern':
-        // Smaller head with graduation cap
-        const internHead = createHeadGeometry(node.val * 0.5, 0x8B7355);
-        if (internHead) {
-          group.add(internHead);
-          
-          // Add graduation cap
-          const capGeometry = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 8);
-          const capMaterial = new THREE.MeshLambertMaterial({ color: 0x000080 });
-          const cap = new THREE.Mesh(capGeometry, capMaterial);
-          cap.position.y = node.val * 0.6;
-          group.add(cap);
-          
-          // Add tassel
-          const tasselGeometry = new THREE.SphereGeometry(0.05, 8, 8);
-          const tasselMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700 });
-          const tassel = new THREE.Mesh(tasselGeometry, tasselMaterial);
-          tassel.position.set(0.4, node.val * 0.6, 0);
-          group.add(tassel);
+        // Intern learning indicators - progress elements
+        const bookGeometry = new THREE.BoxGeometry(0.2, 0.3, 0.05);
+        const bookMaterial = new THREE.MeshPhongMaterial({ color: nodeColors.accent });
+        const book = new THREE.Mesh(bookGeometry, bookMaterial);
+        book.position.set(0.4, 0, 0.4);
+        book.rotation.y = Math.PI / 4;
+        group.add(book);
+
+        // Progress bars
+        for (let i = 0; i < 3; i++) {
+          const barGeometry = new THREE.BoxGeometry(0.4, 0.02, 0.02);
+          const barMaterial = new THREE.MeshPhongMaterial({ 
+            color: nodeColors.secondary,
+            transparent: true,
+            opacity: 0.8
+          });
+          const bar = new THREE.Mesh(barGeometry, barMaterial);
+          bar.position.set(0, -0.3 - i * 0.1, 0.5);
+          group.add(bar);
+
+          // Progress fill
+          const fillGeometry = new THREE.BoxGeometry(0.4 * (0.3 + i * 0.2), 0.02, 0.02);
+          const fillMaterial = new THREE.MeshPhongMaterial({ color: nodeColors.accent });
+          const fill = new THREE.Mesh(fillGeometry, fillMaterial);
+          fill.position.set(-0.2 + (0.4 * (0.3 + i * 0.2)) / 2, -0.3 - i * 0.1, 0.51);
+          group.add(fill);
         }
         break;
         
       default:
-        // Fallback to basic head
-        const defaultHead = createHeadGeometry(node.val * 0.6, 0x8B7355);
+        // Professional default node
+        const defaultHead = createIsometricHeadGeometry(node.val * 0.06, 'default');
         if (defaultHead) {
           group.add(defaultHead);
         }
@@ -271,11 +333,11 @@ export default function HeadNodeDemo() {
   }, []);
 
   const nodeTypeInfo = {
-    executive: { icon: '👑', description: 'Head with golden crown/halo', color: '#dc2626' },
-    manager: { icon: '📋', description: 'Head with identification badge', color: '#2563eb' },
-    developer: { icon: '🤓', description: 'Head with glasses and bridge', color: '#16a34a' },
-    designer: { icon: '🎨', description: 'Head with creative thought bubbles', color: '#ca8a04' },
-    intern: { icon: '🎓', description: 'Smaller head with graduation cap', color: '#7c3aed' }
+    executive: { icon: '💎', description: 'Isometric head with geometric crown and authority rings', color: '#8E44AD' },
+    manager: { icon: '⬡', description: 'Professional head with hexagonal badge and corner markers', color: '#2980B9' },
+    developer: { icon: '📟', description: 'Tech head with HUD interface and code block visualization', color: '#27AE60' },
+    designer: { icon: '🎨', description: 'Creative head with color palette and artistic swatches', color: '#E67E22' },
+    intern: { icon: '📚', description: 'Learning head with progress bars and knowledge indicators', color: '#7F8C8D' }
   };
 
   return (
@@ -398,21 +460,21 @@ export default function HeadNodeDemo() {
             <CardContent>
               <div className="space-y-3 text-sm">
                 <div>
-                  <h4 className="font-medium">Head Geometry:</h4>
+                  <h4 className="font-medium">Isometric Design:</h4>
                   <p className="text-xs text-gray-600">
-                    Modified sphere with vertex manipulation for realistic head shape
+                    Gender/racial neutral geometric heads using BoxGeometry with professional wireframe overlays
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-medium">Accessories:</h4>
+                  <h4 className="font-medium">Role Indicators:</h4>
                   <p className="text-xs text-gray-600">
-                    Crown, glasses, badges, caps added as child objects
+                    Abstract geometric accessories: crowns, HUD elements, progress bars, color palettes
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-medium">Material:</h4>
+                  <h4 className="font-medium">Professional Materials:</h4>
                   <p className="text-xs text-gray-600">
-                    Skin-tone MeshLambertMaterial with proper lighting
+                    MeshPhongMaterial with role-based color palettes, transparency, and shininess effects
                   </p>
                 </div>
               </div>
@@ -443,27 +505,30 @@ export default function HeadNodeDemo() {
               </div>
               
               <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium mb-2">Head Creation Function:</h4>
+                <h4 className="font-medium mb-2">Isometric Head Creation:</h4>
                 <pre className="text-xs bg-gray-800 text-green-400 p-3 rounded overflow-x-auto">
-{`const createHeadGeometry = (size, color) => {
-  const headGeometry = new THREE.SphereGeometry(size, 32, 32);
+{`const createIsometricHeadGeometry = (size, role) => {
+  const group = new THREE.Group();
   
-  // Modify vertices for realistic head shape
-  const position = headGeometry.attributes.position;
-  for (let i = 0; i < position.count; i++) {
-    const x = position.getX(i);
-    const y = position.getY(i);
-    const z = position.getZ(i);
-    
-    // Flatten back of head
-    if (z < -0.3) position.setZ(i, z * 0.7);
-    
-    // Create chin
-    if (y < -0.5) position.setY(i, y * 1.2);
-  }
+  // Professional geometric head base
+  const headGeometry = new THREE.BoxGeometry(
+    size * 1.2, size * 1.4, size * 1.0
+  );
+  const headMaterial = new THREE.MeshPhongMaterial({
+    color: colorPalette.primary,
+    transparent: true,
+    opacity: 0.9,
+    shininess: 30
+  });
   
-  headGeometry.attributes.position.needsUpdate = true;
-  return new THREE.Mesh(headGeometry, material);
+  // Add wireframe overlay for tech aesthetic
+  const wireframeGeometry = new THREE.EdgesGeometry(headGeometry);
+  const wireframe = new THREE.LineSegments(
+    wireframeGeometry, 
+    wireframeMaterial
+  );
+  
+  return group;
 };`}
                 </pre>
               </div>
