@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-// This import will cause a build failure
-import { brokenFunction } from '../../INTENTIONAL_BUILD_FAILURE_TEST.md'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowRight, Lightbulb, Target, Shield, Mic, BookOpen, Users, LogIn, UserPlus } from 'lucide-react'
