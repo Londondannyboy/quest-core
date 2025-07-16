@@ -122,6 +122,10 @@ model User {
   repoHealthMetrics RepoHealthMetrics[]
   crossLayerInsights CrossLayerInsight[]
 
+  // Commits System
+  conversationCommits ConversationCommit[]
+  commitBatches      CommitBatch[]
+
   // Professional Relationships
   professionalContacts ProfessionalContact[]
   workRelationships   WorkRelationship[]
@@ -612,6 +616,59 @@ model CrossLayerInsight {
   user User @relation(fields: [userId], references: [id])
 
   @@map("cross_layer_insights")
+}
+
+// Commits System Models - AI-driven conversation extraction staging
+model ConversationCommit {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  batchId         String?  @map("batch_id") @db.Uuid
+  extractionType  String   @map("extraction_type") // skill, experience, education, objective, key_result
+  status          String   @default("pending") // pending, approved, rejected, committed
+  confidence      Float    @map("confidence_score") // AI confidence in extraction
+  aiSummary       String   @map("ai_summary") // AI-generated description of what was extracted
+  originalText    String   @map("original_text") // The original conversation text
+  extractedData   Json     @map("extracted_data") // Structured data extracted by AI
+  suggestedEdits  Json?    @map("suggested_edits") // User modifications to AI extraction
+  commitMessage   String?  @map("commit_message") // Git-style commit message
+  conversationId  String?  @map("conversation_id") // Link to voice session if applicable
+  reviewNotes     String?  @map("review_notes") // User notes during review
+  targetLayer     String   @map("target_layer") // surface, working, personal, deep
+  createdAt       DateTime @default(now()) @map("created_at")
+  reviewedAt      DateTime? @map("reviewed_at")
+  committedAt     DateTime? @map("committed_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id])
+  batch CommitBatch? @relation(fields: [batchId], references: [id])
+
+  @@map("conversation_commits")
+}
+
+model CommitBatch {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  batchTitle      String   @map("batch_title") // e.g., "Voice Session - July 16, 2025"
+  batchType       String   @map("batch_type") // voice_session, chat_session, document_upload, manual
+  sessionSummary  String?  @map("session_summary") // AI summary of the entire session
+  totalCommits    Int      @default(0) @map("total_commits")
+  pendingCommits  Int      @default(0) @map("pending_commits")
+  approvedCommits Int      @default(0) @map("approved_commits")
+  rejectedCommits Int      @default(0) @map("rejected_commits")
+  committedCommits Int     @default(0) @map("committed_commits")
+  batchStatus     String   @default("active") // active, completed, archived
+  aiInsights      Json?    @map("ai_insights") // Overall insights from the session
+  sessionMetadata Json?    @map("session_metadata") // Duration, quality, etc.
+  createdAt       DateTime @default(now()) @map("created_at")
+  completedAt     DateTime? @map("completed_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id])
+  commits ConversationCommit[]
+
+  @@map("commit_batches")
 }
 
 // Professional Relationship Models
