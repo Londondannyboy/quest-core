@@ -374,7 +374,7 @@ export default function ConversationPage() {
           Conversation Agent
         </h1>
         <p className="text-gray-600 mt-2">
-          Chat naturally about your experiences and I'll help build your professional repository
+          Chat naturally about your experiences and I&apos;ll help build your professional repository
         </p>
       </div>
 

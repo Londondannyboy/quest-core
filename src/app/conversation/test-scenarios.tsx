@@ -182,7 +182,7 @@ export default function TestScenarios({ onRunScenario }: TestScenariosProps) {
                     <div>
                       <h4 className="text-xs font-medium text-gray-700 mb-1">Sample Text:</h4>
                       <p className="text-xs text-gray-600 italic bg-gray-50 p-2 rounded">
-                        "{scenario.sampleText}"
+                        &quot;{scenario.sampleText}&quot;
                       </p>
                     </div>
                     

@@ -12,8 +12,8 @@ export async function POST(request: NextRequest) {
     console.log(`Processing commits for user ${user.id}:`, commitIds);
 
     const results = {
-      successful: [],
-      failed: [],
+      successful: [] as any[],
+      failed: [] as any[],
       summary: {
         total: 0,
         skills: 0,
@@ -211,7 +211,7 @@ async function processExperienceCommit(commit: any, userId: string) {
       data: {
         userId,
         companyId: company.id,
-        position: finalData.position || 'Software Engineer',
+        title: finalData.position || 'Software Engineer',
         startDate: finalData.startDate ? new Date(finalData.startDate) : null,
         endDate: finalData.endDate ? new Date(finalData.endDate) : null,
         isCurrent: finalData.isCurrent || false,
@@ -255,7 +255,7 @@ async function processEducationCommit(commit: any, userId: string) {
         fieldOfStudy: finalData.fieldOfStudy || 'Computer Science',
         startDate: finalData.startDate ? new Date(finalData.startDate) : null,
         endDate: finalData.endDate ? new Date(finalData.endDate) : null,
-        grade: finalData.grade || null
+        gpa: finalData.grade || null
       }
     });
 

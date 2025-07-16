@@ -101,7 +101,7 @@ export default function CommitsPage() {
       fetchCommits();
       fetchBatches();
     }
-  }, [isLoaded, userId, filter]);
+  }, [isLoaded, userId, filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchCommits = async () => {
     try {
@@ -356,7 +356,7 @@ export default function CommitsPage() {
                   <div className="space-y-3">
                     <div className="text-sm">
                       <span className="font-medium">Original text:</span>
-                      <p className="text-gray-600 italic">"{commit.originalText}"</p>
+                      <p className="text-gray-600 italic">&quot;{commit.originalText}&quot;</p>
                     </div>
                     
                     {commit.batch && (
@@ -548,7 +548,7 @@ export default function CommitsPage() {
               
               <div>
                 <h4 className="font-medium mb-2">Original Text</h4>
-                <p className="text-sm italic bg-gray-50 p-2 rounded">"{selectedCommit.originalText}"</p>
+                <p className="text-sm italic bg-gray-50 p-2 rounded">&quot;{selectedCommit.originalText}&quot;</p>
               </div>
               
               <div>

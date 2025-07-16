@@ -120,7 +120,7 @@ export default function OKRsPage() {
     if (isLoaded && userId) {
       fetchObjectives();
     }
-  }, [isLoaded, userId, filterStatus, filterCategory]);
+  }, [isLoaded, userId, filterStatus, filterCategory]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreateObjective = async () => {
     if (!objectiveForm.title.trim()) {
