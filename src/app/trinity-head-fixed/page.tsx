@@ -231,21 +231,21 @@ export default function TrinityHeadFixedPage() {
       // Animate trinity elements
       if (trinityGroup) {
         // Mind pulsing
-        const mindMesh = trinityGroup.children[0];
+        const mindMesh = trinityGroup.children[0] as any;
         if (mindMesh && trinityState.mind.active) {
           mindMesh.scale.setScalar(1 + Math.sin(time * 2) * 0.1 * trinityIntensity[0]);
           mindMesh.material.emissiveIntensity = 0.3 + Math.sin(time * 2) * 0.1 * trinityIntensity[0];
         }
         
         // Body heartbeat
-        const bodyMesh = trinityGroup.children[1];
+        const bodyMesh = trinityGroup.children[1] as any;
         if (bodyMesh && trinityState.body.active) {
           bodyMesh.scale.setScalar(1 + Math.sin(time * 3) * 0.15 * trinityIntensity[0]);
           bodyMesh.material.emissiveIntensity = 0.3 + Math.sin(time * 3) * 0.1 * trinityIntensity[0];
         }
         
         // Spirit rotation
-        const spiritMesh = trinityGroup.children[2];
+        const spiritMesh = trinityGroup.children[2] as any;
         if (spiritMesh && trinityState.spirit.active) {
           spiritMesh.rotation.y = time * 2 * trinityIntensity[0];
           spiritMesh.material.emissiveIntensity = 0.3 + Math.sin(time * 1.5) * 0.1 * trinityIntensity[0];
@@ -254,7 +254,7 @@ export default function TrinityHeadFixedPage() {
       
       // Update head opacity
       if (headGroup.children[0]) {
-        headGroup.children[0].material.opacity = headOpacity[0];
+        (headGroup.children[0] as any).material.opacity = headOpacity[0];
       }
       
       // Rotate entire head group
