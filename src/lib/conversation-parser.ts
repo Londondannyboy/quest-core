@@ -1,4 +1,5 @@
 import { GraphEventBroadcaster } from './graph-events';
+import { ConversationInsights, CommitInsight } from './conversation-insights';
 
 export interface ConversationAction {
   type: 'add_skill' | 'add_company' | 'add_education' | 'add_objective' | 'add_key_result' | 'update_profile' | 'none';
@@ -22,6 +23,15 @@ export interface ConversationAction {
     measurementType?: string;
     parentObjective?: string;
   };
+  commitmentInsight?: CommitInsight;
+}
+
+export interface ConversationAnalysis {
+  actions: ConversationAction[];
+  commitmentInsights: CommitInsight[];
+  philosophicalReflection: string;
+  commitmentScore: number;
+  dominantCommitmentType: string;
 }
 
 export class ConversationParser {
@@ -198,6 +208,150 @@ export class ConversationParser {
     });
 
     return actions;
+  }
+
+  // Enhanced parsing with commitment insights
+  static parseWithCommitmentInsights(input: string): ConversationAnalysis {
+    const actions = this.parseUserInput(input);
+    const commitmentInsights = ConversationInsights.analyzeCommitmentPatterns(input);
+    
+    // Link commitment insights to actions where relevant
+    actions.forEach(action => {
+      const relevantInsight = commitmentInsights.find(insight => 
+        insight.entity.toLowerCase().includes(action.entity.toLowerCase()) ||
+        action.entity.toLowerCase().includes(insight.entity.toLowerCase())
+      );
+      
+      if (relevantInsight) {
+        action.commitmentInsight = relevantInsight;
+      }
+    });
+
+    const philosophicalReflection = ConversationInsights.generateCommitmentReflection(commitmentInsights);
+    const commitmentScore = this.calculateCommitmentScore(commitmentInsights);
+    const dominantCommitmentType = this.getDominantCommitmentType(commitmentInsights);
+
+    return {
+      actions,
+      commitmentInsights,
+      philosophicalReflection,
+      commitmentScore,
+      dominantCommitmentType
+    };
+  }
+
+  // Calculate overall commitment score (0-100)
+  private static calculateCommitmentScore(insights: CommitInsight[]): number {
+    if (insights.length === 0) return 0;
+
+    const intensityWeights = {
+      low: 1,
+      medium: 2,
+      high: 3,
+      life_changing: 4
+    };
+
+    const totalScore = insights.reduce((sum, insight) => {
+      return sum + intensityWeights[insight.intensity];
+    }, 0);
+
+    // Normalize to 0-100 scale
+    const maxPossibleScore = insights.length * 4;
+    return Math.round((totalScore / maxPossibleScore) * 100);
+  }
+
+  // Get the dominant commitment type
+  private static getDominantCommitmentType(insights: CommitInsight[]): string {
+    if (insights.length === 0) return 'none';
+
+    const typeCounts = insights.reduce((counts, insight) => {
+      counts[insight.type] = (counts[insight.type] || 0) + 1;
+      return counts;
+    }, {} as Record<string, number>);
+
+    const dominantType = Object.entries(typeCounts)
+      .sort(([,a], [,b]) => b - a)[0][0];
+
+    const typeLabels = {
+      life_commitment: 'Life Direction',
+      professional_commitment: 'Career Growth',
+      personal_growth: 'Self Development',
+      relationship_commitment: 'Relationships',
+      skill_commitment: 'Skill Mastery'
+    };
+
+    return typeLabels[dominantType as keyof typeof typeLabels] || 'Mixed';
+  }
+
+  // Generate AI response based on commitment analysis
+  static generateCommitmentResponse(analysis: ConversationAnalysis): string {
+    const { commitmentInsights, philosophicalReflection, commitmentScore, dominantCommitmentType } = analysis;
+
+    if (commitmentInsights.length === 0) {
+      return "I sense potential in your words. Tell me more about what you're truly committed to achieving.";
+    }
+
+    let response = `I hear ${commitmentInsights.length} commitment${commitmentInsights.length > 1 ? 's' : ''} in your words. `;
+    
+    if (commitmentScore >= 80) {
+      response += "Your language shows deep conviction and strong intent. ";
+    } else if (commitmentScore >= 60) {
+      response += "There's good commitment energy here. ";
+    } else {
+      response += "I sense some hesitation - what would help you feel more committed? ";
+    }
+
+    if (dominantCommitmentType !== 'none') {
+      response += `Your focus seems to be on ${dominantCommitmentType.toLowerCase()}. `;
+    }
+
+    // Add insight about specific commitments
+    const highIntensityInsights = commitmentInsights.filter(i => i.intensity === 'high' || i.intensity === 'life_changing');
+    if (highIntensityInsights.length > 0) {
+      const insight = highIntensityInsights[0];
+      response += `Your commitment to "${insight.entity}" particularly stands out. `;
+      
+      // Add a relevant question or insight
+      response += this.generateCommitmentQuestion(insight);
+    }
+
+    response += " What would help you take the next step forward?";
+
+    return response;
+  }
+
+  // Generate thoughtful questions based on commitment insights
+  private static generateCommitmentQuestion(insight: CommitInsight): string {
+    const questions = {
+      life_commitment: [
+        "What does this commitment mean for your daily choices?",
+        "How will you know when you're living this commitment fully?",
+        "What might try to pull you away from this path?"
+      ],
+      professional_commitment: [
+        "What's the first concrete step you'll take tomorrow?",
+        "Who could support you on this professional journey?",
+        "What skills do you need to develop to achieve this?"
+      ],
+      personal_growth: [
+        "What's been holding you back from this growth?",
+        "How will you measure progress along the way?",
+        "What would success look like in 6 months?"
+      ],
+      relationship_commitment: [
+        "How will this commitment change your relationships?",
+        "What do you need from others to support this?",
+        "How will you maintain this commitment during difficult times?"
+      ],
+      skill_commitment: [
+        "How will you practice this consistently?",
+        "What's your plan for when you hit obstacles?",
+        "How will you know when you've achieved mastery?"
+      ]
+    };
+
+    const questionSet = questions[insight.type];
+    return questionSet[Math.floor(Math.random() * questionSet.length)];
   }
 
   // Extract proficiency level from context

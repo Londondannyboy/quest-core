@@ -28,8 +28,10 @@ import {
   Play,
   Pause,
   Square,
-  RefreshCw
+  RefreshCw,
+  TestTube
 } from 'lucide-react';
+import TestScenarios from './test-scenarios';
 
 interface ConversationMessage {
   id: string;
@@ -71,6 +73,10 @@ export default function ConversationPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [autoExtraction, setAutoExtraction] = useState(true);
   const [extractionMode, setExtractionMode] = useState<'realtime' | 'batch' | 'manual'>('realtime');
+  const [commitmentInsights, setCommitmentInsights] = useState<any[]>([]);
+  const [commitmentScore, setCommitmentScore] = useState(0);
+  const [dominantCommitmentType, setDominantCommitmentType] = useState('none');
+  const [showTestScenarios, setShowTestScenarios] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -132,6 +138,15 @@ export default function ConversationPage() {
       if (autoExtraction && extractionMode === 'realtime') {
         await processMessageForExtractions(currentMessage);
       }
+
+      // Analyze commitment insights
+      const { ConversationParser } = await import('@/lib/conversation-parser');
+      const analysis = ConversationParser.parseWithCommitmentInsights(currentMessage);
+      
+      // Update commitment insights state
+      setCommitmentInsights(prev => [...prev, ...analysis.commitmentInsights]);
+      setCommitmentScore(analysis.commitmentScore);
+      setDominantCommitmentType(analysis.dominantCommitmentType);
 
       // Generate AI response
       const aiResponse = await generateAIResponse(currentMessage, messages);
@@ -210,16 +225,19 @@ export default function ConversationPage() {
   };
 
   const generateAIResponse = async (userMessage: string, conversationHistory: ConversationMessage[]) => {
-    // Simple AI response generation - in production, integrate with your AI service
-    const responses = [
-      "That's interesting! I've noted that information. Is there anything else you'd like to share about your experience?",
-      "Great! I've captured those details. Would you like to tell me more about your background?",
-      "Thanks for sharing! I've extracted some key information. What else would you like to add to your profile?",
-      "I've recorded that information. Are there any other skills or experiences you'd like to mention?",
-      "Perfect! I've noted those details. What other aspects of your professional journey would you like to discuss?"
-    ];
-
-    return responses[Math.floor(Math.random() * responses.length)];
+    // Use enhanced parser with commitment insights
+    const { ConversationParser } = await import('@/lib/conversation-parser');
+    const analysis = ConversationParser.parseWithCommitmentInsights(userMessage);
+    
+    // Generate response based on commitment analysis
+    const commitmentResponse = ConversationParser.generateCommitmentResponse(analysis);
+    
+    // Add philosophical reflection if high commitment score
+    if (analysis.commitmentScore >= 70) {
+      return `${commitmentResponse}\n\n💭 Reflection: ${analysis.philosophicalReflection}`;
+    }
+    
+    return commitmentResponse;
   };
 
   const handleExtractionAction = async (extractionId: string, action: 'approve' | 'reject') => {
@@ -311,6 +329,11 @@ export default function ConversationPage() {
     }
   };
 
+  const handleRunScenario = (scenario: any) => {
+    setCurrentMessage(scenario.sampleText);
+    setShowTestScenarios(false);
+  };
+
   const getExtractionIcon = (type: string) => {
     switch (type) {
       case 'skill': return <Brain className="h-4 w-4" />;
@@ -355,9 +378,14 @@ export default function ConversationPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Chat Interface */}
         <div className="lg:col-span-2">
+          {showTestScenarios && (
+            <div className="mb-4">
+              <TestScenarios onRunScenario={handleRunScenario} />
+            </div>
+          )}
           <Card className="h-[600px] flex flex-col">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -365,6 +393,14 @@ export default function ConversationPage() {
                   {session?.title || 'Conversation Session'}
                 </CardTitle>
                 <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowTestScenarios(!showTestScenarios)}
+                  >
+                    <TestTube className="h-4 w-4 mr-1" />
+                    Test
+                  </Button>
                   <Badge variant={session?.status === 'active' ? 'default' : 'secondary'}>
                     {session?.status || 'inactive'}
                   </Badge>
@@ -474,6 +510,71 @@ export default function ConversationPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Commitment Insights */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                Commitment Insights
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">{commitmentScore}%</div>
+                  <div className="text-sm text-gray-600">Commitment Score</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-sm font-medium text-gray-800">{dominantCommitmentType}</div>
+                  <div className="text-xs text-gray-600">Primary Focus</div>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-600">{commitmentInsights.length}</div>
+                  <div className="text-xs text-gray-600">Commitments Detected</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {commitmentInsights.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Recent Commitments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[200px]">
+                  <div className="space-y-3">
+                    {commitmentInsights.slice(-5).reverse().map((insight, index) => (
+                      <div key={index} className="border rounded-lg p-3 text-sm">
+                        <div className="flex items-center justify-between mb-1">
+                          <Badge variant="outline" className="text-xs">
+                            {insight.category}
+                          </Badge>
+                          <Badge 
+                            className={`text-xs ${
+                              insight.intensity === 'life_changing' ? 'bg-red-500' :
+                              insight.intensity === 'high' ? 'bg-orange-500' :
+                              insight.intensity === 'medium' ? 'bg-yellow-500' :
+                              'bg-green-500'
+                            } text-white`}
+                          >
+                            {insight.intensity}
+                          </Badge>
+                        </div>
+                        <p className="font-medium text-gray-800">{insight.commitment_statement}</p>
+                        <p className="text-xs text-gray-600 mt-1">{insight.philosophical_significance}</p>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Live Extractions */}
