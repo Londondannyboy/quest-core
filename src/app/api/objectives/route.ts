@@ -34,29 +34,48 @@ export async function GET(request: NextRequest) {
 // POST - Create new objective
 export async function POST(request: NextRequest) {
   try {
+    console.log('Starting objective creation...');
+    
     const { user } = await getOrCreateUser();
+    console.log('User authenticated:', user.id);
+    
     const body = await request.json();
+    console.log('Request body:', body);
+
+    const objectiveData = {
+      userId: user.id,
+      title: body.title,
+      description: body.description || null,
+      category: body.category || null,
+      priority: body.priority || null,
+      timeframe: body.timeframe || null,
+      targetDate: body.targetDate ? new Date(body.targetDate) : null,
+      status: body.status || 'active'
+    };
+    
+    console.log('Objective data to create:', objectiveData);
 
     const objective = await prisma.objective.create({
-      data: {
-        userId: user.id,
-        title: body.title,
-        description: body.description,
-        category: body.category,
-        priority: body.priority,
-        timeframe: body.timeframe,
-        targetDate: body.targetDate ? new Date(body.targetDate) : null,
-        status: body.status || 'active'
-      },
+      data: objectiveData,
       include: {
         keyResults: true
       }
     });
 
+    console.log('Objective created successfully:', objective.id);
     return NextResponse.json(objective, { status: 201 });
   } catch (error) {
     console.error('Error creating objective:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
+    
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
