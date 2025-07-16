@@ -116,6 +116,11 @@ model User {
   // Deep Repo
   deepInsights      DeepInsight[]
   trinityCore       TrinityCore?
+  trinityEvolution  TrinityEvolution[]
+  careerPathAnalysis CareerPathAnalysis[]
+  skillEvolutionAnalysis SkillEvolutionAnalysis[]
+  repoHealthMetrics RepoHealthMetrics[]
+  crossLayerInsights CrossLayerInsight[]
 
   // Professional Relationships
   professionalContacts ProfessionalContact[]
@@ -470,9 +475,18 @@ model KeyResult {
 model DeepInsight {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId          String   @map("user_id") @db.Uuid
-  insightType     String?  @map("insight_type")
+  insightType     String?  @map("insight_type") // career, skill, relationship, goal, trinity, pattern
+  category        String?  // professional, personal, learning, health
+  title           String?  // Human-readable insight title
+  description     String?  // Human-readable insight description
   aiAnalysis      Json?    @map("ai_analysis")
   confidenceScore Float?   @map("confidence_score")
+  priority        String?  @default("medium") // high, medium, low
+  actionable      Boolean? @default(false) // Whether this insight suggests specific actions
+  actionItems     Json?    @map("action_items") // Structured action recommendations
+  dataSource      String?  @map("data_source") // surface, working, personal, trinity, conversation
+  triggerEvent    String?  @map("trigger_event") // What triggered this insight generation
+  isArchived      Boolean  @default(false) @map("is_archived")
   generatedAt     DateTime @default(now()) @map("generated_at")
   updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
 
@@ -489,12 +503,115 @@ model TrinityCore {
   serviceAnalysis Json?    @map("service_analysis")
   pledgeAnalysis  Json?    @map("pledge_analysis")
   coherenceScore  Float?   @map("coherence_score")
+  maturityLevel   String?  @map("maturity_level") // emerging, developing, established, evolved
+  evolutionStage  String?  @map("evolution_stage") // discovery, refinement, integration, mastery
+  lastUpdated     DateTime @default(now()) @map("last_updated")
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id])
+  trinityEvolution TrinityEvolution[]
+
+  @@map("trinity_core")
+}
+
+// Track Trinity evolution over time
+model TrinityEvolution {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  trinityId       String   @map("trinity_id") @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  questSnapshot   Json?    @map("quest_snapshot")
+  serviceSnapshot Json?    @map("service_snapshot")
+  pledgeSnapshot  Json?    @map("pledge_snapshot")
+  coherenceScore  Float?   @map("coherence_score")
+  changeReason    String?  @map("change_reason") // user_update, insight_driven, coaching_session
+  significantChange Boolean @default(false) @map("significant_change")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  trinityCore TrinityCore @relation(fields: [trinityId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("trinity_evolution")
+}
+
+// Advanced Deep Analysis Models
+model CareerPathAnalysis {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  currentRole     String?  @map("current_role")
+  targetRole      String?  @map("target_role")
+  pathViability   Float?   @map("path_viability") // 0-1 score
+  timeEstimate    String?  @map("time_estimate") // e.g., "2-3 years"
+  keyMilestones   Json?    @map("key_milestones")
+  skillGaps       Json?    @map("skill_gaps")
+  recommendations Json?    @map("recommendations")
+  confidenceScore Float?   @map("confidence_score")
+  lastAnalyzed    DateTime @default(now()) @map("last_analyzed")
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("career_path_analysis")
+}
+
+model SkillEvolutionAnalysis {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  skillName       String   @map("skill_name")
+  currentLevel    String?  @map("current_level") // beginner, intermediate, advanced, expert
+  growthRate      Float?   @map("growth_rate") // Skills gained per time period
+  practiceFrequency String? @map("practice_frequency") // daily, weekly, monthly, rarely
+  industryDemand  Float?   @map("industry_demand") // 0-1 score
+  futureRelevance Float?   @map("future_relevance") // 0-1 score
+  learningPath    Json?    @map("learning_path")
+  relatedSkills   Json?    @map("related_skills")
   lastUpdated     DateTime @default(now()) @map("last_updated")
 
   // Relationships
   user User @relation(fields: [userId], references: [id])
 
-  @@map("trinity_core")
+  @@map("skill_evolution_analysis")
+}
+
+model RepoHealthMetrics {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  overallScore    Float?   @map("overall_score") // 0-100
+  surfaceScore    Float?   @map("surface_score") // Public profile completeness
+  workingScore    Float?   @map("working_score") // Working portfolio strength
+  personalScore   Float?   @map("personal_score") // Personal development tracking
+  deepScore       Float?   @map("deep_score") // Trinity coherence + insights quality
+  trinityAlignment Float?  @map("trinity_alignment") // How well layers align with Trinity
+  dataFreshness   Float?   @map("data_freshness") // How recently data was updated
+  engagementLevel Float?   @map("engagement_level") // User activity level
+  recommendations Json?    @map("recommendations")
+  calculatedAt    DateTime @default(now()) @map("calculated_at")
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("repo_health_metrics")
+}
+
+model CrossLayerInsight {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  insightType     String   @map("insight_type") // alignment, gap, opportunity, risk
+  title           String   // Human-readable insight title
+  description     String   // Detailed insight description
+  affectedLayers  Json     @map("affected_layers") // Array of layer names
+  dataConnections Json     @map("data_connections") // What data points are connected
+  actionPriority  String   @map("action_priority") // immediate, short_term, long_term
+  potentialImpact Float?   @map("potential_impact") // 0-1 score
+  confidenceScore Float    @map("confidence_score")
+  status          String   @default("active") // active, acknowledged, resolved, dismissed
+  generatedAt     DateTime @default(now()) @map("generated_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("cross_layer_insights")
 }
 
 // Professional Relationship Models

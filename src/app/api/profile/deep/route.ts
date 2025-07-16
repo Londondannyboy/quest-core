@@ -1,24 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOrCreateUser } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
-// GET - Fetch user's deep repository
-export async function GET() {
+
+// GET - Fetch user's comprehensive deep repository
+export async function GET(request: NextRequest) {
   try {
     const { user } = await getOrCreateUser();
+    const { searchParams } = new URL(request.url);
+    const includeAll = searchParams.get('includeAll') === 'true';
 
     const userWithDeep = await prisma.user.findUnique({
       where: { id: user.id },
       include: {
         trinityCore: true,
+        trinityEvolution: {
+          orderBy: { createdAt: 'desc' },
+          take: includeAll ? undefined : 10
+        },
         deepInsights: {
-          orderBy: { generatedAt: 'desc' }
+          where: { isArchived: false },
+          orderBy: { generatedAt: 'desc' },
+          take: includeAll ? undefined : 20
+        },
+        careerPathAnalysis: {
+          orderBy: { lastAnalyzed: 'desc' },
+          take: includeAll ? undefined : 5
+        },
+        skillEvolutionAnalysis: {
+          orderBy: { lastUpdated: 'desc' },
+          take: includeAll ? undefined : 10
+        },
+        repoHealthMetrics: {
+          orderBy: { calculatedAt: 'desc' },
+          take: includeAll ? undefined : 5
+        },
+        crossLayerInsights: {
+          where: { status: 'active' },
+          orderBy: { generatedAt: 'desc' },
+          take: includeAll ? undefined : 15
         }
       }
     });
 
     return NextResponse.json({
       trinityCore: userWithDeep?.trinityCore || null,
-      insights: userWithDeep?.deepInsights || []
+      trinityEvolution: userWithDeep?.trinityEvolution || [],
+      insights: userWithDeep?.deepInsights || [],
+      careerPathAnalysis: userWithDeep?.careerPathAnalysis || [],
+      skillEvolutionAnalysis: userWithDeep?.skillEvolutionAnalysis || [],
+      repoHealthMetrics: userWithDeep?.repoHealthMetrics || [],
+      crossLayerInsights: userWithDeep?.crossLayerInsights || []
     });
 
   } catch (error) {
