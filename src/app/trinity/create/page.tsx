@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Lightbulb, Target, Shield, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react'
 import { TrinityCoach } from '@/components/trinity/TrinityCoach'
+import TrinityVisualization3D from '@/components/trinity/TrinityVisualization3D'
 import { useAuth } from '@clerk/nextjs'
 
 interface TrinityData {
@@ -382,46 +383,123 @@ export default function TrinityCreatePage() {
           )}
 
           {currentStep === 'integration' && (
-            <div className="space-y-6">
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="trinity-quest p-4 rounded-lg border-2">
-                  <h3 className="font-semibold text-quest-700 mb-2 flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5" />
-                    Your Quest
-                  </h3>
-                  <p className="text-sm text-slate-600">
-                    {trinityData.quest || 'Not yet defined'}
+            <div className="space-y-8">
+              {/* 3D Trinity Visualization */}
+              <div className="bg-gradient-to-br from-slate-50 to-blue-50 p-8 rounded-xl">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold mb-2">Your Trinity Visualization</h3>
+                  <p className="text-slate-600">
+                    Watch your Quest, Service, and Pledge come together in sacred geometry
                   </p>
                 </div>
-                <div className="trinity-service p-4 rounded-lg border-2">
-                  <h3 className="font-semibold text-service-700 mb-2 flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Your Service
-                  </h3>
-                  <p className="text-sm text-slate-600">
-                    {trinityData.service || 'Not yet defined'}
-                  </p>
-                </div>
-                <div className="trinity-pledge p-4 rounded-lg border-2">
-                  <h3 className="font-semibold text-pledge-700 mb-2 flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Your Pledge
-                  </h3>
-                  <p className="text-sm text-slate-600">
-                    {trinityData.pledge || 'Not yet defined'}
+                
+                <TrinityVisualization3D
+                  trinityData={trinityData}
+                  trinityCharacteristics={{
+                    questType: 'balanced',
+                    serviceType: 'collective', 
+                    pledgeType: 'steady',
+                    intensity: 'medium'
+                  }}
+                  size="large"
+                  showLabels={true}
+                  showFace={true}
+                  className="mx-auto"
+                />
+                
+                <div className="text-center mt-6">
+                  <p className="text-sm text-slate-500">
+                    Interactive 3D model - click and drag to rotate, scroll to zoom
                   </p>
                 </div>
               </div>
+
+              {/* Trinity Summary Cards */}
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="trinity-quest p-6 rounded-lg border-2">
+                  <h3 className="font-semibold text-quest-700 mb-3 flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5" />
+                    Your Quest
+                  </h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    {trinityData.quest || 'Complete the Quest step to see your driving purpose here.'}
+                  </p>
+                  {trinityData.quest && (
+                    <div className="mt-3 text-xs text-quest-600">
+                      {trinityData.quest.trim().split(' ').length} words
+                    </div>
+                  )}
+                </div>
+                <div className="trinity-service p-6 rounded-lg border-2">
+                  <h3 className="font-semibold text-service-700 mb-3 flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Your Service
+                  </h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    {trinityData.service || 'Complete the Service step to see how you uniquely serve others.'}
+                  </p>
+                  {trinityData.service && (
+                    <div className="mt-3 text-xs text-service-600">
+                      {trinityData.service.trim().split(' ').length} words
+                    </div>
+                  )}
+                </div>
+                <div className="trinity-pledge p-6 rounded-lg border-2">
+                  <h3 className="font-semibold text-pledge-700 mb-3 flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Your Pledge
+                  </h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    {trinityData.pledge || 'Complete the Pledge step to see your professional commitments.'}
+                  </p>
+                  {trinityData.pledge && (
+                    <div className="mt-3 text-xs text-pledge-600">
+                      {trinityData.pledge.trim().split(' ').length} words
+                    </div>
+                  )}
+                </div>
+              </div>
               
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
-                <h3 className="font-semibold mb-4">Trinity Coherence Analysis</h3>
-                <p className="text-sm text-slate-600 mb-4">
-                  Your Trinity elements work together to create your authentic professional identity. 
-                  Consider how your Quest drives your Service, and how your Pledge ensures you serve at your highest level.
-                </p>
-                <Button onClick={() => setIsCoachingMode(true)} variant="outline">
-                  Get AI Coaching on Integration
-                </Button>
+              {/* Trinity Coherence Analysis */}
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-8 rounded-xl">
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Sparkles className="h-6 w-6 text-purple-600" />
+                  Trinity Coherence Analysis
+                </h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium mb-3">Coherence Score</h4>
+                    <div className="bg-white p-4 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="text-3xl font-bold text-purple-600">
+                          {Math.round(calculateCoherence() * 100)}%
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          <div>Complete: {Math.round(calculateCoherence() * 100)}%</div>
+                          <div className="text-xs">Based on content depth and integration</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-3">Integration Insights</h4>
+                    <div className="bg-white p-4 rounded-lg text-sm text-slate-600 space-y-2">
+                      <p>• Your Quest drives your Service purpose</p>
+                      <p>• Your Service creates authentic value</p>
+                      <p>• Your Pledge ensures sustainable excellence</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-6 flex gap-4">
+                  <Button onClick={() => setIsCoachingMode(true)} variant="outline">
+                    Get AI Coaching on Integration
+                  </Button>
+                  {calculateCoherence() > 0.7 && (
+                    <Button onClick={saveTrinity} disabled={saving}>
+                      {saving ? 'Saving...' : 'Save Trinity to Deep Repository'}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
