@@ -25,7 +25,7 @@ export interface ConversationGraphEvent {
   type: 'conversation_update';
   userId: string;
   data: {
-    action: 'add_skill' | 'add_company' | 'add_education' | 'update_profile';
+    action: 'add_skill' | 'add_company' | 'add_education' | 'add_objective' | 'add_key_result' | 'update_profile';
     entity: string;
     details?: any;
   };
