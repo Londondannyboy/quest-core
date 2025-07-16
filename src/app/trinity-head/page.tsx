@@ -48,7 +48,7 @@ export default function TrinityHeadPage() {
 
       // Scene setup
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0a0a0a);
+      scene.background = new THREE.Color(0x1a1a1a);
       sceneRef.current = scene;
 
       // Camera setup
@@ -61,11 +61,12 @@ export default function TrinityHeadPage() {
       camera.position.set(0, 0, 8);
 
       // Renderer setup
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
       renderer.setSize(containerRef.current!.clientWidth, containerRef.current!.clientHeight);
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.setClearColor(0x1a1a1a, 1);
       containerRef.current!.appendChild(renderer.domElement);
       rendererRef.current = renderer;
 
