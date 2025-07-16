@@ -60,9 +60,9 @@ export default function AdvancedTimeline() {
 
     // Multiple colored lights for dynamic effect
     const lights = [
-      { color: 0x4c1d95, position: [-800, 300, 200] },
-      { color: 0x2563eb, position: [0, 400, 300] },
-      { color: 0xf59e0b, position: [800, 200, -200] }
+      { color: 0x4c1d95, position: [-800, 300, 200] as [number, number, number] },
+      { color: 0x2563eb, position: [0, 400, 300] as [number, number, number] },
+      { color: 0xf59e0b, position: [800, 200, -200] as [number, number, number] }
     ];
 
     lights.forEach(lightConfig => {
