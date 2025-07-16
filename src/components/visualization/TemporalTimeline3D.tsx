@@ -304,13 +304,13 @@ export function TemporalTimeline3D() {
 
   // Custom node rendering with date labels
   const renderNode = (node: any) => {
+    const group = new THREE.Group();
+    
     if (typeof window === 'undefined') {
-      return null;
+      return group; // Return empty group instead of null
     }
     
     try {
-      const group = new THREE.Group();
-      
       // Create the main node geometry
       const geometry = getNodeGeometry(node.type);
       if (!geometry) {
@@ -379,7 +379,7 @@ export function TemporalTimeline3D() {
       return group;
     } catch (error) {
       console.error('Error creating 3D node:', error);
-      return null;
+      return group; // Return empty group instead of null
     }
   };
 
