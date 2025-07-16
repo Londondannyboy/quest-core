@@ -10,11 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { CalendarIcon, Plus, Target, TrendingUp, CheckCircle, Clock, Edit, Trash2, BarChart3 } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus, Target, CheckCircle, Clock } from 'lucide-react';
 
 interface KeyResult {
   id: string;
@@ -72,7 +69,6 @@ export default function OKRsPage() {
   const [isKeyResultDialogOpen, setIsKeyResultDialogOpen] = useState(false);
   const [selectedObjective, setSelectedObjective] = useState<Objective | null>(null);
   const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
-  const [editingKeyResult, setEditingKeyResult] = useState<KeyResult | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
 
@@ -94,12 +90,6 @@ export default function OKRsPage() {
     dueDate: undefined
   });
 
-  useEffect(() => {
-    if (isLoaded && userId) {
-      fetchObjectives();
-    }
-  }, [isLoaded, userId, filterStatus, filterCategory]);
-
   const fetchObjectives = async () => {
     try {
       const params = new URLSearchParams();
@@ -107,14 +97,22 @@ export default function OKRsPage() {
       if (filterCategory !== 'all') params.append('category', filterCategory);
       
       const response = await fetch(`/api/objectives?${params}`);
-      const data = await response.json();
-      setObjectives(data);
+      if (response.ok) {
+        const data = await response.json();
+        setObjectives(data);
+      }
     } catch (error) {
       console.error('Error fetching objectives:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isLoaded && userId) {
+      fetchObjectives();
+    }
+  }, [isLoaded, userId, filterStatus, filterCategory]);
 
   const handleCreateObjective = async () => {
     try {
@@ -138,26 +136,6 @@ export default function OKRsPage() {
       }
     } catch (error) {
       console.error('Error creating objective:', error);
-    }
-  };
-
-  const handleUpdateObjective = async () => {
-    if (!editingObjective) return;
-
-    try {
-      const response = await fetch('/api/objectives', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...objectiveForm, id: editingObjective.id })
-      });
-
-      if (response.ok) {
-        setEditingObjective(null);
-        setIsObjectiveDialogOpen(false);
-        fetchObjectives();
-      }
-    } catch (error) {
-      console.error('Error updating objective:', error);
     }
   };
 
@@ -310,9 +288,7 @@ export default function OKRsPage() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>
-                {editingObjective ? 'Edit Objective' : 'Create New Objective'}
-              </DialogTitle>
+              <DialogTitle>Create New Objective</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -362,47 +338,26 @@ export default function OKRsPage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="timeframe">Timeframe</Label>
-                  <Select value={objectiveForm.timeframe} onValueChange={(value) => setObjectiveForm({...objectiveForm, timeframe: value})}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select timeframe" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="quarter">Quarter</SelectItem>
-                      <SelectItem value="half-year">Half Year</SelectItem>
-                      <SelectItem value="year">Year</SelectItem>
-                      <SelectItem value="ongoing">Ongoing</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="targetDate">Target Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {objectiveForm.targetDate ? format(objectiveForm.targetDate, 'PPP') : 'Select date'}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={objectiveForm.targetDate}
-                        onSelect={(date) => setObjectiveForm({...objectiveForm, targetDate: date})}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+              <div>
+                <Label htmlFor="timeframe">Timeframe</Label>
+                <Select value={objectiveForm.timeframe} onValueChange={(value) => setObjectiveForm({...objectiveForm, timeframe: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select timeframe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="quarter">Quarter</SelectItem>
+                    <SelectItem value="half-year">Half Year</SelectItem>
+                    <SelectItem value="year">Year</SelectItem>
+                    <SelectItem value="ongoing">Ongoing</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button variant="outline" onClick={() => setIsObjectiveDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={editingObjective ? handleUpdateObjective : handleCreateObjective}>
-                  {editingObjective ? 'Update' : 'Create'} Objective
+                <Button onClick={handleCreateObjective}>
+                  Create Objective
                 </Button>
               </div>
             </div>
@@ -435,12 +390,6 @@ export default function OKRsPage() {
                 <div className="flex items-center gap-4 mt-3">
                   <Badge variant="outline">{objective.category}</Badge>
                   <Badge variant="outline">{objective.timeframe}</Badge>
-                  {objective.targetDate && (
-                    <Badge variant="outline" className="text-xs">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {format(new Date(objective.targetDate), 'MMM d, yyyy')}
-                    </Badge>
-                  )}
                 </div>
               </CardHeader>
               <CardContent>
@@ -573,25 +522,6 @@ export default function OKRsPage() {
                 onChange={(e) => setKeyResultForm({...keyResultForm, targetValue: parseFloat(e.target.value)})}
                 placeholder="Enter target value"
               />
-            </div>
-            <div>
-              <Label htmlFor="dueDate">Due Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {keyResultForm.dueDate ? format(keyResultForm.dueDate, 'PPP') : 'Select date'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={keyResultForm.dueDate}
-                    onSelect={(date) => setKeyResultForm({...keyResultForm, dueDate: date})}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
             </div>
             <div className="flex justify-end space-x-2 pt-4">
               <Button variant="outline" onClick={() => setIsKeyResultDialogOpen(false)}>
