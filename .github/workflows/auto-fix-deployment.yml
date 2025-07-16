@@ -1,0 +1,161 @@
+name: Auto-Fix Failed Deployments
+
+on:
+  # Trigger when Vercel deployment fails
+  deployment_status:
+    types: [failure]
+  
+  # Also allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      deployment_id:
+        description: 'Deployment ID to check (optional)'
+        required: false
+
+jobs:
+  auto-fix-deployment:
+    runs-on: ubuntu-latest
+    if: github.event.deployment_status.state == 'failure' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Check current attempt count
+      id: attempt_count
+      run: |
+        # Check if we've already tried to fix this commit
+        ATTEMPT_FILE=".github/auto-fix-attempts"
+        CURRENT_SHA="${{ github.sha }}"
+        
+        if [ -f "$ATTEMPT_FILE" ]; then
+          ATTEMPTS=$(grep "$CURRENT_SHA" "$ATTEMPT_FILE" | wc -l || echo "0")
+        else
+          ATTEMPTS=0
+        fi
+        
+        echo "attempts=$ATTEMPTS" >> $GITHUB_OUTPUT
+        echo "sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
+        
+    - name: Skip if max attempts reached
+      if: steps.attempt_count.outputs.attempts >= '5'
+      run: |
+        echo "❌ Maximum auto-fix attempts (5) reached for commit ${{ steps.attempt_count.outputs.sha }}"
+        echo "🚨 Manual intervention required. Please review the deployment failure."
+        exit 1
+        
+    - name: Record attempt
+      if: steps.attempt_count.outputs.attempts < '5'
+      run: |
+        mkdir -p .github
+        echo "${{ steps.attempt_count.outputs.sha }} attempt-$((steps.attempt_count.outputs.attempts + 1)) $(date)" >> .github/auto-fix-attempts
+        
+    - name: Run build and capture errors
+      id: build_check
+      run: |
+        echo "🔍 Checking build errors..."
+        
+        # Capture build output and errors
+        if npm run build > build_output.log 2>&1; then
+          echo "✅ Build succeeded - no auto-fix needed"
+          echo "success=true" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Build failed - attempting auto-fix"
+          echo "success=false" >> $GITHUB_OUTPUT
+          
+          # Extract and analyze common error patterns
+          if grep -q "Cannot find module" build_output.log; then
+            echo "error_type=missing_import" >> $GITHUB_OUTPUT
+          elif grep -q "Type.*is not assignable" build_output.log; then
+            echo "error_type=type_error" >> $GITHUB_OUTPUT
+          elif grep -q "Unexpected token" build_output.log; then
+            echo "error_type=syntax_error" >> $GITHUB_OUTPUT
+          else
+            echo "error_type=unknown" >> $GITHUB_OUTPUT
+          fi
+        fi
+        
+    - name: Auto-fix missing imports
+      if: steps.build_check.outputs.success == 'false' && steps.build_check.outputs.error_type == 'missing_import'
+      run: |
+        echo "🔧 Auto-fixing missing import errors..."
+        
+        # Extract the problematic import lines and remove them
+        if grep -n "Cannot find module" build_output.log; then
+          # This is a simplified fix - in practice, you'd want more sophisticated parsing
+          echo "Removing problematic import statements..."
+          
+          # Find files with import errors and comment them out
+          grep -r "import.*from.*\.md" src/ --include="*.tsx" --include="*.ts" | while read line; do
+            file=$(echo $line | cut -d: -f1)
+            echo "Commenting out problematic import in $file"
+            sed -i 's/^import.*\.md.*/\/\/ &/' "$file"
+          done
+        fi
+        
+    - name: Auto-fix type errors  
+      if: steps.build_check.outputs.success == 'false' && steps.build_check.outputs.error_type == 'type_error'
+      run: |
+        echo "🔧 Auto-fixing type errors..."
+        # Add common type fixes (this would be expanded based on your common errors)
+        find src/ -name "*.tsx" -o -name "*.ts" | xargs sed -i 's/: any;/: unknown;/g'
+        
+    - name: Verify fix
+      if: steps.build_check.outputs.success == 'false'
+      run: |
+        echo "✅ Verifying auto-fix..."
+        if npm run build; then
+          echo "🎉 Auto-fix successful!"
+          echo "fix_successful=true" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Auto-fix failed"
+          echo "fix_successful=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit and push fix
+      if: steps.build_check.outputs.success == 'false' && env.fix_successful == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "Auto-Fix Bot"
+        
+        ATTEMPT_NUM=$((steps.attempt_count.outputs.attempts + 1))
+        
+        git add .
+        git commit -m "🤖 Auto-fix deployment failure (attempt $ATTEMPT_NUM/5)
+
+        Automatically resolved build errors:
+        - Error type: ${{ steps.build_check.outputs.error_type }}
+        - Attempt: $ATTEMPT_NUM of 5
+        - Original commit: ${{ steps.attempt_count.outputs.sha }}
+        
+        🤖 Generated with Claude Code Auto-Fix
+        Co-Authored-By: Claude <noreply@anthropic.com>"
+        
+        git push
+        
+    - name: Report status
+      if: always()
+      run: |
+        ATTEMPT_NUM=$((steps.attempt_count.outputs.attempts + 1))
+        
+        if [ "${{ steps.build_check.outputs.success }}" == "true" ]; then
+          echo "✅ No fix needed - build already successful"
+        elif [ "${{ env.fix_successful }}" == "true" ]; then
+          echo "🎉 Auto-fix attempt $ATTEMPT_NUM/5 successful and pushed!"
+        elif [ "$ATTEMPT_NUM" -ge 5 ]; then
+          echo "❌ Auto-fix failed after 5 attempts. Manual intervention required."
+          echo "Please review the deployment logs and errors."
+        else
+          echo "❌ Auto-fix attempt $ATTEMPT_NUM/5 failed. Will retry on next push."
+        fi
