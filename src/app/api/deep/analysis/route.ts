@@ -11,7 +11,14 @@ export async function POST(request: NextRequest) {
 
     console.log(`Starting deep analysis for user ${user.id}, type: ${analysisType}`);
 
-    const results = {
+    const results: {
+      trinityAnalysis: any;
+      careerPathAnalysis: any;
+      skillEvolutionAnalysis: any;
+      repoHealthMetrics: any;
+      crossLayerInsights: any;
+      newInsights: any[];
+    } = {
       trinityAnalysis: null,
       careerPathAnalysis: null,
       skillEvolutionAnalysis: null,
