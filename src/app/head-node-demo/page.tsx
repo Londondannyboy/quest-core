@@ -66,7 +66,10 @@ export default function HeadNodeDemo() {
   // Create head geometry - adapted from Trinity Head code
   const createHeadGeometry = (size = 1, color = 0x8B7355) => {
     const THREE = (window as any).THREE;
-    if (!THREE) return null;
+    if (!THREE) {
+      console.log('THREE.js not available for head geometry creation');
+      return null;
+    }
 
     // Create head shape (modified sphere)
     const headGeometry = new THREE.SphereGeometry(size, 32, 32);
@@ -111,7 +114,10 @@ export default function HeadNodeDemo() {
   // Create different node shapes based on type
   const createNodeObject = (node: any) => {
     const THREE = (window as any).THREE;
-    if (!THREE) return null;
+    if (!THREE) {
+      console.log('THREE.js not available for node creation');
+      return null;
+    }
 
     const group = new THREE.Group();
     
@@ -244,6 +250,7 @@ export default function HeadNodeDemo() {
       
       // Make THREE available globally for the createNodeObject function
       (window as any).THREE = THREE;
+      console.log('THREE.js loaded and available globally');
     };
 
     initForceGraph();

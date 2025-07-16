@@ -79,10 +79,10 @@ export default function TrinityHeadPage() {
       controls.autoRotateSpeed = rotationSpeed[0];
 
       // Lighting
-      const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+      const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
       scene.add(ambientLight);
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
       directionalLight.position.set(5, 5, 5);
       directionalLight.castShadow = true;
       scene.add(directionalLight);
@@ -126,7 +126,7 @@ export default function TrinityHeadPage() {
       const headMaterial = new THREE.MeshPhongMaterial({
         color: 0x8B7355,
         transparent: true,
-        opacity: 0.5, // Make more visible initially
+        opacity: 0.8, // Make more visible initially
         wireframe: false,
         shininess: 10
       });
