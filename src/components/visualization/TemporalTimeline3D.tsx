@@ -313,11 +313,15 @@ export function TemporalTimeline3D() {
       
       // Create the main node geometry
       const geometry = getNodeGeometry(node.type);
+      if (!geometry) {
+        return group; // Return empty group if geometry creation fails
+      }
+      
       const material = new THREE.MeshLambertMaterial({ 
-        color: node.visualProperties.color,
+        color: node.visualProperties?.color || '#ffffff',
         transparent: true,
-        opacity: node.visualProperties.opacity,
-        emissive: node.visualProperties.color,
+        opacity: node.visualProperties?.opacity || 1,
+        emissive: node.visualProperties?.color || '#ffffff',
         emissiveIntensity: 0.2
       });
       
