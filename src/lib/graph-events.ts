@@ -42,7 +42,7 @@ export class GraphEventBroadcaster {
   }
 
   // Broadcast conversation-based updates
-  static async broadcastConversationUpdate(userId: string, action: 'add_skill' | 'add_company' | 'add_education' | 'update_profile', entity: string, details?: any) {
+  static async broadcastConversationUpdate(userId: string, action: 'add_skill' | 'add_company' | 'add_education' | 'add_objective' | 'add_key_result' | 'update_profile', entity: string, details?: any) {
     const event: ConversationGraphEvent = {
       type: 'conversation_update',
       userId,
