@@ -58,7 +58,7 @@ export default function TrinityHeadPage() {
         0.1,
         1000
       );
-      camera.position.set(0, 0, 5);
+      camera.position.set(0, 0, 8);
 
       // Renderer setup
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -78,10 +78,10 @@ export default function TrinityHeadPage() {
       controls.autoRotateSpeed = rotationSpeed[0];
 
       // Lighting
-      const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+      const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
       scene.add(ambientLight);
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
       directionalLight.position.set(5, 5, 5);
       directionalLight.castShadow = true;
       scene.add(directionalLight);
@@ -125,7 +125,7 @@ export default function TrinityHeadPage() {
       const headMaterial = new THREE.MeshPhongMaterial({
         color: 0x8B7355,
         transparent: true,
-        opacity: headOpacity[0],
+        opacity: 0.5, // Make more visible initially
         wireframe: false,
         shininess: 10
       });
@@ -145,9 +145,9 @@ export default function TrinityHeadPage() {
       const mindMaterial = new THREE.MeshPhongMaterial({
         color: 0x4F46E5,
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.9,
         emissive: 0x4F46E5,
-        emissiveIntensity: 0.2
+        emissiveIntensity: 0.3
       });
       const mindMesh = new THREE.Mesh(mindGeometry, mindMaterial);
       mindMesh.position.set(0, 0.6, 0);
@@ -158,9 +158,9 @@ export default function TrinityHeadPage() {
       const bodyMaterial = new THREE.MeshPhongMaterial({
         color: 0xDC2626,
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.9,
         emissive: 0xDC2626,
-        emissiveIntensity: 0.2
+        emissiveIntensity: 0.3
       });
       const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
       bodyMesh.position.set(-0.5, -0.3, 0);
@@ -171,9 +171,9 @@ export default function TrinityHeadPage() {
       const spiritMaterial = new THREE.MeshPhongMaterial({
         color: 0x059669,
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.9,
         emissive: 0x059669,
-        emissiveIntensity: 0.2
+        emissiveIntensity: 0.3
       });
       const spiritMesh = new THREE.Mesh(spiritGeometry, spiritMaterial);
       spiritMesh.position.set(0.5, -0.3, 0);
@@ -214,8 +214,6 @@ export default function TrinityHeadPage() {
 
       // Animation loop
       const animate = () => {
-        if (!isPlaying) return;
-        
         animationRef.current = requestAnimationFrame(animate);
         
         // Update controls
