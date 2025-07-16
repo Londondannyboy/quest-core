@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,12 @@ import {
   Settings,
   Zap
 } from 'lucide-react';
+
+// Dynamic import to avoid SSR issues with 3D components
+const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-96">Loading 3D Graph...</div>
+});
 
 export default function HeadNodeDemo() {
   const forceGraphRef = useRef<any>(null);
@@ -58,7 +65,7 @@ export default function HeadNodeDemo() {
 
   // Create head geometry - adapted from Trinity Head code
   const createHeadGeometry = (size = 1, color = 0x8B7355) => {
-    const THREE = window.THREE;
+    const THREE = (window as any).THREE;
     if (!THREE) return null;
 
     // Create head shape (modified sphere)
@@ -103,7 +110,7 @@ export default function HeadNodeDemo() {
 
   // Create different node shapes based on type
   const createNodeObject = (node: any) => {
-    const THREE = window.THREE;
+    const THREE = (window as any).THREE;
     if (!THREE) return null;
 
     const group = new THREE.Group();
@@ -232,60 +239,29 @@ export default function HeadNodeDemo() {
   };
 
   useEffect(() => {
-    if (!containerRef.current) return;
-
     const initForceGraph = async () => {
-      const ForceGraph3D = (await import('react-force-graph-3d')).default;
       const THREE = await import('three');
       
       // Make THREE available globally for the createNodeObject function
       (window as any).THREE = THREE;
-
-      const fgRef = { current: null };
-
-      const fg = ForceGraph3D()(containerRef.current!)
-        .graphData(graphData)
-        .nodeAutoColorBy('type')
-        .nodeThreeObject(createNodeObject)
-        .nodeThreeObjectExtend(true)
-        .linkColor(() => '#ffffff')
-        .linkOpacity(0.6)
-        .backgroundColor('transparent')
-        .showNavInfo(false)
-        .nodeLabel(node => `${node.name} (${node.type})`)
-        .onNodeHover(node => {
-          if (containerRef.current) {
-            containerRef.current.style.cursor = node ? 'pointer' : 'auto';
-          }
-        })
-        .onNodeClick(node => {
-          console.log('Clicked node:', node);
-        });
-
-      forceGraphRef.current = fg;
-
-      // Set initial camera position
-      setTimeout(() => {
-        if (fg) {
-          fg.cameraPosition({ x: 0, y: 0, z: 400 });
-        }
-      }, 100);
     };
 
     initForceGraph();
-
-    return () => {
-      if (forceGraphRef.current) {
-        forceGraphRef.current._destructor();
-      }
-    };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetCamera = () => {
     if (forceGraphRef.current) {
       forceGraphRef.current.cameraPosition({ x: 0, y: 0, z: 400 });
     }
   };
+
+  // Set camera position after mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      resetCamera();
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const nodeTypeInfo = {
     executive: { icon: '👑', description: 'Head with golden crown/halo', color: '#dc2626' },
@@ -336,10 +312,26 @@ export default function HeadNodeDemo() {
               </div>
             </CardHeader>
             <CardContent>
-              <div 
-                ref={containerRef}
-                className="w-full h-[600px] bg-gray-900 rounded-lg"
-              />
+              <div className="w-full h-[600px] bg-gray-900 rounded-lg">
+                <ForceGraph3D
+                  ref={forceGraphRef}
+                  graphData={graphData}
+                  nodeAutoColorBy="type"
+                  nodeThreeObject={createNodeObject}
+                  nodeThreeObjectExtend={true}
+                  linkColor={() => '#ffffff'}
+                  linkOpacity={0.6}
+                  backgroundColor="transparent"
+                  showNavInfo={false}
+                  nodeLabel={(node: any) => `${node.name} (${node.type})`}
+                  onNodeHover={(node: any) => {
+                    document.body.style.cursor = node ? 'pointer' : 'auto';
+                  }}
+                  onNodeClick={(node: any) => {
+                    console.log('Clicked node:', node);
+                  }}
+                />
+              </div>
               
               {showControls && (
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
