@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Calendar, Clock, Users, Award, BookOpen, Briefcase } from 'lucide-react';
+import * as THREE from 'three';
 
 // Dynamic import to avoid SSR issues
 const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), {
@@ -302,13 +303,12 @@ export function TemporalTimeline3D() {
   };
 
   // Custom node rendering with date labels
-  const renderNode = (node: TemporalNode) => {
-    if (typeof window === 'undefined' || !(window as any).THREE) {
+  const renderNode = (node: any) => {
+    if (typeof window === 'undefined') {
       return null;
     }
     
     try {
-      const THREE = (window as any).THREE;
       const group = new THREE.Group();
       
       // Create the main node geometry
@@ -381,11 +381,9 @@ export function TemporalTimeline3D() {
 
   // Get node geometry based on type
   const getNodeGeometry = (type: string) => {
-    if (typeof window === 'undefined' || !(window as any).THREE) {
+    if (typeof window === 'undefined') {
       return null;
     }
-    
-    const THREE = (window as any).THREE;
     
     try {
       switch (type) {
@@ -427,9 +425,7 @@ export function TemporalTimeline3D() {
 
   // Add time axis labels to the 3D scene
   const addTimeAxisLabels = () => {
-    if (!graphRef.current || typeof window === 'undefined' || !(window as any).THREE) return;
-    
-    const THREE = (window as any).THREE;
+    if (!graphRef.current || typeof window === 'undefined') return;
     const scene = graphRef.current.scene();
     
     // Remove existing axis group if any
@@ -553,9 +549,7 @@ export function TemporalTimeline3D() {
 
   // Add progression lines showing career timeline flow
   const addProgressionLines = () => {
-    if (!graphRef.current || typeof window === 'undefined' || !(window as any).THREE || !timelineData) return;
-    
-    const THREE = (window as any).THREE;
+    if (!graphRef.current || typeof window === 'undefined' || !timelineData) return;
     const scene = graphRef.current.scene();
     
     // Remove existing progression lines
