@@ -6,6 +6,22 @@ import { Button } from '@/components/ui/button';
 
 const timelineVariants = [
   {
+    id: 'test-debug-three',
+    name: 'Three.js Debug Test',
+    description: 'Debug test to check Three.js availability and loading',
+    features: ['Window object check', 'Three.js detection', 'Loading diagnostics', 'Simple graph test'],
+    url: '/test-debug-three',
+    color: 'bg-red-600/20 border-red-600/30'
+  },
+  {
+    id: 'test-morphing-fixed',
+    name: 'Fixed Morphing Background',
+    description: 'Morphing background with proper Three.js imports',
+    features: ['Direct Three.js import', 'Simple morphing sphere', 'Fixed loading issues', 'Transparent overlay'],
+    url: '/test-morphing-fixed',
+    color: 'bg-lime-500/20 border-lime-500/30'
+  },
+  {
     id: 'debug-timeline',
     name: 'Simple Debug Timeline',
     description: 'Basic 4-node test with fixed positions',
