@@ -96,10 +96,18 @@ export default function OKRsPage() {
       if (filterStatus !== 'all') params.append('status', filterStatus);
       if (filterCategory !== 'all') params.append('category', filterCategory);
       
+      console.log('Fetching objectives with params:', params.toString());
+      
       const response = await fetch(`/api/objectives?${params}`);
+      console.log('Fetch response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetched objectives:', data);
         setObjectives(data);
+      } else {
+        const errorData = await response.json();
+        console.error('Error fetching objectives:', errorData);
       }
     } catch (error) {
       console.error('Error fetching objectives:', error);
@@ -115,12 +123,38 @@ export default function OKRsPage() {
   }, [isLoaded, userId, filterStatus, filterCategory]);
 
   const handleCreateObjective = async () => {
+    if (!objectiveForm.title.trim()) {
+      alert('Please enter a title for your objective');
+      return;
+    }
+    
+    if (!objectiveForm.category) {
+      alert('Please select a category for your objective');
+      return;
+    }
+    
+    if (!objectiveForm.priority) {
+      alert('Please select a priority for your objective');
+      return;
+    }
+    
+    if (!objectiveForm.timeframe) {
+      alert('Please select a timeframe for your objective');
+      return;
+    }
+
     try {
+      console.log('Creating objective with data:', objectiveForm);
+      
       const response = await fetch('/api/objectives', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(objectiveForm)
       });
+
+      console.log('Response status:', response.status);
+      const responseData = await response.json();
+      console.log('Response data:', responseData);
 
       if (response.ok) {
         setObjectiveForm({
@@ -133,9 +167,12 @@ export default function OKRsPage() {
         });
         setIsObjectiveDialogOpen(false);
         fetchObjectives();
+      } else {
+        alert(`Error creating objective: ${responseData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error creating objective:', error);
+      alert('Error creating objective. Please try again.');
     }
   };
 
