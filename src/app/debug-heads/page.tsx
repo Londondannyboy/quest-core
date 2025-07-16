@@ -17,7 +17,7 @@ export default function DebugHeadsPage() {
 
         // Scene setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x222222);
+        scene.background = new THREE.Color(0x666666);
 
         // Camera setup
         const camera = new THREE.PerspectiveCamera(
@@ -33,13 +33,18 @@ export default function DebugHeadsPage() {
         renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
         containerRef.current.appendChild(renderer.domElement);
 
-        // Basic lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        // Much brighter lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
         directionalLight.position.set(5, 5, 5);
         scene.add(directionalLight);
+
+        // Add additional front lighting
+        const frontLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        frontLight.position.set(0, 0, 10);
+        scene.add(frontLight);
 
         // Create a simple head geometry
         const headGeometry = new THREE.SphereGeometry(1, 32, 32);

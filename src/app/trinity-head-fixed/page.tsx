@@ -198,14 +198,19 @@ export default function TrinityHeadFixedPage() {
 
     headGroup.add(trinityGroup);
 
-    // Add lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+    // Add much brighter lighting
+    const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
     directionalLight.position.set(100, 100, 100);
     directionalLight.castShadow = true;
     scene.add(directionalLight);
+
+    // Add additional front lighting
+    const frontLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    frontLight.position.set(0, 0, 200);
+    scene.add(frontLight);
 
     // Point lights for trinity elements
     const mindLight = new THREE.PointLight(0x4F46E5, 2, 200);
