@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import * as THREE from 'three';
 
 const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), {
   ssr: false,
@@ -77,7 +78,6 @@ export default function CircularTimeline() {
   const addCircularEffects = () => {
     if (!graphRef.current || typeof window === 'undefined') return;
     
-    const THREE = (window as any).THREE;
     if (!THREE) return;
 
     const scene = graphRef.current.scene();

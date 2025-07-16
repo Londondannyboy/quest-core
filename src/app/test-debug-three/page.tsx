@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import * as THREE from 'three';
 
 const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), {
   ssr: false,
@@ -33,20 +34,20 @@ export default function DebugThree() {
       logs.push('✅ Window object available');
       
       // Check for Three.js in various locations
-      if ((window as any).THREE) {
-        logs.push('✅ window.THREE exists');
+      if (THREE) {
+        logs.push('✅ THREE exists');
         setThreeLoaded(true);
       } else {
-        logs.push('❌ window.THREE not found');
+        logs.push('❌ THREE not found');
       }
       
       // Check if ForceGraph3D might expose Three.js
       setTimeout(() => {
-        if ((window as any).THREE) {
-          logs.push('✅ window.THREE available after timeout');
+        if (THREE) {
+          logs.push('✅ THREE available after timeout');
           setThreeLoaded(true);
         } else {
-          logs.push('❌ window.THREE still not available after timeout');
+          logs.push('❌ THREE still not available after timeout');
         }
         setDebugInfo([...logs]);
       }, 2000);
@@ -84,8 +85,8 @@ export default function DebugThree() {
           onEngineStop={() => {
             console.log('ForceGraph3D engine stopped');
             // Check again after graph loads
-            if ((window as any).THREE) {
-              setDebugInfo(prev => [...prev, '✅ window.THREE available after ForceGraph3D loads']);
+            if (THREE) {
+              setDebugInfo(prev => [...prev, '✅ THREE available after ForceGraph3D loads']);
               setThreeLoaded(true);
             }
           }}

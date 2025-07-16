@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import * as THREE from 'three';
 
 // Dynamic import to avoid SSR issues
 const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), {
@@ -74,7 +75,6 @@ export default function DebugTimeline() {
   const addTimelineAxis = () => {
     if (!graphRef.current || typeof window === 'undefined') return;
     
-    const THREE = (window as any).THREE;
     if (!THREE) return;
 
     const scene = graphRef.current.scene();
