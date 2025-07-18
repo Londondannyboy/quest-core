@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 // import { brokenFunction } from './test-auto-fix-failure.md'
-import { nonExistentImport } from './fake-module'
+// import { nonExistentImport } from './fake-module' // AUTO-FIXED: missing module
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowRight, Lightbulb, Target, Shield, Mic, BookOpen, Users, LogIn, UserPlus } from 'lucide-react'
