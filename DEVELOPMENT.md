@@ -24,7 +24,8 @@
 - **Voice AI**: Hume EVI with enhanced repo context
 - **Visualization**: React Force Graph 3D, D3.js, Recharts
 - **UI Components**: shadcn/ui component system  
-- **Deployment**: Vercel with automatic GitHub integration
+- **Deployment**: Vercel with automatic GitHub integration + Auto-Fix System
+- **DevOps**: MCP-Vercel monitoring, Zero-approval auto-fix, 5-attempt retry logic
 - **Graph Database**: Neo4j (ready for integration)
 
 ### **4-Layer Repository System**
@@ -174,6 +175,8 @@ const userContext = {
 - Profile system with searchable components
 - 3D Force Graph visualization with timeline
 - Complete build and deployment pipeline
+- **Auto-Fix System**: Zero-approval deployment error correction
+- **MCP-Vercel**: Real-time deployment monitoring and failure detection
 
 ### **❌ Next Phase Requirements**
 - Neo4j graph database integration
@@ -198,6 +201,14 @@ Transform from basic profile platform to intelligent professional analytics:
 - Advanced career path analysis and network insights
 
 ## 🔧 **Development Environment**
+
+### **Auto-Fix System**
+```bash
+# Auto-Fix Commands
+node scripts/claude-auto-fix.js     # Run auto-fix manually
+npm run build                       # Verify build success
+cat .github/auto-fix-attempts      # Check attempt history
+```
 
 ### **Database**
 ```bash
