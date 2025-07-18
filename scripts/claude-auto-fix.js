@@ -56,6 +56,7 @@ class AutoFixBot {
 
   async autoFix(errorOutput) {
     console.log('🔧 Attempting auto-fix...');
+    console.log('Error output:', errorOutput.substring(0, 200) + '...');
     
     let fixApplied = false;
 

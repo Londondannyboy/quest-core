@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { brokenFunction } from './test-auto-fix-failure.md'
+// import { brokenFunction } from './test-auto-fix-failure.md'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowRight, Lightbulb, Target, Shield, Mic, BookOpen, Users, LogIn, UserPlus } from 'lucide-react'
