@@ -11,6 +11,7 @@ import Link from 'next/link'
 export default function HomePage() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
   const { user } = useUser()
+  const undefinedVariable: string = nonExistentVariable // This will cause a type error
 
   return (
     <div className="container mx-auto px-4 py-8">
