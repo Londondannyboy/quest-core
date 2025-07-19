@@ -96,6 +96,44 @@ export class QuestThesysClient {
     this.questCoreRules = this.loadQuestCoreAdaptationRules();
   }
   
+  private loadQuestCoreAdaptationRules(): AdaptationRules {
+    return {
+      // Quest Brand Compliance Rules
+      brandCompliance: {
+        colorPalette: ['#00D4B8', '#4F46E5', '#8B5CF6', '#1A1D29'],
+        typography: 'GT Walsheim',
+        componentStyle: 'premium-dark',
+        gradientUsage: 'selective-emphasis',
+        spacing: '8px-grid-system',
+        animations: 'subtle-professional'
+      },
+      
+      // Trinity-Specific Adaptation Rules
+      trinityAdaptation: {
+        questVisualization: 'interconnected-cards-gradient',
+        servicePresentation: 'professional-network-graphs',
+        pledgeTracking: 'progress-rings-circular',
+        coherenceScoring: 'dynamic-visual-feedback'
+      },
+      
+      // Coaching Interface Rules
+      coachingInterface: {
+        masterCoach: 'orchestrator-premium-layout',
+        specialistCoaches: 'individual-coach-cards',
+        conversationFlow: 'contextual-bubbles-gradient',
+        progressIndicators: 'real-time-coaching-viz'
+      },
+      
+      // Adaptive Behavior Rules
+      adaptationBehavior: {
+        beginnerUser: 'guided-simplified-interfaces',
+        intermediateUser: 'balanced-feature-exposure',
+        advancedUser: 'full-feature-sophisticated',
+        experiseUser: 'minimal-power-user-focused'
+      }
+    };
+  }
+  
   async generateAdaptiveInterface(
     context: QuestUIContext,
     interfaceType: 'trinity-discovery' | 'coaching-dashboard' | 'skill-development' | 'profile-builder'
@@ -142,12 +180,28 @@ export class QuestThesysClient {
   private buildQuestCorePrompt(context: QuestUIContext, type: string): string {
     const basePrompt = `Generate a ${type} interface for Quest Core professional development platform.`;
     
+    const brandPrompt = `
+    Quest Brand Requirements:
+    - Color Palette: Aurora Fade (#00D4B8), Electric Violet (#4F46E5), Purple Accent (#8B5CF6)
+    - Typography: GT Walsheim professional font family
+    - Background: Deep charcoal (#0A0E1A) with card surfaces (#1A1D29)
+    - Style: Premium dark theme with sophisticated gradient treatments
+    - Components: Clean modern design with subtle professional animations
+    `;
+    
     const contextPrompt = `
     User Context:
     - Trinity State: ${JSON.stringify(context.trinityState)}
     - Coaching Progress: ${context.coachingProgress.completionLevel}%
     - Current Focus: ${context.currentSession.sessionType}
     - Adaptation Level: ${context.adaptationLevel}
+    
+    Design System Compliance:
+    - Use Quest color system consistently
+    - Apply GT Walsheim typography hierarchy
+    - Implement premium dark theme patterns
+    - Include Quest-specific UI elements (Trinity cards, coaching interfaces, network graphs)
+    - Maintain professional, sophisticated visual language
     
     Quest Core Principles:
     - Purpose-driven professional development

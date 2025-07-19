@@ -15,6 +15,7 @@ Built using Cole Medin's advanced context engineering methodology to create AI-p
 
 ### **Technology Stack**
 - **Frontend**: Next.js 15, React 18, TypeScript, Tailwind CSS
+- **Design System**: Quest premium visual language with GT Walsheim typography
 - **Generative UI**: thesys.dev C1 API (dynamic interface generation)
 - **Authentication**: Clerk (user management)
 - **Database**: PostgreSQL (Neon) - Single source of truth
@@ -205,6 +206,60 @@ const contextualInterface = async (userId: string, sessionType: string) => {
 };
 ```
 
+## 🎨 **Design System & Brand Standards**
+
+### **Quest Premium Visual Language**
+Quest Core employs a sophisticated design system that positions the platform as a premium, cutting-edge professional development solution.
+
+#### **Core Design Principles**
+1. **Premium & Professional**: Sophisticated visual language building enterprise trust
+2. **Innovation Leadership**: Cutting-edge design positioning Quest ahead of competitors  
+3. **Data-Driven Beauty**: Complex professional data presented elegantly
+4. **Adaptive Excellence**: Seamless integration with thesys.dev generative UI
+5. **Journey Metaphor**: Visual elements reinforcing professional growth narrative
+
+#### **Color System**
+```css
+/* Primary Brand Colors */
+--quest-primary: #00D4B8;        /* Aurora Fade (Teal) */
+--quest-secondary: #4F46E5;      /* Electric Violet (Blue) */
+--quest-accent: #8B5CF6;         /* Purple */
+
+/* Gradients */
+--quest-gradient-primary: linear-gradient(135deg, #00D4B8 0%, #4F46E5 100%);
+--quest-sphere-gradient: radial-gradient(circle at 30% 30%, #00D4B8, #4F46E5, #8B5CF6);
+```
+
+#### **Typography System**
+- **Primary Font**: GT Walsheim (premium, professional)
+- **Hierarchy**: H1 48px, H2 36px, Body 16px, Caption 12px
+- **Usage**: Clean, modern typography with sophisticated weight variations
+
+#### **Quest-Specific UI Patterns**
+- **Trinity Visualization**: Interconnected cards with gradient treatments
+- **Professional Network Graphs**: Profile photos with gradient borders
+- **AI Coaching Interface**: Specialist coach cards with visual hierarchy
+- **3D Spherical Elements**: Distinctive gradient spheres reinforcing journey metaphor
+
+### **thesys.dev Brand Compliance**
+When generating adaptive interfaces, ensure:
+```typescript
+// Brand compliance rules for generative UI
+const questUIRules = {
+  colorPalette: ['#00D4B8', '#4F46E5', '#8B5CF6', '#1A1D29'],
+  typography: 'GT Walsheim',
+  componentStyle: 'premium-dark',
+  gradientUsage: 'selective-emphasis',
+  animations: 'subtle-professional'
+};
+```
+
+### **Component Standards**
+- **Cards**: Dark backgrounds (#1A1D29) with subtle borders
+- **Buttons**: Gradient treatments for primary actions
+- **Forms**: Clean inputs with Quest color focus states
+- **Data Visualization**: Professional graph styling with brand colors
+
 ## ⚡ **AI Development & Experimentation**
 
 ### **PocketFlow Integration Pattern**
@@ -346,6 +401,7 @@ await prisma.userInsight.create({
 - `ZEP_INTEGRATION.md` - Zep implementation details
 - `OPENROUTER_INTEGRATION.md` - AI gateway implementation guide
 - `GENERATIVE_UI.md` - thesys.dev integration and adaptive interfaces
+- `DESIGN_SYSTEM.md` - Premium visual language and brand standards
 - `POCKETFLOW_EVALUATION.md` - AI development acceleration strategy
 - `MULTI_COACH_AI_ARCHITECTURE.md` - AI coaching system design
 
