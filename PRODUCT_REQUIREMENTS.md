@@ -217,12 +217,51 @@ Surface Repo → Initial Data → Deep Repo Gen → Personal Goals → AI Mentor
 - Privacy and consent management
 - Conversational AI integration with graph context
 
-## 🏗️ Database Schema Updates
+## 🏗️ Data Architecture Strategy
+
+### **Hybrid Architecture Decision (December 2024)**
+**Single Source of Truth**: PostgreSQL (Neon) maintains all permanent user data
+**Specialized Systems**: Zep for conversational memory, Neo4j for relationship graphs
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    PostgreSQL (Neon)                     │
+│                  SINGLE SOURCE OF TRUTH                  │
+│  - Users (Clerk ID as master)                          │
+│  - Professional profiles                                │
+│  - 4-layer repository data                             │
+│  - Key insights from Zep sessions                      │
+└─────────────────┬───────────────────────┬──────────────┘
+                  │                       │
+        Sync Key Insights          Read for Context
+                  │                       │
+                  ↓                       ↓
+         ┌────────────────┐      ┌────────────────┐
+         │      Zep       │      │     Neo4j      │
+         │ Conversations  │      │ Relationships  │
+         │ Behavioral     │      │ Graph Queries  │
+         │ Temporal KG    │      │ Professional   │
+         └────────────────┘      └────────────────┘
+```
+
+### **Zep Integration for Conversational Memory**
+- **Temporal Knowledge Graphs**: Automatic extraction of entities and relationships from conversations
+- **User Session Management**: Persistent memory across voice coaching sessions
+- **Context Optimization**: Query only relevant facts (3-5 most relevant) instead of full history
+- **Trinity Evolution Tracking**: How Quest, Service, Pledge evolve through conversations
+- **Token Cost Optimization**: 60-70% reduction in LLM context tokens
+
+### **User ID Strategy**
+**Master ID**: Clerk User ID used consistently across all systems
+- PostgreSQL: Primary key = Clerk ID
+- Zep: user_id = Clerk ID (no translation needed)
+- Neo4j (future): User nodes use Clerk ID
 
 ### **Current State**
 - Basic user, trinity, skills, conversations tables
 - Authentication with Clerk
 - Voice coaching infrastructure
+- Ready for Zep integration
 
 ### **Required Schema Changes - Entity-Centric Design**
 

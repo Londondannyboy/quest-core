@@ -1,215 +1,230 @@
-# Next Session TODO - July 18, 2025
+# Next Session TODO - July 19, 2025
 
-> **Session Goal**: Neo4j Integration + Multi-Coach AI System Design
-> **Previous Achievement**: Zero-Approval Auto-Fix System (COMPLETE)
+> **Session Goal**: Zep Integration Implementation + Multi-Coach AI System  
+> **Previous Achievement**: Comprehensive Architecture Documentation (COMPLETE)
 
-## ✅ **COMPLETED: Auto-Fix System**
-- **MCP-Vercel Integration**: Real-time deployment monitoring ✅
-- **Zero-Approval Automation**: TypeScript/JavaScript auto-fixes ✅
-- **5-Attempt Retry Logic**: Smart attempt tracking and failure recovery ✅
-- **Claude Code Configuration**: Full automation without manual intervention ✅
-- **Production Testing**: Validated end-to-end workflow ✅
+## ✅ **COMPLETED: Architecture Strategy & Documentation**
+- **Hybrid Data Architecture**: PostgreSQL + Zep + Neo4j strategy finalized ✅
+- **Technical Documentation**: CLAUDE.md, ZEP_INTEGRATION.md created ✅
+- **Implementation Roadmap**: 4-phase plan with detailed specifications ✅
+- **User ID Strategy**: Clerk ID as master identifier across all systems ✅
+- **Data Flow Design**: Single source of truth with specialized memory systems ✅
 
 ## 🎯 **High Priority Tasks**
 
-### 1. **Neo4j Graph Database Integration**
-**Status**: Not started  
-**Priority**: HIGH  
-**Time Estimate**: 3-4 hours
-
-**Objective**: Transform basic Force Graph visualization into intelligent professional relationship analytics
-
-**Tasks**:
-- [ ] Set up Neo4j database instance (cloud or local)
-- [ ] Configure Neo4j environment variables in Vercel
-- [ ] Create data sync pipeline: PostgreSQL → Neo4j
-- [ ] Build Cypher query layer for professional intelligence
-- [ ] Update Force Graph to display Neo4j query results
-- [ ] Test complex relationship queries
-
-**Key Queries to Implement**:
-- "Who worked with whom at which companies?"
-- "What skills move between companies and roles?"
-- "Career progression paths from role X to role Y"
-- "Professional network community detection"
-
-### 2. **Multi-Coach AI System Architecture Design**
-**Status**: Research needed  
+### 1. **Zep Integration - Phase 1: Core Setup**
+**Status**: Ready to implement  
 **Priority**: HIGH  
 **Time Estimate**: 2-3 hours
 
-**Core Questions to Resolve**:
-1. **Architecture Pattern**: Single LLM with personalities vs separate prompt systems?
-2. **Orchestration**: How does master coach manage multiple AI voices?
-3. **Debate Management**: Handling disagreements between coaches
-4. **Authority Hierarchy**: Who has final say in coaching decisions?
-
-**Implementation Options**:
-
-**Option A - Single Engine Multi-Personality**:
-```
-Master Coach (Orchestrator)
-├── Career Coach (prompt: career strategy)
-├── Skills Coach (prompt: technical development) 
-├── Leadership Coach (prompt: management growth)
-└── Network Coach (prompt: relationship building)
-```
-
-**Option B - Separate AI Systems**:
-```
-Master Agent (Coordination)
-├── Separate LLM Instance 1 (Career)
-├── Separate LLM Instance 2 (Skills)
-├── Separate LLM Instance 3 (Leadership)
-└── Separate LLM Instance 4 (Network)
-```
+**Objective**: Implement foundational Zep integration with user management and session tracking
 
 **Tasks**:
-- [ ] Research multi-agent AI architecture patterns
-- [ ] Design conversation flow and turn-taking protocol
-- [ ] Create proof-of-concept with 2 coaches + orchestrator
-- [ ] Test debate scenario handling
-- [ ] Document coaching authority and decision-making hierarchy
+- [ ] Install Zep SDK: `npm install zep-cloud`
+- [ ] Configure Zep environment variables (API key, project ID)
+- [ ] Create `lib/zep-client.ts` with basic client setup
+- [ ] Implement `createZepUser()` function for user onboarding
+- [ ] Update user creation flow to include Zep user creation
+- [ ] Test Zep user creation with existing Clerk authentication
+- [ ] Implement `initializeUserGraph()` for new user profile data
 
-### 3. **Planning Process Analysis & Documentation**
-**Status**: Not started  
+**Key Integration Points**:
+```typescript
+// User creation with consistent ID strategy
+createZepUser(clerkUser.id)  // Use Clerk ID directly
+initializeUserGraph(userId, profileData)
+```
+
+### 2. **Zep Integration - Phase 2: Voice Coaching Memory**
+**Status**: Depends on Phase 1  
 **Priority**: HIGH  
-**Time Estimate**: 1 hour
+**Time Estimate**: 2-3 hours
 
-**Objective**: Understand why user creation was overlooked and prevent similar issues
+**Objective**: Enhance voice coaching with persistent memory across sessions
 
 **Tasks**:
-- [ ] Analyze original planning documents for user management gaps
-- [ ] Document assumption vs explicit requirement patterns
-- [ ] Create "Fundamental Requirements Checklist" for future planning
-- [ ] Review authentication flow documentation completeness
-- [ ] Identify other potential planning blind spots
+- [ ] Create `lib/voice-session.ts` for Zep session management
+- [ ] Implement `startVoiceSession()` and `addVoiceInteraction()`
+- [ ] Update `HumeVoiceInterface.tsx` to include Zep session tracking
+- [ ] Create `getCoachingContext()` function for context retrieval
+- [ ] Test voice coaching memory continuity across sessions
+- [ ] Implement conversation storage in Zep during voice interactions
 
-**Deliverables**:
-- [ ] Planning oversight analysis document
-- [ ] Process improvement recommendations
-- [ ] Updated planning templates with user flow requirements
+**Key Features**:
+- Session tracking with metadata (session_type, platform)
+- Context retrieval for coaching responses (3-5 most relevant facts)
+- Conversation storage for future context
+
+### 3. **Multi-Coach AI Foundation with Zep Context**
+**Status**: Architecture documented, ready to implement  
+**Priority**: HIGH  
+**Time Estimate**: 2-3 hours
+
+**Objective**: Implement "Orchestrated Specialists" pattern with shared Zep memory
+
+**Architecture Confirmed**:
+- **Master Coach**: Orchestrator with final authority
+- **Specialist Coaches**: Career, Skills, Leadership, Network
+- **Shared Context**: All coaches access same Zep user graph
+- **Single LLM**: Different system prompts, not separate instances
+
+**Tasks**:
+- [ ] Create `lib/multi-coach.ts` with coach context management
+- [ ] Implement `getSpecialistCoachContext()` for coach-specific queries
+- [ ] Build `orchestrateCoachingSession()` for master coach flow
+- [ ] Create basic conversation flow with 2 coaches (Master + Career)
+- [ ] Test debate management and authority hierarchy
+- [ ] Validate shared Zep context across coach specializations
+
+### 4. **PostgreSQL ↔ Zep Sync Implementation**
+**Status**: Design complete, ready to implement  
+**Priority**: HIGH  
+**Time Estimate**: 1-2 hours
+
+**Objective**: Sync key insights from Zep back to PostgreSQL for single source of truth
+
+**Tasks**:
+- [ ] Create `lib/session-sync.ts` for insights synchronization
+- [ ] Implement `syncSessionInsights()` to extract and store key coaching points
+- [ ] Create `syncBusinessDataToZep()` for profile data synchronization
+- [ ] Test Trinity updates from Zep conversations
+- [ ] Implement data consistency validation between systems
+
+**Sync Strategy**:
+- Zep → PostgreSQL: Key insights, Trinity updates, goal progress
+- PostgreSQL → Zep: Profile data, work history, skill updates
 
 ## 🔧 **Medium Priority Tasks**
 
-### 4. **Auto-Fix System Enhancements**
-**Status**: Foundation complete, enhancements available  
+### 5. **Enhanced Voice Coaching API with Zep Context**
+**Status**: Enhancement to existing system  
 **Priority**: MEDIUM  
 **Time Estimate**: 1-2 hours
 
-**Potential Improvements**:
-- [ ] Support for more error types (CSS, YAML, configuration files)
-- [ ] Machine learning integration for fix pattern recognition
-- [ ] Integration with additional deployment platforms (Netlify, AWS)
-- [ ] Enhanced error reporting and analytics
-- [ ] Custom fix patterns for project-specific errors
-
 **Tasks**:
-- [ ] Add support for CSS/SCSS import errors
-- [ ] Implement package.json dependency auto-fixes
-- [ ] Add configuration file error handling
-- [ ] Create fix pattern analytics dashboard
-- [ ] Test auto-fix system with complex multi-file errors
+- [ ] Update `/api/hume-clm-sse/chat/completions/route.ts` with Zep context
+- [ ] Create `/api/coaching/session/` endpoints for session management
+- [ ] Implement context-aware response generation
+- [ ] Add session end with insight sync functionality
 
-### 5. **Enhanced Force Graph with Neo4j Results**
-**Status**: Depends on Neo4j integration  
-**Priority**: MEDIUM  
-**Time Estimate**: 2 hours
-
-**Tasks**:
-- [ ] Update ProfessionalNetworkGraph component to query Neo4j
-- [ ] Add advanced filtering (by relationship type, strength, time period)
-- [ ] Implement graph algorithm visualizations (shortest path, centrality)
-- [ ] Add relationship strength heatmaps
-- [ ] Create career path visualization mode
-
-### 6. **Skills Progression Timeline**
-**Status**: Design needed  
-**Priority**: MEDIUM  
-**Time Estimate**: 2 hours
-
-**Tasks**:
-- [ ] Design skills timeline component (skills gained over time)
-- [ ] Create API endpoint for skills progression data
-- [ ] Add skill proficiency evolution visualization
-- [ ] Integrate with work experience timeline for context
-
-## 📋 **Low Priority Tasks**
-
-### 7. **Advanced Graph Intelligence Features**
+### 6. **Zep Performance Monitoring & Analytics**
 **Status**: Future enhancement  
-**Priority**: LOW  
-**Time Estimate**: 4+ hours
+**Priority**: MEDIUM  
+**Time Estimate**: 1 hour
 
 **Tasks**:
-- [ ] Career path recommendation engine
-- [ ] Professional network influence scoring
-- [ ] Skill market demand integration
-- [ ] Industry trend analysis and visualization
+- [ ] Create `lib/zep-analytics.ts` for performance tracking
+- [ ] Implement context retrieval speed monitoring
+- [ ] Add Trinity evolution tracking metrics
+- [ ] Create basic dashboard for Zep performance insights
 
-### 8. **Performance & UX Enhancements**
-**Status**: Future optimization  
-**Priority**: LOW  
-**Time Estimate**: 2 hours
+### 7. **Error Handling & Fallback Systems**
+**Status**: Production readiness  
+**Priority**: MEDIUM  
+**Time Estimate**: 1 hour
 
 **Tasks**:
-- [ ] Large graph performance optimization
-- [ ] Mobile-responsive 3D controls
-- [ ] Progressive loading for complex networks
-- [ ] Graph export functionality (PDF, PNG)
+- [ ] Implement `getContextWithFallback()` for Zep unavailability
+- [ ] Create graceful degradation to PostgreSQL-only context
+- [ ] Add data consistency validation tools
+- [ ] Test system behavior when Zep is unavailable
 
-## 🤔 **Research Questions**
+## 📋 **Lower Priority Tasks**
 
-### Multi-Coach AI System Design
-1. **Conversation Flow**: How to prevent coaches from talking over each other?
-2. **Context Sharing**: Do all coaches share the same user context or have specialized views?
-3. **Disagreement Resolution**: What happens when coaches give conflicting advice?
-4. **User Experience**: How does user interact with multiple coaches simultaneously?
-5. **Coaching Effectiveness**: Single focused coach vs collaborative coaching team?
+### 8. **Neo4j Integration Planning** (Future Phase)
+**Status**: Positioned as complement to Zep  
+**Priority**: LOW  
+**Time Estimate**: Research phase
 
-### Neo4j Integration Architecture  
-1. **Data Sync Strategy**: Real-time sync vs batch updates from PostgreSQL?
-2. **Query Performance**: Client-side Cypher vs API layer abstraction?
-3. **Relationship Modeling**: How to represent professional relationship strength and context?
-4. **Scalability**: Multi-tenant Neo4j design for multiple users?
+**Updated Strategy**:
+- **Zep**: Handles conversational memory and behavioral insights
+- **Neo4j**: Focuses on professional relationship graphs
+- **Integration**: Both feed context to multi-coach system
+
+**Research Tasks**:
+- [ ] Define Neo4j vs Zep data boundaries
+- [ ] Plan professional relationship modeling
+- [ ] Design integration points with Zep context
+
+### 9. **GDPR Compliance & Data Export**
+**Status**: Production requirement  
+**Priority**: LOW  
+**Time Estimate**: 1-2 hours
+
+**Tasks**:
+- [ ] Implement `deleteUserFromZep()` for data deletion
+- [ ] Create `exportUserZepData()` for data portability
+- [ ] Add data retention policies and metadata
+- [ ] Test complete user data removal across systems
+
+## 🤔 **Key Implementation Questions**
+
+### Zep Integration Specifics
+1. **Context Optimization**: How many facts to retrieve per query for optimal performance?
+2. **Session Management**: When to create new sessions vs continue existing ones?
+3. **Trinity Evolution**: How to track and validate Trinity changes from conversations?
+4. **Multi-Coach Context**: Should each coach get specialized queries or shared context?
+
+### Technical Implementation
+1. **Error Handling**: Graceful fallback when Zep is unavailable?
+2. **Performance**: Acceptable latency for Zep context retrieval in voice coaching?
+3. **Data Consistency**: How often to sync insights back to PostgreSQL?
+4. **User Experience**: Transparent integration vs visible memory features?
 
 ## 📊 **Success Criteria**
 
-### End of Next Session Goals
-- [ ] **Neo4j Working**: Professional relationships queryable via graph database
-- [ ] **Multi-Coach Design**: Clear architecture with proof-of-concept implementation
-- [ ] **Force Graph Enhanced**: Displaying Neo4j relationship intelligence
-- [ ] **Process Documented**: Planning oversight analysis complete
-- [ ] **Advanced Queries**: Career path and network analysis working
+### End of Session Goals
+- [ ] **Zep Integrated**: Users created in Zep with Clerk ID consistency
+- [ ] **Voice Memory**: Coaching sessions persist context across interactions
+- [ ] **Multi-Coach Foundation**: Basic orchestration working with shared context
+- [ ] **Data Sync**: Key insights flowing from Zep to PostgreSQL
+- [ ] **Context Quality**: Coaching responses improved with relevant historical facts
 
 ### Technical Milestones
-- [ ] Neo4j database populated with user professional data
+- [ ] Zep SDK operational with Quest Core authentication
+- [ ] Voice coaching interface enhanced with session tracking
 - [ ] Multi-coach conversation system prototype functional
-- [ ] 3D Force Graph showing intelligent relationship analysis
-- [ ] Professional intelligence queries returning meaningful results
+- [ ] PostgreSQL insights table populated from Zep sessions
+- [ ] Trinity evolution tracking working through conversations
+
+### User Experience Improvements
+- [ ] Coaching continuity: "Last time we discussed..." context working
+- [ ] Multi-perspective advice: Multiple coaches providing coherent guidance
+- [ ] Goal tracking: Progress monitored through natural conversation
+- [ ] Trinity evolution: User identity development tracked over time
 
 ## 🔗 **Dependencies & Prerequisites**
 
-### For Neo4j Integration
-- [ ] Neo4j database access (cloud instance or local setup)
-- [ ] Environment variables configured in Vercel
-- [ ] Neo4j driver and query library installed
+### For Zep Integration
+- [ ] Zep Cloud account created and API key obtained
+- [ ] Package installation: `npm install zep-cloud`
+- [ ] Environment variables configured in .env.local and Vercel
+- [ ] Existing Clerk authentication system (✅ Already working)
 
-### For Multi-Coach AI System
-- [ ] Research into multi-agent conversation management
-- [ ] Decision on architecture pattern (single vs multiple LLM instances)
-- [ ] Conversation flow and orchestration design
+### For Multi-Coach System
+- [ ] Zep user context retrieval working
+- [ ] MULTI_COACH_AI_ARCHITECTURE.md system prompts ready
+- [ ] Voice coaching flow established for testing
+- [ ] Session management infrastructure
 
-### For Enhanced Visualization
-- [ ] Neo4j data pipeline working
-- [ ] Graph query performance optimized
-- [ ] Advanced relationship metrics defined
+### For Data Sync
+- [ ] PostgreSQL schema ready for insights storage
+- [ ] Prisma models updated for coaching sessions
+- [ ] Error handling for sync failures
+- [ ] Data validation between systems
+
+## 🚀 **Implementation Order**
+
+1. **Phase 1 - Core Setup** (Priority 1): Zep SDK, user creation, basic session tracking
+2. **Phase 2 - Voice Memory** (Priority 1): Enhanced voice coaching with persistent context
+3. **Phase 3 - Multi-Coach** (Priority 1): Orchestrated specialists with shared Zep memory
+4. **Phase 4 - Data Sync** (Priority 1): PostgreSQL sync for single source of truth
+5. **Enhancements** (Priority 2): Performance monitoring, error handling, analytics
 
 ---
 
-**Next Session Focus**: Transform Quest Core from a profile platform with basic visualization into an intelligent professional relationship analytics system with advanced AI coaching capabilities.
+**Next Session Focus**: Transform Quest Core from basic voice coaching into an intelligent, memory-enabled AI system with persistent context and multi-coach capabilities powered by Zep's temporal knowledge graphs.
 
-**Key Decision Points**: 
-1. Neo4j architecture and integration approach
-2. Multi-coach AI system design pattern
-3. Professional intelligence feature prioritization
+**Key Success Indicator**: User can have a coaching conversation, end the session, return later, and the AI remembers the context and continues the development journey seamlessly.
+
+**Architecture Achievement**: Hybrid system operational with PostgreSQL as master data store, Zep as conversational memory, and consistent user identification across all systems.
