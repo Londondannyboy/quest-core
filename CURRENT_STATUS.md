@@ -99,20 +99,24 @@
 
 ### **Immediate Priorities (Updated Architecture)**
 
-#### **1. Zep Integration Implementation** 
+#### **1. Zep + OpenRouter Integration Implementation** 
 **Status**: Ready to begin - Complete technical specifications available
-- **Phase 1**: Core setup with user management and session tracking (Week 1-2)
-- **Phase 2**: Voice coaching integration with persistent memory (Week 2-3)  
-- **Phase 3**: Multi-coach system with shared context (Week 3-4)
-- **Phase 4**: PostgreSQL sync and production readiness (Week 4+)
-- **Benefits**: 60-70% token cost reduction, persistent memory, Trinity evolution tracking
+- **Phase 1**: Zep core setup + OpenRouter AI gateway integration (Week 1-2)
+- **Phase 2**: Voice coaching with persistent memory + model routing (Week 2-3)  
+- **Phase 3**: Multi-coach system with specialized AI models (Week 3-4)
+- **Phase 4**: PostgreSQL sync, cost optimization, and production readiness (Week 4+)
+- **Benefits**: 40-60% total cost reduction, persistent memory, specialized coaching models
 
-#### **2. Multi-Coach AI System with Zep Context**
-**Architecture Decided**: "Orchestrated Specialists" with shared Zep memory
-- **Master Coach**: Orchestrator with final authority, accesses full Zep context
-- **Specialist Coaches**: Career, Skills, Leadership, Network - each with specialized Zep queries
+#### **2. Multi-Coach AI System with OpenRouter + Zep**
+**Architecture Decided**: "Orchestrated Specialists" with AI gateway routing and shared memory
+- **Master Coach**: GPT-4 Turbo via OpenRouter, orchestrates with full Zep context
+- **Specialist Coaches**: Optimized models per domain via OpenRouter routing
+  - **Career Coach**: Claude-3 Sonnet for strategic analysis
+  - **Skills Coach**: GPT-4 for technical assessment  
+  - **Leadership Coach**: Gemini Pro for interpersonal growth
+  - **Network Coach**: Claude-3 Sonnet for relationship strategy
 - **Shared Memory**: All coaches access same user knowledge graph via Zep
-- **Debate Management**: Master coach synthesizes specialist perspectives with historical context
+- **Cost Optimization**: Automatic model selection based on complexity and budget
 
 #### **3. Neo4j Professional Relationship Graphs** (Future Phase)
 **Positioned as complement to Zep**: Professional networks vs conversational memory
@@ -144,7 +148,8 @@
 4. **Plan Neo4j Integration**: Position as complement to Zep for professional relationship intelligence
 
 **Documentation Completed**:
-- `CLAUDE.md` - Complete AI assistant context and guidelines
-- `ZEP_INTEGRATION.md` - Detailed technical implementation guide  
-- `DATA_ARCHITECTURE.md` - Single source of truth strategy
-- `PRODUCT_REQUIREMENTS.md` - Updated with hybrid architecture approach
+- `CLAUDE.md` - Complete AI assistant context and guidelines (+ OpenRouter integration)
+- `ZEP_INTEGRATION.md` - Detailed technical implementation guide (+ AI gateway routing)
+- `DATA_ARCHITECTURE.md` - Single source of truth strategy (+ AI gateway layer)
+- `OPENROUTER_INTEGRATION.md` - Comprehensive AI gateway implementation guide
+- `PRODUCT_REQUIREMENTS.md` - Updated with hybrid architecture + AI gateway approach

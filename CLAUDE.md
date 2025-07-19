@@ -17,7 +17,8 @@ Built using Cole Medin's advanced context engineering methodology to create AI-p
 - **Frontend**: Next.js 15, React 18, TypeScript, Tailwind CSS
 - **Authentication**: Clerk (user management)
 - **Database**: PostgreSQL (Neon) - Single source of truth
-- **AI & Voice**: Hume AI EVI, OpenAI GPT-4, Zep (memory management)
+- **AI & Voice**: Hume AI EVI, OpenRouter.AI (AI gateway), Zep (memory management)
+- **AI Models**: GPT-4, Claude-3, Gemini Pro (via OpenRouter for optimal routing)
 - **Future**: Neo4j (professional relationship graphs)
 - **Deployment**: Vercel with auto-fix deployment system
 
@@ -101,9 +102,28 @@ npx prisma studio        # Database GUI
 ### **Required Services**
 - **Database**: Neon PostgreSQL connection
 - **Authentication**: Clerk keys (public/secret)
-- **AI Services**: OpenAI API key, Hume AI credentials
+- **AI Gateway**: OpenRouter API key for multi-model access
+- **Voice AI**: Hume AI credentials for empathic voice processing
 - **Memory**: Zep API key and configuration
 - **Deployment**: Vercel integration
+
+### **AI Gateway Configuration**
+```env
+# OpenRouter for multi-model routing
+OPENROUTER_API_KEY=your_openrouter_key
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+
+# Model selection for different coaches
+COACH_MODEL_MASTER=openai/gpt-4-turbo
+COACH_MODEL_CAREER=anthropic/claude-3-sonnet
+COACH_MODEL_SKILLS=openai/gpt-4
+COACH_MODEL_LEADERSHIP=google/gemini-pro
+COACH_MODEL_NETWORK=anthropic/claude-3-sonnet
+
+# Cost optimization settings
+OPENROUTER_PREFER_COST=true
+OPENROUTER_FALLBACK_ENABLED=true
+```
 
 ### **Configuration Files**
 - `.env.local` - Local development environment
@@ -145,11 +165,33 @@ const relevantFacts = await zep.graph.search({
 });
 ```
 
-### **Multi-Coach Orchestration**
-- Single LLM with specialized system prompts
-- Master Coach manages conversation flow and conflicts
-- Specialist coaches provide domain expertise
-- Debate management with authority hierarchy
+### **Multi-Coach Orchestration with AI Gateway**
+- OpenRouter.AI for intelligent model routing per coach type
+- Master Coach (GPT-4): Complex orchestration and final authority
+- Career Coach (Claude-3): Strategic analysis and market insights  
+- Skills Coach (GPT-4): Technical assessment and learning paths
+- Leadership Coach (Gemini Pro): Interpersonal and management growth
+- Network Coach (Claude-3): Relationship and networking strategy
+- Cost optimization through automatic model selection
+
+### **AI Client Abstraction Pattern**
+```typescript
+// AI routing with OpenRouter
+const aiClient = new AIClient({
+  baseURL: process.env.OPENROUTER_BASE_URL,
+  apiKey: process.env.OPENROUTER_API_KEY
+});
+
+// Model selection by coach type
+const getCoachResponse = async (coach: CoachType, context: ZepContext) => {
+  const model = selectModelForCoach(coach);
+  return await aiClient.chat.completions.create({
+    model,
+    messages: buildCoachPrompt(coach, context),
+    temperature: getTemperatureForCoach(coach)
+  });
+};
+```
 
 ## 📊 **Data Flow Architecture**
 

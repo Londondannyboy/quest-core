@@ -257,16 +257,67 @@ export function HumeVoiceInterface({ sessionType, onEndSession }: Props) {
 }
 ```
 
-### **Phase 3: Multi-Coach Implementation (Week 3-4)**
+### **Phase 3: Multi-Coach Implementation with OpenRouter (Week 3-4)**
 
-#### **3.1 Shared Context Across Coaches**
+#### **3.1 AI Gateway Integration for Coach Routing**
+```typescript
+// lib/ai-client.ts - OpenRouter integration
+import OpenAI from 'openai';
+
+export class AIClient {
+  private openrouter: OpenAI;
+  
+  constructor() {
+    this.openrouter = new OpenAI({
+      baseURL: process.env.OPENROUTER_BASE_URL,
+      apiKey: process.env.OPENROUTER_API_KEY,
+    });
+  }
+  
+  async generateCoachResponse(
+    coachType: CoachType, 
+    context: ZepContext, 
+    userQuery: string
+  ) {
+    const model = this.selectModelForCoach(coachType);
+    const prompt = this.buildCoachPrompt(coachType, context, userQuery);
+    
+    return await this.openrouter.chat.completions.create({
+      model,
+      messages: prompt,
+      temperature: this.getTemperatureForCoach(coachType),
+      max_tokens: this.getMaxTokensForCoach(coachType)
+    });
+  }
+  
+  private selectModelForCoach(coachType: CoachType): string {
+    const modelMap = {
+      master: process.env.COACH_MODEL_MASTER || 'openai/gpt-4-turbo',
+      career: process.env.COACH_MODEL_CAREER || 'anthropic/claude-3-sonnet',
+      skills: process.env.COACH_MODEL_SKILLS || 'openai/gpt-4',
+      leadership: process.env.COACH_MODEL_LEADERSHIP || 'google/gemini-pro',
+      network: process.env.COACH_MODEL_NETWORK || 'anthropic/claude-3-sonnet'
+    };
+    
+    return modelMap[coachType] || 'openai/gpt-3.5-turbo';
+  }
+}
+```
+
+#### **3.2 Enhanced Multi-Coach Context with Model Awareness**
 ```typescript
 // lib/multi-coach.ts
 interface CoachContext {
   role: 'master' | 'career' | 'skills' | 'leadership' | 'network'
+  model: string  // Track which AI model is being used
   userContext: ZepContext
   conversationHistory: Message[]
   specialistFocus: string[]
+  costTracking: {
+    tokensUsed: number
+    modelCost: number
+    responseTime: number
+  }
 }
 
 export async function getSpecialistCoachContext(
@@ -284,11 +335,20 @@ export async function getSpecialistCoachContext(
     min_score: 0.7
   })
   
+  const aiClient = new AIClient();
+  const selectedModel = aiClient.selectModelForCoach(coachRole);
+  
   return {
     role: coachRole,
+    model: selectedModel,
     relevantFacts: context.facts,
     userHistory: context.summary,
-    specialization: getCoachSpecialization(coachRole)
+    specialization: getCoachSpecialization(coachRole),
+    costTracking: {
+      tokensUsed: 0,
+      modelCost: 0,
+      responseTime: 0
+    }
   }
 }
 
@@ -304,7 +364,7 @@ function getCoachSpecialization(role: string): string[] {
 }
 ```
 
-#### **3.2 Master Coach Orchestration**
+#### **3.3 Master Coach Orchestration with Cost Optimization**
 ```typescript
 // lib/master-coach.ts
 export async function orchestrateCoachingSession(
@@ -312,37 +372,87 @@ export async function orchestrateCoachingSession(
   userQuery: string,
   sessionId: string
 ) {
+  const aiClient = new AIClient();
+  const startTime = Date.now();
+  
   // 1. Master coach analyzes query and determines needed specialists
-  const masterAnalysis = await analyzeMasterCoachNeed(userQuery)
+  const masterAnalysis = await aiClient.generateCoachResponse(
+    'master',
+    await getCoachingContext(userId, userQuery, sessionId),
+    `Analyze this query and determine which specialist coaches to consult: ${userQuery}`
+  );
   
   // 2. Get context from Zep for each needed specialist
+  const neededCoaches = extractNeededCoaches(masterAnalysis);
   const specialistContexts = await Promise.all(
-    masterAnalysis.neededCoaches.map(coach =>
-      getSpecialistCoachContext(userId, coach, userQuery)
-    )
-  )
+    neededCoaches.map(async coach => ({
+      ...await getSpecialistCoachContext(userId, coach, userQuery),
+      startTime: Date.now()
+    }))
+  );
   
-  // 3. Generate specialist responses
-  const specialistResponses = await generateSpecialistResponses(
-    userQuery,
-    specialistContexts
-  )
+  // 3. Generate specialist responses with model routing
+  const specialistResponses = await Promise.all(
+    specialistContexts.map(async context => {
+      const response = await aiClient.generateCoachResponse(
+        context.role,
+        context.userContext,
+        userQuery
+      );
+      
+      // Track cost and performance
+      context.costTracking = {
+        tokensUsed: response.usage?.total_tokens || 0,
+        modelCost: calculateModelCost(context.model, response.usage?.total_tokens || 0),
+        responseTime: Date.now() - context.startTime
+      };
+      
+      return { ...context, response };
+    })
+  );
   
   // 4. Master coach synthesizes final response
-  const masterResponse = await generateMasterSynthesis(
-    userQuery,
-    specialistResponses,
-    await getCoachingContext(userId, userQuery, sessionId)
-  )
+  const masterResponse = await aiClient.generateCoachResponse(
+    'master',
+    await getCoachingContext(userId, userQuery, sessionId),
+    `Synthesize these specialist responses into final guidance: ${JSON.stringify(specialistResponses.map(r => r.response))}`
+  );
   
-  // 5. Store complete interaction in Zep
-  await addVoiceInteraction(sessionId, userQuery, masterResponse.content)
+  // 5. Store complete interaction in Zep with cost tracking
+  const sessionData = {
+    query: userQuery,
+    response: masterResponse.choices[0].message.content,
+    coaches_used: neededCoaches,
+    total_cost: specialistResponses.reduce((sum, r) => sum + r.costTracking.modelCost, 0),
+    total_tokens: specialistResponses.reduce((sum, r) => sum + r.costTracking.tokensUsed, 0),
+    session_duration: Date.now() - startTime,
+    models_used: specialistResponses.map(r => ({ coach: r.role, model: r.model }))
+  };
+  
+  await addVoiceInteraction(sessionId, userQuery, masterResponse.choices[0].message.content);
+  await trackCoachingCosts(userId, sessionId, sessionData);
   
   return {
     masterResponse,
     specialistInputs: specialistResponses,
-    coachingFlow: masterAnalysis.flow
+    costBreakdown: sessionData,
+    coachingFlow: neededCoaches
   }
+}
+
+function calculateModelCost(model: string, tokens: number): number {
+  // OpenRouter pricing (approximate per 1M tokens)
+  const pricing = {
+    'openai/gpt-4-turbo': 10.0,
+    'openai/gpt-4': 30.0,
+    'anthropic/claude-3-sonnet': 3.0,
+    'anthropic/claude-3-opus': 15.0,
+    'google/gemini-pro': 0.5,
+    'openai/gpt-3.5-turbo': 0.5
+  };
+  
+  const costPer1M = pricing[model] || 1.0;
+  return (tokens / 1000000) * costPer1M;
 }
 ```
 

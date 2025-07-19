@@ -244,12 +244,25 @@ Surface Repo → Initial Data → Deep Repo Gen → Personal Goals → AI Mentor
          └────────────────┘      └────────────────┘
 ```
 
+### **AI Gateway Integration with OpenRouter**
+- **Multi-Model Routing**: Access to 300+ AI models through unified API
+- **Cost Optimization**: Automatic selection of most cost-effective model per use case
+- **Coach Specialization**: Different models optimized for different coaching types
+- **Reliability**: Automatic fallbacks when primary providers are unavailable
+- **Performance**: OpenAI-compatible API with <25ms routing overhead
+
 ### **Zep Integration for Conversational Memory**
 - **Temporal Knowledge Graphs**: Automatic extraction of entities and relationships from conversations
 - **User Session Management**: Persistent memory across voice coaching sessions
 - **Context Optimization**: Query only relevant facts (3-5 most relevant) instead of full history
 - **Trinity Evolution Tracking**: How Quest, Service, Pledge evolve through conversations
 - **Token Cost Optimization**: 60-70% reduction in LLM context tokens
+
+### **Combined Benefits: OpenRouter + Zep**
+- **Intelligent Coaching**: Right model + right context for each interaction
+- **Cost Efficiency**: Model optimization + context optimization = 40-60% cost reduction
+- **Enhanced Quality**: Specialized models with rich historical context
+- **Scalability**: Handle increased load through intelligent routing and memory management
 
 ### **User ID Strategy**
 **Master ID**: Clerk User ID used consistently across all systems

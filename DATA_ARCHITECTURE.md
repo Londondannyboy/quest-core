@@ -36,6 +36,21 @@ Quest Core implements a hybrid data architecture that combines the reliability o
                   └──── Coaching Context ──┘
                             ↓
                    ┌─────────────────┐
+                   │ OpenRouter.AI   │
+                   │   AI Gateway    │
+                   │ Model Routing   │
+                   └─────────┬───────┘
+                            ↓
+          ┌──────────────────┼──────────────────┐
+          │                  │                  │
+      ┌───▼───┐      ┌──────▼─────┐      ┌────▼─────┐
+      │ GPT-4 │      │ Claude-3   │      │ Gemini   │
+      │Turbo  │      │ Sonnet     │      │ Pro      │
+      └───────┘      └────────────┘      └──────────┘
+          │                  │                  │
+          └──────────────────┼──────────────────┘
+                            ↓
+                   ┌─────────────────┐
                    │   Multi-Coach   │
                    │   AI System     │
                    └─────────────────┘
@@ -158,15 +173,34 @@ skills (id, name, category, marketDemand)
 4. First Voice Session → Zep session + PostgreSQL session record
 ```
 
-### **2. Voice Coaching Flow**
+### **2. Enhanced Voice Coaching Flow with AI Gateway**
 ```
 1. User Message → Zep context retrieval (relevant facts)
               ↓
-2. AI Response Generation → Enhanced with historical context
+2. Coach Selection → Determine optimal AI model via OpenRouter
+                  ↓
+3. AI Response Generation → Route to GPT-4/Claude-3/Gemini based on use case
                          ↓
-3. Store Interaction → Zep (conversation) + PostgreSQL (insights)
+4. Store Interaction → Zep (conversation) + PostgreSQL (insights + model used)
                     ↓
-4. Trinity Evolution → Update both Zep graph + PostgreSQL trinity table
+5. Trinity Evolution → Update both Zep graph + PostgreSQL trinity table
+                    ↓
+6. Cost Tracking → Monitor model usage and costs per coaching session
+```
+
+### **3. Multi-Coach AI Routing**
+```
+Master Coach Request → OpenRouter selects GPT-4 Turbo (complex orchestration)
+                    ↓
+Specialist Consultation → Route to optimal models:
+- Career Coach → Claude-3 Sonnet (strategic analysis)
+- Skills Coach → GPT-4 (technical assessment)  
+- Leadership Coach → Gemini Pro (interpersonal growth)
+- Network Coach → Claude-3 Sonnet (relationship strategy)
+                    ↓
+Response Synthesis → Master Coach (GPT-4) synthesizes final guidance
+                  ↓
+Cost Optimization → Automatic fallback to cheaper models when appropriate
 ```
 
 ### **3. Data Sync Patterns**
@@ -347,6 +381,46 @@ async function healDataInconsistencies(userId: string) {
 ```
 
 ## 🚀 **Performance Optimization**
+
+### **AI Gateway Optimization**
+
+#### **Model Selection Performance**
+```typescript
+// Cached model selection for performance
+const modelCache = new Map<CoachType, string>();
+
+const getOptimalModel = (coach: CoachType, complexity: number) => {
+  const cacheKey = `${coach}_${complexity}`;
+  
+  if (modelCache.has(cacheKey)) {
+    return modelCache.get(cacheKey);
+  }
+  
+  const model = complexity > 0.8 
+    ? getHighPerformanceModel(coach)  // GPT-4, Claude-3 Opus
+    : getCostOptimizedModel(coach);   // GPT-3.5, Claude-3 Haiku
+    
+  modelCache.set(cacheKey, model);
+  return model;
+};
+```
+
+#### **Cost Optimization Strategy**
+```typescript
+const costOptimization = {
+  simpleQuestions: 'openai/gpt-3.5-turbo',      // $0.50/1M tokens
+  complexReasoning: 'openai/gpt-4-turbo',       // $10/1M tokens
+  strategicAnalysis: 'anthropic/claude-3-sonnet', // $3/1M tokens
+  creativeWork: 'anthropic/claude-3-opus',      // $15/1M tokens
+  
+  // Automatic fallback rules
+  fallbackRules: {
+    'openai/gpt-4-turbo': 'openai/gpt-4',
+    'anthropic/claude-3-opus': 'anthropic/claude-3-sonnet',
+    'google/gemini-pro': 'openai/gpt-3.5-turbo'
+  }
+};
+```
 
 ### **Query Optimization Patterns**
 

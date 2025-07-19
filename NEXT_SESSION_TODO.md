@@ -1,38 +1,49 @@
 # Next Session TODO - July 19, 2025
 
-> **Session Goal**: Zep Integration Implementation + Multi-Coach AI System  
-> **Previous Achievement**: Comprehensive Architecture Documentation (COMPLETE)
+> **Session Goal**: Zep + OpenRouter Integration Implementation + Multi-Coach AI System  
+> **Previous Achievement**: Comprehensive Architecture Documentation + AI Gateway Strategy (COMPLETE)
 
 ## ✅ **COMPLETED: Architecture Strategy & Documentation**
-- **Hybrid Data Architecture**: PostgreSQL + Zep + Neo4j strategy finalized ✅
-- **Technical Documentation**: CLAUDE.md, ZEP_INTEGRATION.md created ✅
-- **Implementation Roadmap**: 4-phase plan with detailed specifications ✅
+- **Hybrid Data Architecture**: PostgreSQL + Zep + Neo4j + OpenRouter strategy finalized ✅
+- **AI Gateway Integration**: OpenRouter.AI for intelligent model routing and cost optimization ✅
+- **Technical Documentation**: CLAUDE.md, ZEP_INTEGRATION.md, OPENROUTER_INTEGRATION.md created ✅
+- **Implementation Roadmap**: 4-phase plan with AI gateway and memory integration ✅
 - **User ID Strategy**: Clerk ID as master identifier across all systems ✅
-- **Data Flow Design**: Single source of truth with specialized memory systems ✅
+- **Data Flow Design**: Single source of truth with specialized memory and AI routing ✅
 
 ## 🎯 **High Priority Tasks**
 
-### 1. **Zep Integration - Phase 1: Core Setup**
+### 1. **OpenRouter + Zep Integration - Phase 1: Dual Setup**
 **Status**: Ready to implement  
 **Priority**: HIGH  
-**Time Estimate**: 2-3 hours
+**Time Estimate**: 3-4 hours
 
-**Objective**: Implement foundational Zep integration with user management and session tracking
+**Objective**: Implement both OpenRouter AI gateway and foundational Zep integration
 
-**Tasks**:
+**OpenRouter Tasks**:
+- [ ] Install OpenAI package (OpenRouter compatible): `npm install openai`
+- [ ] Configure OpenRouter environment variables (API key, base URL)
+- [ ] Create `lib/ai-client.ts` with OpenRouter integration and model routing
+- [ ] Implement coach-specific model selection logic
+- [ ] Test model routing with different coach types
+
+**Zep Tasks**:
 - [ ] Install Zep SDK: `npm install zep-cloud`
 - [ ] Configure Zep environment variables (API key, project ID)
 - [ ] Create `lib/zep-client.ts` with basic client setup
 - [ ] Implement `createZepUser()` function for user onboarding
 - [ ] Update user creation flow to include Zep user creation
 - [ ] Test Zep user creation with existing Clerk authentication
-- [ ] Implement `initializeUserGraph()` for new user profile data
 
 **Key Integration Points**:
 ```typescript
-// User creation with consistent ID strategy
-createZepUser(clerkUser.id)  // Use Clerk ID directly
-initializeUserGraph(userId, profileData)
+// AI Gateway routing
+const aiClient = new AIClient(); // OpenRouter integration
+const response = await aiClient.generateResponse('career', context, query);
+
+// Memory management
+createZepUser(clerkUser.id);  // Use Clerk ID directly
+initializeUserGraph(userId, profileData);
 ```
 
 ### 2. **Zep Integration - Phase 2: Voice Coaching Memory**
@@ -55,26 +66,30 @@ initializeUserGraph(userId, profileData)
 - Context retrieval for coaching responses (3-5 most relevant facts)
 - Conversation storage for future context
 
-### 3. **Multi-Coach AI Foundation with Zep Context**
+### 3. **Multi-Coach AI Foundation with OpenRouter + Zep**
 **Status**: Architecture documented, ready to implement  
 **Priority**: HIGH  
-**Time Estimate**: 2-3 hours
+**Time Estimate**: 3-4 hours
 
-**Objective**: Implement "Orchestrated Specialists" pattern with shared Zep memory
+**Objective**: Implement "Orchestrated Specialists" with AI gateway routing and shared memory
 
 **Architecture Confirmed**:
-- **Master Coach**: Orchestrator with final authority
-- **Specialist Coaches**: Career, Skills, Leadership, Network
+- **Master Coach**: GPT-4 Turbo via OpenRouter for orchestration
+- **Specialist Coaches**: Optimized models per domain
+  - **Career Coach**: Claude-3 Sonnet (strategic analysis)
+  - **Skills Coach**: GPT-4 (technical assessment)
+  - **Leadership Coach**: Gemini Pro (interpersonal growth)
+  - **Network Coach**: Claude-3 Sonnet (relationship strategy)
 - **Shared Context**: All coaches access same Zep user graph
-- **Single LLM**: Different system prompts, not separate instances
+- **Cost Tracking**: Monitor model usage and costs per session
 
 **Tasks**:
-- [ ] Create `lib/multi-coach.ts` with coach context management
-- [ ] Implement `getSpecialistCoachContext()` for coach-specific queries
-- [ ] Build `orchestrateCoachingSession()` for master coach flow
-- [ ] Create basic conversation flow with 2 coaches (Master + Career)
-- [ ] Test debate management and authority hierarchy
-- [ ] Validate shared Zep context across coach specializations
+- [ ] Create `lib/multi-coach.ts` with AI gateway integration
+- [ ] Implement `getSpecialistCoachContext()` with model routing
+- [ ] Build `orchestrateCoachingSession()` with cost tracking
+- [ ] Create conversation flow with OpenRouter model selection
+- [ ] Test model routing for different coach types
+- [ ] Validate cost optimization and fallback mechanisms
 
 ### 4. **PostgreSQL ↔ Zep Sync Implementation**
 **Status**: Design complete, ready to implement  
