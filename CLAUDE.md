@@ -15,6 +15,7 @@ Built using Cole Medin's advanced context engineering methodology to create AI-p
 
 ### **Technology Stack**
 - **Frontend**: Next.js 15, React 18, TypeScript, Tailwind CSS
+- **Generative UI**: thesys.dev C1 API (dynamic interface generation)
 - **Authentication**: Clerk (user management)
 - **Database**: PostgreSQL (Neon) - Single source of truth
 - **AI & Voice**: Hume AI EVI, OpenRouter.AI (AI gateway), Zep (memory management)
@@ -27,8 +28,9 @@ Built using Cole Medin's advanced context engineering methodology to create AI-p
 
 1. **PostgreSQL (Neon)** - Master repository for all user data
 2. **Zep** - Conversational memory and behavioral insights
-3. **Neo4j** (future) - Professional relationship graphs
-4. **Clerk** - Authentication (master user ID source)
+3. **thesys.dev** - Generative UI and adaptive interface layer
+4. **Neo4j** (future) - Professional relationship graphs
+5. **Clerk** - Authentication (master user ID source)
 
 ## 🎯 **Trinity System**
 
@@ -66,13 +68,15 @@ Multi-coach system with specialized AI agents:
 ### **🚧 In Progress**
 - Zep integration for conversational memory
 - Multi-coach AI system implementation
+- thesys.dev generative UI integration
 - Enhanced context engineering
 
 ### **📋 Next Priorities**
 1. Zep integration for persistent conversation memory
 2. Multi-coach orchestration system
-3. Neo4j integration for professional relationship intelligence
-4. Advanced Trinity system development
+3. thesys.dev C1 API implementation for adaptive interfaces
+4. Neo4j integration for professional relationship intelligence
+5. Advanced Trinity system development
 
 ## 🛠️ **Development Guidelines**
 
@@ -105,6 +109,7 @@ npx prisma studio        # Database GUI
 - **AI Gateway**: OpenRouter API key for multi-model access
 - **Voice AI**: Hume AI credentials for empathic voice processing
 - **Memory**: Zep API key and configuration
+- **Generative UI**: thesys.dev C1 API credentials
 - **Deployment**: Vercel integration
 
 ### **AI Gateway Configuration**
@@ -123,6 +128,12 @@ COACH_MODEL_NETWORK=anthropic/claude-3-sonnet
 # Cost optimization settings
 OPENROUTER_PREFER_COST=true
 OPENROUTER_FALLBACK_ENABLED=true
+
+# thesys.dev C1 API for generative UI
+THESYS_API_KEY=your_thesys_api_key
+THESYS_BASE_URL=https://api.thesys.dev/c1
+THESYS_MODEL=claude-3-sonnet  # Model for UI generation
+THESYS_STREAMING=true         # Enable real-time UI updates
 ```
 
 ### **Configuration Files**
@@ -144,6 +155,53 @@ OPENROUTER_FALLBACK_ENABLED=true
 3. System queries Zep for relevant user history
 4. AI coaches provide contextual guidance
 5. Session insights stored in both Zep and PostgreSQL
+
+## 🎨 **Generative UI Integration**
+
+### **thesys.dev C1 API Pattern**
+Quest Core leverages thesys.dev for cutting-edge generative UI experiences that adapt to each user's professional development journey. Interfaces evolve in real-time based on user progress, Trinity insights, and coaching context.
+
+```typescript
+// Dynamic interface generation
+const generateAdaptiveInterface = async (userContext: UserContext) => {
+  const thesysClient = new ThesysClient({
+    apiKey: process.env.THESYS_API_KEY,
+    model: process.env.THESYS_MODEL
+  });
+  
+  const interfaceSpec = await thesysClient.generateInterface({
+    userState: userContext.currentState,
+    trinityData: userContext.trinity,
+    coachingProgress: userContext.progress,
+    adaptationRules: getQuestCoreAdaptationRules()
+  });
+  
+  return interfaceSpec;
+};
+```
+
+### **Quest Core Use Cases**
+- **Adaptive Trinity Discovery**: Interface elements that evolve based on user responses
+- **Dynamic Coaching Dashboards**: Real-time layout changes based on session progress
+- **Personalized Skill Development**: Custom interface flows per user's learning style
+- **Context-Aware Profile Builder**: Adaptive forms that respond to user's professional context
+- **Real-Time Coaching Sessions**: Voice coaching interfaces that update during conversation
+
+### **Integration with Existing Systems**
+```typescript
+// Combine Zep context with generative UI
+const contextualInterface = async (userId: string, sessionType: string) => {
+  const zepContext = await getCoachingContext(userId);
+  const uiGeneration = await thesysClient.generateCoachingInterface({
+    userHistory: zepContext.relevantFacts,
+    currentFocus: sessionType,
+    trinityState: zepContext.trinity,
+    adaptiveElements: getQuestCoreUIElements()
+  });
+  
+  return uiGeneration;
+};
+```
 
 ## 🧠 **AI Context Engineering**
 
@@ -246,6 +304,8 @@ await prisma.userInsight.create({
 ### **Architecture Documents**
 - `DATA_ARCHITECTURE.md` - Complete data strategy
 - `ZEP_INTEGRATION.md` - Zep implementation details
+- `OPENROUTER_INTEGRATION.md` - AI gateway implementation guide
+- `GENERATIVE_UI.md` - thesys.dev integration and adaptive interfaces
 - `MULTI_COACH_AI_ARCHITECTURE.md` - AI coaching system design
 
 ### **Status Documents**
