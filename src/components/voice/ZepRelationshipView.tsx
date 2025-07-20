@@ -23,7 +23,8 @@ interface ZepRelationship {
   strength: number
   context: string
   extractedAt: string
-  category?: 'person' | 'organization' | 'skill' | 'goal'
+  category?: 'connection' | 'value' | 'solution' | 'insight' | 'semantic'
+  connectionType?: string
   sentiment?: 'positive' | 'negative' | 'neutral'
   proficiencyLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert'
   timeframe?: string
@@ -241,8 +242,11 @@ export function ZepRelationshipView({
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <Network className="h-4 w-4 text-purple-600" />
-              Relationship Network
+              Contextual Connections
             </CardTitle>
+            <CardDescription className="text-xs">
+              How your interests, goals, and experiences interconnect
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {/* Interactive Network Graph */}
@@ -254,25 +258,25 @@ export function ZepRelationshipView({
               />
             </div>
 
-            {/* Network Statistics */}
+            {/* Connection Statistics */}
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="text-center p-2 bg-blue-50 rounded">
                 <div className="font-bold text-blue-600">
-                  {contextData.relationships.filter(r => r.category === 'person').length}
+                  {contextData.relationships.filter(r => r.category === 'connection').length}
                 </div>
-                <div className="text-slate-600">People</div>
+                <div className="text-slate-600">Links</div>
               </div>
               <div className="text-center p-2 bg-purple-50 rounded">
                 <div className="font-bold text-purple-600">
-                  {contextData.relationships.filter(r => r.category === 'organization').length}
+                  {contextData.relationships.filter(r => r.category === 'value').length}
                 </div>
-                <div className="text-slate-600">Orgs</div>
+                <div className="text-slate-600">Values</div>
               </div>
               <div className="text-center p-2 bg-green-50 rounded">
                 <div className="font-bold text-green-600">
-                  {contextData.relationships.filter(r => r.category === 'skill').length}
+                  {contextData.relationships.filter(r => r.category === 'solution').length}
                 </div>
-                <div className="text-slate-600">Skills</div>
+                <div className="text-slate-600">Solutions</div>
               </div>
             </div>
           </CardContent>
@@ -284,8 +288,8 @@ export function ZepRelationshipView({
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-600" />
-              Professional Network
+              <BarChart3 className="h-4 w-4 text-blue-600" />
+              Contextual Insights
               <Badge variant="outline" className="text-xs">
                 {contextData.relationships.length} connections
               </Badge>
@@ -295,20 +299,22 @@ export function ZepRelationshipView({
             {contextData.relationships.slice(0, 5).map((rel, index) => {
               const getCategoryIcon = (category?: string) => {
                 switch (category) {
-                  case 'person': return '👤';
-                  case 'organization': return '🏢';
-                  case 'skill': return '🔧';
-                  case 'goal': return '🎯';
-                  default: return '🔗';
+                  case 'connection': return '🔗';
+                  case 'value': return '💎';
+                  case 'solution': return '💡';
+                  case 'insight': return '🎯';
+                  case 'semantic': return '🧠';
+                  default: return '🔄';
                 }
               };
 
               const getCategoryColor = (category?: string) => {
                 switch (category) {
-                  case 'person': return 'bg-blue-50 border-blue-200';
-                  case 'organization': return 'bg-purple-50 border-purple-200';
-                  case 'skill': return 'bg-green-50 border-green-200';
-                  case 'goal': return 'bg-orange-50 border-orange-200';
+                  case 'connection': return 'bg-blue-50 border-blue-200';
+                  case 'value': return 'bg-purple-50 border-purple-200';
+                  case 'solution': return 'bg-green-50 border-green-200';
+                  case 'insight': return 'bg-orange-50 border-orange-200';
+                  case 'semantic': return 'bg-indigo-50 border-indigo-200';
                   default: return 'bg-slate-50 border-slate-200';
                 }
               };
@@ -327,8 +333,10 @@ export function ZepRelationshipView({
                     <div className="flex items-center gap-2">
                       <span className="text-sm">{getCategoryIcon(rel.category)}</span>
                       <div>
-                        <div className="font-medium text-sm">{rel.to}</div>
-                        <div className="text-xs text-slate-500">{rel.type}</div>
+                        <div className="font-medium text-sm">{rel.from} → {rel.to}</div>
+                        <div className="text-xs text-slate-500">
+                          {rel.type} {rel.connectionType && `• ${rel.connectionType}`}
+                        </div>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">

@@ -6,7 +6,7 @@ import * as d3 from 'd3'
 interface NetworkNode {
   id: string
   name: string
-  type: 'user' | 'person' | 'organization' | 'skill' | 'goal'
+  type: 'user' | 'connection' | 'value' | 'solution' | 'insight' | 'semantic'
   strength: number
   category?: string
   sentiment?: 'positive' | 'negative' | 'neutral'
@@ -59,11 +59,23 @@ export function ProfessionalNetworkMini({
 
     // Add relationship nodes
     relationships.forEach(rel => {
+      // Add both from and to nodes if they don't exist
+      if (!nodes.find(n => n.id === rel.from) && rel.from !== 'User') {
+        nodes.push({
+          id: rel.from,
+          name: rel.from,
+          type: rel.category as any || 'connection',
+          strength: rel.strength,
+          category: rel.category,
+          sentiment: rel.sentiment as any
+        })
+      }
+      
       if (!nodes.find(n => n.id === rel.to)) {
         nodes.push({
           id: rel.to,
           name: rel.to,
-          type: rel.category as any || 'person',
+          type: rel.category as any || 'connection',
           strength: rel.strength,
           category: rel.category,
           sentiment: rel.sentiment as any
@@ -72,7 +84,7 @@ export function ProfessionalNetworkMini({
     })
 
     const links: NetworkLink[] = relationships.map(rel => ({
-      source: 'user',
+      source: rel.from === 'User' ? 'user' : rel.from,
       target: rel.to,
       strength: rel.strength,
       type: rel.type
@@ -92,12 +104,11 @@ export function ProfessionalNetworkMini({
     const getNodeColor = (type: string, sentiment?: string) => {
       switch (type) {
         case 'user': return '#2563eb'  // Blue
-        case 'person': 
-          return sentiment === 'positive' ? '#16a34a' : 
-                 sentiment === 'negative' ? '#dc2626' : '#6366f1'  // Green/Red/Indigo
-        case 'organization': return '#9333ea'  // Purple
-        case 'skill': return '#059669'  // Emerald
-        case 'goal': return '#ea580c'  // Orange
+        case 'connection': return '#6366f1'  // Indigo
+        case 'value': return '#9333ea'  // Purple
+        case 'solution': return '#059669'  // Emerald
+        case 'insight': return '#ea580c'  // Orange
+        case 'semantic': return '#7c3aed'  // Violet
         default: return '#6b7280'  // Gray
       }
     }

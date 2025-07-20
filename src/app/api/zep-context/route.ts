@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 function extractRelationshipsFromContext(context: any) {
   const relationships: any[] = [];
   
-  // Extract relationships from conversation history
+  // Extract CONTEXTUAL relationships from conversation history (Zep specialty)
   const history = context.conversationHistory || [];
   const userMessages = history.filter((msg: any) => msg.role === 'user');
   
@@ -69,108 +69,174 @@ function extractRelationshipsFromContext(context: any) {
     const content = msg.content.toLowerCase();
     const originalContent = msg.content;
     
-    // Enhanced relationship extraction patterns
+    // Zep-style contextual relationship extraction patterns
     
-    // 1. Professional Relationships (People)
-    const peoplePatterns = [
-      { pattern: /(?:my|the|our)\s+(manager|boss|supervisor)/i, entity: 'Manager' },
-      { pattern: /(?:my|the|our)\s+(team|teammates|colleagues)/i, entity: 'Team Members' },
-      { pattern: /(?:working with|collaborated with|partner)\s+([A-Z][a-z]+)/i, entity: 'Collaborator' },
-      { pattern: /(?:mentor|coach|advisor)\s+([A-Z][a-z]+)?/i, entity: 'Mentor' },
-      { pattern: /(?:client|customer)\s+([A-Z][a-z]+)?/i, entity: 'Client' }
+    // 1. Interest → Goal Connections
+    const interestGoalPatterns = [
+      { 
+        interest: /(?:love|enjoy|passionate about|interested in)\s+([\w\s]+)/i, 
+        goal: /(?:want to|hoping to|planning to)\s+([\w\s]+)/i,
+        connection: 'drives'
+      },
+      {
+        interest: /(?:travel|traveling|explore|exploring)\s*(?:to)?\s*([\w\s]*)/i,
+        goal: /(?:remote work|flexibility|location independence|work from anywhere)/i,
+        connection: 'enables'
+      }
     ];
     
-    peoplePatterns.forEach((pattern) => {
-      const match = originalContent.match(pattern.pattern);
-      if (match) {
-        const entityName = match[1] || pattern.entity;
+    interestGoalPatterns.forEach((pattern) => {
+      const interestMatch = originalContent.match(pattern.interest);
+      const goalMatch = originalContent.match(pattern.goal);
+      
+      if (interestMatch && goalMatch) {
+        const interest = interestMatch[1]?.trim() || 'personal interest';
+        const goal = goalMatch[1]?.trim() || 'career goal';
+        
         relationships.push({
-          id: `person-${index}-${Math.random().toString(36).substr(2, 9)}`,
-          type: 'Professional Relationship',
-          from: 'User',
-          to: entityName.charAt(0).toUpperCase() + entityName.slice(1),
-          strength: calculateRelationshipStrength(originalContent, pattern.entity),
-          context: extractRelevantContext(originalContent, match[0]),
+          id: `connection-${index}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'Contextual Connection',
+          from: interest,
+          to: goal,
+          strength: 0.85,
+          context: `Interest in ${interest} ${pattern.connection} goal of ${goal}`,
           extractedAt: msg.timestamp || new Date().toISOString(),
-          category: 'person',
-          sentiment: extractSentiment(originalContent, match[0])
+          category: 'connection',
+          connectionType: pattern.connection
         });
       }
     });
     
-    // 2. Organization Relationships
-    const orgPatterns = [
-      { pattern: /(?:at|work at|employed by)\s+([A-Z][A-Za-z\s&]+(?:Inc|LLC|Corp|Company|Ltd)?)/i, entity: 'Current Company' },
-      { pattern: /(?:previous|former|used to work at)\s+([A-Z][A-Za-z\s&]+)/i, entity: 'Previous Company' },
-      { pattern: /(?:startup|company|organization)\s+([A-Z][A-Za-z\s&]+)/i, entity: 'Organization' },
-      { pattern: /(?:university|college|school)\s+([A-Z][A-Za-z\s&]+)/i, entity: 'Educational Institution' }
+    // 2. Value → Decision Connections
+    const valueDecisionPatterns = [
+      {
+        value: /(?:value|important to me|care about)\s+([\w\s]+)/i,
+        decision: /(?:chose|decided|picked|selected)\s+([\w\s]+)/i,
+        connection: 'influences'
+      },
+      {
+        value: /(?:work-life balance|flexibility|autonomy)/i,
+        decision: /(?:freelance|remote|startup|leave)/i,
+        connection: 'motivates'
+      }
     ];
     
-    orgPatterns.forEach((pattern) => {
-      const match = originalContent.match(pattern.pattern);
-      if (match) {
+    valueDecisionPatterns.forEach((pattern) => {
+      const valueMatch = originalContent.match(pattern.value);
+      const decisionMatch = originalContent.match(pattern.decision);
+      
+      if (valueMatch && decisionMatch) {
+        const value = valueMatch[1]?.trim() || valueMatch[0];
+        const decision = decisionMatch[1]?.trim() || decisionMatch[0];
+        
         relationships.push({
-          id: `org-${index}-${Math.random().toString(36).substr(2, 9)}`,
-          type: 'Organization',
-          from: 'User',
-          to: match[1].trim(),
+          id: `value-decision-${index}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'Value-Decision Link',
+          from: value,
+          to: decision,
           strength: 0.9,
-          context: extractRelevantContext(originalContent, match[0]),
+          context: `Value of ${value} ${pattern.connection} decision about ${decision}`,
           extractedAt: msg.timestamp || new Date().toISOString(),
-          category: 'organization',
-          sentiment: extractSentiment(originalContent, match[0])
+          category: 'value',
+          connectionType: pattern.connection
         });
       }
     });
     
-    // 3. Skill & Technology Relationships
-    const skillPatterns = [
-      { pattern: /(?:learning|studying|mastering)\s+([\w\s-]+(?:programming|development|management|design|analytics))/i, entity: 'Learning Skill' },
-      { pattern: /(?:expert in|skilled at|experienced with)\s+([\w\s-]+)/i, entity: 'Expert Skill' },
-      { pattern: /(?:want to learn|interested in)\s+([\w\s-]+)/i, entity: 'Target Skill' },
-      { pattern: /(?:python|javascript|react|node|sql|aws|docker|kubernetes)/i, entity: 'Technical Skill' }
-    ];
-    
-    skillPatterns.forEach((pattern) => {
-      const match = originalContent.match(pattern.pattern);
-      if (match) {
-        const skillName = match[1] || match[0];
-        relationships.push({
-          id: `skill-${index}-${Math.random().toString(36).substr(2, 9)}`,
-          type: 'Skill Development',
-          from: 'User',
-          to: skillName.trim(),
-          strength: calculateSkillStrength(originalContent, skillName),
-          context: extractRelevantContext(originalContent, match[0]),
-          extractedAt: msg.timestamp || new Date().toISOString(),
-          category: 'skill',
-          proficiencyLevel: extractProficiencyLevel(originalContent),
-          sentiment: extractSentiment(originalContent, match[0])
-        });
+    // 3. Challenge → Solution Connections
+    const challengeSolutionPatterns = [
+      {
+        challenge: /(?:struggle with|difficult|problem|challenge)\s+([\w\s]+)/i,
+        solution: /(?:need to|should|going to|plan to)\s+([\w\s]+)/i,
+        connection: 'requires'
+      },
+      {
+        challenge: /(?:time management|work-life balance|stress)/i,
+        solution: /(?:delegate|prioritize|boundaries|schedule)/i,
+        connection: 'addressed by'
       }
-    });
-    
-    // 4. Goal & Aspiration Relationships
-    const goalPatterns = [
-      { pattern: /(?:want to|goal is to|hoping to)\s+([\w\s]+)/i, entity: 'Career Goal' },
-      { pattern: /(?:transition to|move into|become)\s+([\w\s]+)/i, entity: 'Career Transition' },
-      { pattern: /(?:improve|develop|build)\s+([\w\s]+(?:skills|abilities|knowledge))/i, entity: 'Development Goal' }
     ];
     
-    goalPatterns.forEach((pattern) => {
-      const match = originalContent.match(pattern.pattern);
-      if (match) {
+    challengeSolutionPatterns.forEach((pattern) => {
+      const challengeMatch = originalContent.match(pattern.challenge);
+      const solutionMatch = originalContent.match(pattern.solution);
+      
+      if (challengeMatch && solutionMatch) {
+        const challenge = challengeMatch[1]?.trim() || challengeMatch[0];
+        const solution = solutionMatch[1]?.trim() || solutionMatch[0];
+        
         relationships.push({
-          id: `goal-${index}-${Math.random().toString(36).substr(2, 9)}`,
-          type: 'Career Aspiration',
-          from: 'User',
-          to: match[1].trim(),
+          id: `challenge-solution-${index}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'Challenge-Solution Path',
+          from: challenge,
+          to: solution,
           strength: 0.8,
-          context: extractRelevantContext(originalContent, match[0]),
+          context: `Challenge with ${challenge} ${pattern.connection} ${solution}`,
           extractedAt: msg.timestamp || new Date().toISOString(),
-          category: 'goal',
-          timeframe: extractTimeframe(originalContent),
-          sentiment: 'positive'
+          category: 'solution',
+          connectionType: pattern.connection
+        });
+      }
+    });
+    
+    // 4. Experience → Insight Connections
+    const experienceInsightPatterns = [
+      {
+        experience: /(?:when I|experience|time I)\s+([\w\s]+)/i,
+        insight: /(?:learned|realized|discovered|understood)\s+([\w\s]+)/i,
+        connection: 'taught me'
+      },
+      {
+        experience: /(?:project|role|job|position)\s+([\w\s]*)/i,
+        insight: /(?:good at|strength|excel at|skilled in)\s+([\w\s]+)/i,
+        connection: 'revealed'
+      }
+    ];
+    
+    experienceInsightPatterns.forEach((pattern) => {
+      const experienceMatch = originalContent.match(pattern.experience);
+      const insightMatch = originalContent.match(pattern.insight);
+      
+      if (experienceMatch && insightMatch) {
+        const experience = experienceMatch[1]?.trim() || experienceMatch[0];
+        const insight = insightMatch[1]?.trim() || insightMatch[0];
+        
+        relationships.push({
+          id: `experience-insight-${index}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'Experience-Insight Map',
+          from: experience,
+          to: insight,
+          strength: 0.75,
+          context: `Experience with ${experience} ${pattern.connection} that ${insight}`,
+          extractedAt: msg.timestamp || new Date().toISOString(),
+          category: 'insight',
+          connectionType: pattern.connection
+        });
+      }
+    });
+    
+    // 5. Topic → Topic Semantic Connections
+    const topicConnections = [
+      { topics: ['travel', 'remote work'], connection: 'enables', strength: 0.9 },
+      { topics: ['leadership', 'management'], connection: 'includes', strength: 0.8 },
+      { topics: ['coding', 'problem solving'], connection: 'requires', strength: 0.7 },
+      { topics: ['networking', 'career growth'], connection: 'supports', strength: 0.8 },
+      { topics: ['learning', 'skill development'], connection: 'facilitates', strength: 0.9 }
+    ];
+    
+    topicConnections.forEach((conn) => {
+      const [topic1, topic2] = conn.topics;
+      if (content.includes(topic1) && content.includes(topic2)) {
+        relationships.push({
+          id: `topic-connection-${index}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'Semantic Connection',
+          from: topic1,
+          to: topic2,
+          strength: conn.strength,
+          context: `Discussion connects ${topic1} and ${topic2}`,
+          extractedAt: msg.timestamp || new Date().toISOString(),
+          category: 'semantic',
+          connectionType: conn.connection
         });
       }
     });
@@ -178,12 +244,12 @@ function extractRelationshipsFromContext(context: any) {
   
   // Remove duplicates and sort by strength
   const uniqueRelationships = relationships.filter((rel, index, self) => 
-    index === self.findIndex(r => r.to === rel.to && r.type === rel.type)
+    index === self.findIndex(r => r.from === rel.from && r.to === rel.to && r.type === rel.type)
   );
   
   return uniqueRelationships
     .sort((a, b) => b.strength - a.strength)
-    .slice(0, 8); // Increased limit for richer visualization
+    .slice(0, 8);
 }
 
 function calculateRelationshipStrength(content: string, entity: string): number {
