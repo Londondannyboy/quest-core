@@ -4,6 +4,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { getOrCreateUser, createConversation, addMessageToConversation } from '@/lib/db/users';
 import { aiClient, type CoachType } from '@/lib/ai-client';
+import { zepClient, type CoachingContext } from '@/lib/zep-client';
 
 /**
  * Determine appropriate coach type from user message content
@@ -52,16 +53,22 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { messages, session_id, user_id } = body;
         
+        // Get the last user message early for use in Zep context
+        const lastUserMessage = messages?.filter((m: any) => m.role === 'user').pop();
+        const userContent = lastUserMessage?.content || '';
+        
         console.log('[CLM] Request details:', { 
           messageCount: messages?.length, 
           session_id, 
           user_id,
+          userContent: userContent,
           messages: JSON.stringify(messages)
         });
 
         // Initialize user and conversation tracking
         let dbUser = null;
         let conversation = null;
+        let zepContext: CoachingContext | null = null;
         
         // Get authenticated user from Clerk
         try {
@@ -88,7 +95,34 @@ export async function POST(request: NextRequest) {
               email: dbUser?.email 
             });
             
-            // Create or get conversation
+            // Initialize user in Zep
+            try {
+              await zepClient.initializeUser(clerkUser.id, primaryEmail, fullName);
+              
+              // Create Zep session if needed
+              if (session_id) {
+                await zepClient.createSession(clerkUser.id, session_id, 'voice-coaching');
+              }
+              
+              // Get coaching context from Zep
+              zepContext = await zepClient.getCoachingContext(
+                clerkUser.id, 
+                userContent, 
+                session_id
+              );
+              
+              console.log('[CLM] Zep context retrieved:', {
+                relevantFacts: zepContext.relevantFacts.length,
+                hasTrinity: !!zepContext.trinity,
+                conversationHistory: zepContext.conversationHistory.length
+              });
+              
+            } catch (zepError) {
+              console.error('[CLM] Zep error:', zepError);
+              // Continue without Zep if there's an error
+            }
+            
+            // Create or get conversation in PostgreSQL
             if (session_id && dbUser) {
               conversation = await prisma.conversation.findUnique({
                 where: { sessionId: session_id }
@@ -100,26 +134,36 @@ export async function POST(request: NextRequest) {
             }
           } else {
             console.log('[CLM] No authenticated user found');
-            // For unauthenticated users, we could create a temporary user
-            // or require authentication - for now, we'll continue without DB
+            // For unauthenticated users, continue without user-specific context
           }
         } catch (error) {
           console.error('[CLM] Authentication/Database error:', error);
           // Continue without database if there's an error
         }
 
-        // Get the last user message
-        const lastUserMessage = messages?.filter((m: any) => m.role === 'user').pop();
-        const userContent = lastUserMessage?.content || '';
-        
         console.log('[CLM] User said:', userContent);
 
-        // Store user message in database if we have a conversation
-        if (conversation && userContent) {
-          try {
-            await addMessageToConversation(conversation.id, 'user', userContent);
-          } catch (error) {
-            console.error('[CLM] Failed to store user message:', error);
+        // Store user message in Zep and database
+        if (userContent) {
+          // Store in Zep for conversational memory
+          if (session_id && dbUser) {
+            try {
+              await zepClient.addMessage(session_id, 'user', userContent, {
+                coach: 'user-input',
+                timestamp: new Date().toISOString()
+              });
+            } catch (error) {
+              console.error('[CLM] Failed to store user message in Zep:', error);
+            }
+          }
+          
+          // Store in PostgreSQL database
+          if (conversation) {
+            try {
+              await addMessageToConversation(conversation.id, 'user', userContent);
+            } catch (error) {
+              console.error('[CLM] Failed to store user message in DB:', error);
+            }
           }
         }
 
@@ -127,20 +171,27 @@ export async function POST(request: NextRequest) {
         let responseText = '';
         let aiResponse;
         
+        // Determine coach type based on conversation content
+        const coachType = determineCoachType(userContent);
+        
         try {
-          // Build context from user data
+          // Build enhanced context from user data and Zep memory
           const context = {
             userName: dbUser?.name,
             hasProfile: !!dbUser,
-            hasTrinity: !!dbUser?.trinityCore,
+            hasTrinity: !!dbUser?.trinityCore || !!zepContext?.trinity,
             skillCount: dbUser?.userSkills?.length || 0,
             workExperienceCount: dbUser?.workExperiences?.length || 0,
-            isFirstMessage: !userContent || messages.length <= 2
+            isFirstMessage: !userContent || messages.length <= 2,
+            
+            // Zep-enhanced context
+            relevantMemories: zepContext?.relevantFacts || [],
+            conversationHistory: zepContext?.conversationHistory.slice(-3) || [], // Last 3 exchanges
+            trinity: zepContext?.trinity,
+            userInsights: zepContext?.insights || [],
+            hasMemoryContext: !!zepContext && zepContext.relevantFacts.length > 0
           };
 
-          // Determine coach type based on conversation content
-          const coachType = determineCoachType(userContent);
-          
           console.log('[CLM] 🚀 Using OpenRouter with coach:', coachType);
           
           // Generate response using OpenRouter
@@ -214,12 +265,29 @@ export async function POST(request: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalData)}\n\n`));
         controller.enqueue(encoder.encode('data: [DONE]\n\n'));
         
-        // Store assistant response in database if we have a conversation
-        if (conversation && responseText) {
-          try {
-            await addMessageToConversation(conversation.id, 'assistant', responseText);
-          } catch (error) {
-            console.error('[CLM] Failed to store assistant message:', error);
+        // Store assistant response in Zep and database
+        if (responseText) {
+          // Store in Zep for conversational memory
+          if (session_id && dbUser) {
+            try {
+              await zepClient.addMessage(session_id, 'assistant', responseText, {
+                coach: coachType,
+                model: aiResponse?.model || 'fallback',
+                cost: aiResponse?.cost || 0,
+                timestamp: new Date().toISOString()
+              });
+            } catch (error) {
+              console.error('[CLM] Failed to store assistant message in Zep:', error);
+            }
+          }
+          
+          // Store in PostgreSQL database
+          if (conversation) {
+            try {
+              await addMessageToConversation(conversation.id, 'assistant', responseText);
+            } catch (error) {
+              console.error('[CLM] Failed to store assistant message in DB:', error);
+            }
           }
         }
         

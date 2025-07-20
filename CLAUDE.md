@@ -63,23 +63,24 @@ Multi-coach system with specialized AI agents:
 ### **✅ Completed Features**
 - Complete user authentication with Clerk + database integration
 - Profile system with searchable companies, skills, institutions
+- Working Repo with access control, analytics, and token-based sharing
 - 3D visualization with React Force Graph
 - Voice coaching with Hume AI integration
 - Zero-approval auto-fix deployment system
 - MCP-Vercel integration for deployment monitoring
 
 ### **🚧 In Progress**
-- Zep integration for conversational memory
+- OpenRouter AI gateway integration for cost optimization
 - Multi-coach AI system implementation
-- thesys.dev generative UI integration
+- Zustand state management enhancement
 - Enhanced context engineering
 
 ### **📋 Next Priorities**
-1. Zep integration for persistent conversation memory
-2. Multi-coach orchestration system
-3. thesys.dev C1 API implementation for adaptive interfaces
-4. Neo4j integration for professional relationship intelligence
-5. Advanced Trinity system development
+1. OpenRouter integration for 40-60% cost reduction and model specialization
+2. Zep integration for persistent conversation memory
+3. Zustand state management for complex AI features
+4. thesys.dev C1 API implementation for adaptive interfaces
+5. Neo4j integration for professional relationship intelligence
 
 ## 🛠️ **Development Guidelines**
 
@@ -104,21 +105,203 @@ npx prisma db push       # Push schema changes
 npx prisma studio        # Database GUI
 ```
 
+## 🏗️ **Architecture Recommendations**
+
+### **State Management Strategy: Zustand**
+
+Quest Core uses Zustand for complex state management, particularly for AI features and multi-coach conversations.
+
+#### **Why Zustand for Quest Core**
+- **Lightweight**: ~2KB vs Redux's ~15KB bundle size
+- **TypeScript-first**: Excellent TypeScript support out of the box
+- **No boilerplate**: Direct state updates without actions/reducers
+- **React 18 compatible**: Works seamlessly with Suspense and concurrent features
+- **Perfect for AI features**: Ideal for coaching state, conversation management, and generative UI
+
+#### **Implementation Pattern**
+```typescript
+// stores/coaching-store.ts
+import { create } from 'zustand'
+
+interface CoachingState {
+  currentCoach: 'master' | 'career' | 'skills' | 'leadership' | 'network'
+  conversationHistory: Message[]
+  zepContext: ZepContext | null
+  generativeUI: GenerativeUIState | null
+  
+  // Actions
+  switchCoach: (coach: CoachType) => void
+  addMessage: (message: Message) => void
+  updateContext: (context: ZepContext) => void
+  updateGenerativeUI: (ui: GenerativeUIState) => void
+}
+
+export const useCoachingStore = create<CoachingState>((set) => ({
+  currentCoach: 'master',
+  conversationHistory: [],
+  zepContext: null,
+  generativeUI: null,
+  
+  switchCoach: (coach) => set({ currentCoach: coach }),
+  addMessage: (message) => set((state) => ({ 
+    conversationHistory: [...state.conversationHistory, message] 
+  })),
+  updateContext: (context) => set({ zepContext: context }),
+  updateGenerativeUI: (ui) => set({ generativeUI: ui })
+}))
+```
+
+#### **Usage in Components**
+```typescript
+// components/voice/CoachingInterface.tsx
+import { useCoachingStore } from '@/stores/coaching-store'
+
+export function CoachingInterface() {
+  const { currentCoach, switchCoach, conversationHistory } = useCoachingStore()
+  
+  return (
+    <div>
+      <CoachSelector current={currentCoach} onSwitch={switchCoach} />
+      <ConversationView messages={conversationHistory} />
+    </div>
+  )
+}
+```
+
+### **API-First Design Pattern**
+
+Quest Core follows an API-first architecture that separates concerns cleanly while enabling external service integration.
+
+#### **Service Layer Pattern**
+```typescript
+// lib/services/ai-orchestrator.ts
+export class AIOrchestrator {
+  constructor(
+    private openRouter: OpenRouterClient,
+    private zepClient: ZepClient,
+    private pocketFlow?: PocketFlowService
+  ) {}
+
+  async processCoachingSession(userId: string, message: string, coach: CoachType) {
+    // 1. Get contextual memory
+    const context = await this.zepClient.getContext(userId)
+    
+    // 2. Route to appropriate model via OpenRouter
+    const modelConfig = this.getModelForCoach(coach)
+    const response = await this.openRouter.chat(message, context, modelConfig)
+    
+    // 3. Optional: Enhance with PocketFlow experimental features
+    const enhanced = this.pocketFlow 
+      ? await this.pocketFlow.enhance(response)
+      : response
+    
+    // 4. Update memory
+    await this.zepClient.updateMemory(userId, enhanced)
+    
+    return enhanced
+  }
+  
+  private getModelForCoach(coach: CoachType): ModelConfig {
+    const modelMap = {
+      master: { model: 'openai/gpt-4-turbo', temperature: 0.7 },
+      career: { model: 'anthropic/claude-3-sonnet', temperature: 0.6 },
+      skills: { model: 'openai/gpt-4', temperature: 0.5 },
+      leadership: { model: 'google/gemini-pro', temperature: 0.7 },
+      network: { model: 'anthropic/claude-3-sonnet', temperature: 0.6 }
+    }
+    return modelMap[coach]
+  }
+}
+```
+
+#### **Integration in API Routes**
+```typescript
+// app/api/coaching/session/route.ts
+import { AIOrchestrator } from '@/lib/services/ai-orchestrator'
+
+const orchestrator = new AIOrchestrator(
+  openRouterClient,
+  zepClient,
+  pocketFlowService
+)
+
+export async function POST(request: NextRequest) {
+  const { userId, message, coach } = await request.json()
+  
+  const response = await orchestrator.processCoachingSession(userId, message, coach)
+  
+  return NextResponse.json({ response })
+}
+```
+
+### **Microservices Strategy: When NOT to Use Them**
+
+Quest Core deliberately avoids microservices architecture at current scale.
+
+#### **Current Architecture (Recommended)**
+```
+Quest Core Monolith (Next.js)
+├── Frontend (React/TypeScript)
+├── API Routes (Next.js serverless)
+├── Database (PostgreSQL)
+└── External Services
+    ├── OpenRouter (AI Gateway)
+    ├── Zep (Memory Management)
+    ├── Hume AI (Voice Processing)
+    └── PocketFlow (AI Experimentation)
+```
+
+#### **Why Monolith + External Services**
+1. **Team Size**: Small teams benefit from monolithic simplicity
+2. **Development Speed**: Faster iteration and debugging
+3. **Deployment Simplicity**: Single deployment pipeline
+4. **Current Scale**: Microservices complexity not justified
+5. **Language Flexibility**: Can still use Python for specialized AI services
+
+#### **External Service Integration Pattern**
+```typescript
+// lib/integrations/pocketflow-service.ts
+export class PocketFlowService {
+  async enhanceCoachingResponse(response: string, userContext: any) {
+    // Call external Python service for AI enhancement
+    const enhanced = await fetch('/api/pocketflow/enhance', {
+      method: 'POST',
+      body: JSON.stringify({ response, context: userContext })
+    })
+    return enhanced.json()
+  }
+}
+```
+
+### **Technology Integration Philosophy**
+
+#### **React + Node.js + External Services**
+- **Frontend**: React/TypeScript for sophisticated user interfaces
+- **Backend**: Node.js/Next.js for web APIs and business logic
+- **AI Services**: External Python services (PocketFlow) for specialized processing
+- **Data Layer**: PostgreSQL as single source of truth with specialized systems (Zep for memory)
+
+#### **Integration Benefits**
+- Best tool for each layer
+- Maintain development velocity
+- Enable specialized AI capabilities
+- Avoid premature architecture complexity
+
 ## 🔑 **Environment Variables**
 
 ### **Required Services**
-- **Database**: Neon PostgreSQL connection
-- **Authentication**: Clerk keys (public/secret)
-- **AI Gateway**: OpenRouter API key for multi-model access
-- **Voice AI**: Hume AI credentials for empathic voice processing
-- **Memory**: Zep API key and configuration
-- **Generative UI**: thesys.dev C1 API credentials
-- **Deployment**: Vercel integration
+- **Database**: Neon PostgreSQL connection ✅
+- **Authentication**: Clerk keys (public/secret) ✅
+- **AI Gateway**: OpenRouter API key for multi-model access ✅ **OPEN_ROUTER_API_KEY**
+- **Voice AI**: Hume AI credentials for empathic voice processing ✅
+- **Memory**: Zep API key and configuration (pending setup)
+- **Generative UI**: thesys.dev C1 API credentials (future)
+- **Deployment**: Vercel integration ✅
 
 ### **AI Gateway Configuration**
 ```env
 # OpenRouter for multi-model routing
-OPENROUTER_API_KEY=your_openrouter_key
+OPEN_ROUTER_API_KEY=your_openrouter_key  # ✅ Configured
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 
 # Model selection for different coaches
