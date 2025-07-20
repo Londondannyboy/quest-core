@@ -66,6 +66,9 @@ export function ZepRelationshipView({
       // Auto-refresh every 30 seconds during active session
       const interval = setInterval(fetchZepContext, 30000)
       return () => clearInterval(interval)
+    } else if (isVisible) {
+      // Show demo data if no session
+      setContextData(getDemoData())
     }
   }, [isVisible, sessionId, userId])
 
@@ -91,6 +94,54 @@ export function ZepRelationshipView({
       setIsLoading(false)
     }
   }
+
+  const getDemoData = (): ZepContextData => ({
+    relationships: [
+      {
+        id: 'rel-1',
+        type: 'Professional Relationship',
+        from: 'User',
+        to: 'Product Team',
+        strength: 0.9,
+        context: 'Discussed transitioning from marketing to product management role',
+        extractedAt: new Date().toISOString()
+      },
+      {
+        id: 'rel-2', 
+        type: 'Skill Development',
+        from: 'User',
+        to: 'Technical Skills',
+        strength: 0.7,
+        context: 'Mentioned need to learn product analytics and user research',
+        extractedAt: new Date().toISOString()
+      }
+    ],
+    insights: [
+      {
+        type: 'goal',
+        content: 'Career transition is a primary focus area',
+        confidence: 0.8,
+        timestamp: new Date().toISOString()
+      },
+      {
+        type: 'skill',
+        content: 'Active interest in product management skills',
+        confidence: 0.9,
+        timestamp: new Date().toISOString()
+      }
+    ],
+    trinityEvolution: {
+      quest: 'To transition into product management and build user-centered experiences',
+      service: 'Creating digital products that solve real user problems',
+      pledge: 'Learning one new PM skill each month and building side projects',
+      confidence: 0.75
+    },
+    conversationSummary: {
+      totalMessages: 8,
+      keyTopics: ['Career Transition', 'Product Management', 'Skills Development'],
+      emotionalTone: 'determined'
+    }
+  })
 
   if (!isVisible || !contextData) {
     return null

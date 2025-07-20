@@ -326,35 +326,40 @@ export function HumeVoiceInterface({
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Zep Memory Context */}
-            {showZepContext && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <Brain className="h-5 w-5 text-purple-600" />
-                      Memory & Context
-                    </span>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setShowZepContext(false)}
-                    >
-                      <EyeOff className="h-4 w-4" />
-                    </Button>
-                  </CardTitle>
-                  <CardDescription>
-                    Live insights from your conversation
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Brain className="h-5 w-5 text-purple-600" />
+                    Memory & Context
+                  </span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowZepContext(!showZepContext)}
+                  >
+                    {showZepContext ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </CardTitle>
+                <CardDescription>
+                  {isConnected ? 'Live insights from your conversation' : 'Connect to see memory insights'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {showZepContext ? (
                   <ZepRelationshipView
-                    sessionId={`voice-session-${Date.now()}`} // Generate session ID
-                    userId="current-user" // Would get from auth context
-                    isVisible={showZepContext && isConnected}
+                    sessionId={`voice-session-${Date.now()}`}
+                    userId="demo-user"
+                    isVisible={true}
                   />
-                </CardContent>
-              </Card>
-            )}
+                ) : (
+                  <div className="text-center py-4 text-slate-500">
+                    <Brain className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Click the eye icon to show memory context</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Emotional State */}
             <Card>

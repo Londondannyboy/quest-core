@@ -99,6 +99,29 @@ export default function ZepDemoPage() {
     }
   }
 
+  const runSimpleTest = async () => {
+    setIsRunning(true)
+    try {
+      const response = await fetch('/api/simple-zep-test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      })
+      
+      const data = await response.json()
+      if (data.status === 'success') {
+        alert(`Simple Test SUCCESS!\nUser: ${data.testData.userId}\nSession: ${data.testData.sessionId}\nMessages: ${data.testData.contextSample.conversationHistory}`)
+      } else {
+        alert(`Simple Test FAILED: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Simple test error:', error)
+      alert('Simple test failed - check console')
+    } finally {
+      setIsRunning(false)
+    }
+  }
+
   const runDemo = async (reset = false) => {
     setIsRunning(true)
     try {
@@ -181,6 +204,16 @@ export default function ZepDemoPage() {
             >
               <CheckCircle className="h-4 w-4" />
               Test Zep Connection
+            </Button>
+            
+            <Button 
+              onClick={() => runSimpleTest()}
+              disabled={isRunning}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Brain className="h-4 w-4" />
+              Simple Memory Test
             </Button>
             
             <Button 
