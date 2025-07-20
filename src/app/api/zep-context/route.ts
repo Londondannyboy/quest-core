@@ -67,46 +67,203 @@ function extractRelationshipsFromContext(context: any) {
   
   userMessages.forEach((msg: any, index: number) => {
     const content = msg.content.toLowerCase();
+    const originalContent = msg.content;
     
-    // Look for mentions of people, companies, skills
-    if (content.includes('team') || content.includes('manager') || content.includes('colleague')) {
-      relationships.push({
-        id: `rel-${index}`,
-        type: 'Professional Relationship',
-        from: 'User',
-        to: 'Team/Manager',
-        strength: 0.8,
-        context: msg.content.substring(0, 100) + '...',
-        extractedAt: msg.timestamp || new Date().toISOString()
-      });
-    }
+    // Enhanced relationship extraction patterns
     
-    if (content.includes('company') || content.includes('organization')) {
-      relationships.push({
-        id: `org-${index}`,
-        type: 'Organization',
-        from: 'User',
-        to: 'Current Company',
-        strength: 0.9,
-        context: msg.content.substring(0, 100) + '...',
-        extractedAt: msg.timestamp || new Date().toISOString()
-      });
-    }
+    // 1. Professional Relationships (People)
+    const peoplePatterns = [
+      { pattern: /(?:my|the|our)\s+(manager|boss|supervisor)/i, entity: 'Manager' },
+      { pattern: /(?:my|the|our)\s+(team|teammates|colleagues)/i, entity: 'Team Members' },
+      { pattern: /(?:working with|collaborated with|partner)\s+([A-Z][a-z]+)/i, entity: 'Collaborator' },
+      { pattern: /(?:mentor|coach|advisor)\s+([A-Z][a-z]+)?/i, entity: 'Mentor' },
+      { pattern: /(?:client|customer)\s+([A-Z][a-z]+)?/i, entity: 'Client' }
+    ];
     
-    if (content.includes('skill') || content.includes('technology') || content.includes('programming')) {
-      relationships.push({
-        id: `skill-${index}`,
-        type: 'Skill Development',
-        from: 'User',
-        to: 'Technical Skills',
-        strength: 0.7,
-        context: msg.content.substring(0, 100) + '...',
-        extractedAt: msg.timestamp || new Date().toISOString()
-      });
-    }
+    peoplePatterns.forEach((pattern) => {
+      const match = originalContent.match(pattern.pattern);
+      if (match) {
+        const entityName = match[1] || pattern.entity;
+        relationships.push({
+          id: `person-${index}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'Professional Relationship',
+          from: 'User',
+          to: entityName.charAt(0).toUpperCase() + entityName.slice(1),
+          strength: calculateRelationshipStrength(originalContent, pattern.entity),
+          context: extractRelevantContext(originalContent, match[0]),
+          extractedAt: msg.timestamp || new Date().toISOString(),
+          category: 'person',
+          sentiment: extractSentiment(originalContent, match[0])
+        });
+      }
+    });
+    
+    // 2. Organization Relationships
+    const orgPatterns = [
+      { pattern: /(?:at|work at|employed by)\s+([A-Z][A-Za-z\s&]+(?:Inc|LLC|Corp|Company|Ltd)?)/i, entity: 'Current Company' },
+      { pattern: /(?:previous|former|used to work at)\s+([A-Z][A-Za-z\s&]+)/i, entity: 'Previous Company' },
+      { pattern: /(?:startup|company|organization)\s+([A-Z][A-Za-z\s&]+)/i, entity: 'Organization' },
+      { pattern: /(?:university|college|school)\s+([A-Z][A-Za-z\s&]+)/i, entity: 'Educational Institution' }
+    ];
+    
+    orgPatterns.forEach((pattern) => {
+      const match = originalContent.match(pattern.pattern);
+      if (match) {
+        relationships.push({
+          id: `org-${index}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'Organization',
+          from: 'User',
+          to: match[1].trim(),
+          strength: 0.9,
+          context: extractRelevantContext(originalContent, match[0]),
+          extractedAt: msg.timestamp || new Date().toISOString(),
+          category: 'organization',
+          sentiment: extractSentiment(originalContent, match[0])
+        });
+      }
+    });
+    
+    // 3. Skill & Technology Relationships
+    const skillPatterns = [
+      { pattern: /(?:learning|studying|mastering)\s+([\w\s-]+(?:programming|development|management|design|analytics))/i, entity: 'Learning Skill' },
+      { pattern: /(?:expert in|skilled at|experienced with)\s+([\w\s-]+)/i, entity: 'Expert Skill' },
+      { pattern: /(?:want to learn|interested in)\s+([\w\s-]+)/i, entity: 'Target Skill' },
+      { pattern: /(?:python|javascript|react|node|sql|aws|docker|kubernetes)/i, entity: 'Technical Skill' }
+    ];
+    
+    skillPatterns.forEach((pattern) => {
+      const match = originalContent.match(pattern.pattern);
+      if (match) {
+        const skillName = match[1] || match[0];
+        relationships.push({
+          id: `skill-${index}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'Skill Development',
+          from: 'User',
+          to: skillName.trim(),
+          strength: calculateSkillStrength(originalContent, skillName),
+          context: extractRelevantContext(originalContent, match[0]),
+          extractedAt: msg.timestamp || new Date().toISOString(),
+          category: 'skill',
+          proficiencyLevel: extractProficiencyLevel(originalContent),
+          sentiment: extractSentiment(originalContent, match[0])
+        });
+      }
+    });
+    
+    // 4. Goal & Aspiration Relationships
+    const goalPatterns = [
+      { pattern: /(?:want to|goal is to|hoping to)\s+([\w\s]+)/i, entity: 'Career Goal' },
+      { pattern: /(?:transition to|move into|become)\s+([\w\s]+)/i, entity: 'Career Transition' },
+      { pattern: /(?:improve|develop|build)\s+([\w\s]+(?:skills|abilities|knowledge))/i, entity: 'Development Goal' }
+    ];
+    
+    goalPatterns.forEach((pattern) => {
+      const match = originalContent.match(pattern.pattern);
+      if (match) {
+        relationships.push({
+          id: `goal-${index}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'Career Aspiration',
+          from: 'User',
+          to: match[1].trim(),
+          strength: 0.8,
+          context: extractRelevantContext(originalContent, match[0]),
+          extractedAt: msg.timestamp || new Date().toISOString(),
+          category: 'goal',
+          timeframe: extractTimeframe(originalContent),
+          sentiment: 'positive'
+        });
+      }
+    });
   });
   
-  return relationships.slice(0, 5); // Limit to top 5
+  // Remove duplicates and sort by strength
+  const uniqueRelationships = relationships.filter((rel, index, self) => 
+    index === self.findIndex(r => r.to === rel.to && r.type === rel.type)
+  );
+  
+  return uniqueRelationships
+    .sort((a, b) => b.strength - a.strength)
+    .slice(0, 8); // Increased limit for richer visualization
+}
+
+function calculateRelationshipStrength(content: string, entity: string): number {
+  const positiveWords = ['great', 'excellent', 'amazing', 'supportive', 'helpful', 'mentor'];
+  const negativeWords = ['difficult', 'challenging', 'problematic', 'toxic'];
+  const neutralWords = ['working', 'collaborate', 'team', 'together'];
+  
+  const lowerContent = content.toLowerCase();
+  
+  let score = 0.6; // Base strength
+  
+  positiveWords.forEach(word => {
+    if (lowerContent.includes(word)) score += 0.15;
+  });
+  
+  negativeWords.forEach(word => {
+    if (lowerContent.includes(word)) score -= 0.2;
+  });
+  
+  neutralWords.forEach(word => {
+    if (lowerContent.includes(word)) score += 0.05;
+  });
+  
+  return Math.min(Math.max(score, 0.1), 1.0);
+}
+
+function calculateSkillStrength(content: string, skill: string): number {
+  const expertWords = ['expert', 'proficient', 'experienced', 'advanced'];
+  const learningWords = ['learning', 'studying', 'beginner', 'new to'];
+  
+  const lowerContent = content.toLowerCase();
+  
+  if (expertWords.some(word => lowerContent.includes(word))) return 0.9;
+  if (learningWords.some(word => lowerContent.includes(word))) return 0.4;
+  
+  return 0.6; // Default intermediate level
+}
+
+function extractRelevantContext(content: string, match: string): string {
+  const sentences = content.split(/[.!?]/);
+  const relevantSentence = sentences.find(sentence => sentence.includes(match));
+  return relevantSentence ? relevantSentence.trim() : content.substring(0, 120) + '...';
+}
+
+function extractSentiment(content: string, context: string): 'positive' | 'negative' | 'neutral' {
+  const positiveWords = ['love', 'enjoy', 'excited', 'great', 'excellent', 'amazing'];
+  const negativeWords = ['hate', 'dislike', 'struggle', 'difficult', 'challenging', 'frustrated'];
+  
+  const contextLower = context.toLowerCase();
+  
+  if (positiveWords.some(word => contextLower.includes(word))) return 'positive';
+  if (negativeWords.some(word => contextLower.includes(word))) return 'negative';
+  
+  return 'neutral';
+}
+
+function extractProficiencyLevel(content: string): 'beginner' | 'intermediate' | 'advanced' | 'expert' {
+  const lowerContent = content.toLowerCase();
+  
+  if (lowerContent.includes('expert') || lowerContent.includes('proficient')) return 'expert';
+  if (lowerContent.includes('advanced') || lowerContent.includes('experienced')) return 'advanced';
+  if (lowerContent.includes('beginner') || lowerContent.includes('new to')) return 'beginner';
+  
+  return 'intermediate';
+}
+
+function extractTimeframe(content: string): string {
+  const timeframes = [
+    { pattern: /(\d+)\s+(month|year)s?/i, format: (match: RegExpMatchArray) => `${match[1]} ${match[2]}s` },
+    { pattern: /(short|long)\s+term/i, format: (match: RegExpMatchArray) => `${match[1]} term` },
+    { pattern: /(soon|immediately|asap)/i, format: () => 'immediate' },
+    { pattern: /(eventually|someday|future)/i, format: () => 'long term' }
+  ];
+  
+  for (const timeframe of timeframes) {
+    const match = content.match(timeframe.pattern);
+    if (match) return timeframe.format(match);
+  }
+  
+  return 'unspecified';
 }
 
 function extractInsightsFromContext(context: any) {
