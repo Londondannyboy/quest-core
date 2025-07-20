@@ -81,55 +81,42 @@ export function ZepRelationshipView({
   }, [isVisible, sessionId, userId])
 
   const fetchZepContext = async () => {
+    if (!sessionId || !userId) return
+    
     setIsLoading(true)
     try {
-      // First, get the latest demo session data
-      const sessionResponse = await fetch('/api/zep-sessions', {
+      // Use live context endpoint that analyzes real conversation data
+      const response = await fetch('/api/live-context', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get-latest-demo-session' })
+        body: JSON.stringify({ sessionId, userId })
       })
       
-      if (sessionResponse.ok) {
-        const sessionData = await sessionResponse.json()
+      if (response.ok) {
+        const data = await response.json()
         
-        if (sessionData.status === 'success' && sessionData.sessionData) {
-          // Convert Zep context to our format
-          const zepContext = sessionData.sessionData.context
+        if (data.context) {
           const adaptedContext: ZepContextData = {
-            relationships: zepContext.relationships || [],
-            insights: zepContext.insights?.map((insight: string) => ({
-              type: 'goal' as const,
-              content: insight,
-              confidence: 0.8,
-              timestamp: new Date().toISOString()
-            })) || [],
-            trinityEvolution: {
-              quest: zepContext.trinity?.quest,
-              service: zepContext.trinity?.service,
-              pledge: zepContext.trinity?.pledge,
-              confidence: zepContext.trinity?.confidence || 0.75
-            },
-            conversationSummary: {
-              totalMessages: zepContext.conversationHistory?.length || 0,
-              keyTopics: ['Career Transition', 'Product Management', 'Skills Development'],
-              emotionalTone: 'determined'
+            relationships: data.context.relationships || [],
+            insights: data.context.insights || [],
+            trinityEvolution: data.context.trinityEvolution || { confidence: 0 },
+            conversationSummary: data.context.conversationSummary || {
+              totalMessages: 0,
+              keyTopics: [],
+              emotionalTone: 'neutral'
             }
           }
           
           setContextData(adaptedContext)
           setLastUpdated(new Date())
         } else {
-          // Fallback to demo data if no real session found
           setContextData(getDemoData())
         }
       } else {
-        // Fallback to demo data on error
         setContextData(getDemoData())
       }
     } catch (error) {
-      console.error('Failed to fetch Zep context:', error)
-      // Fallback to demo data on error
+      console.error('Failed to fetch live context:', error)
       setContextData(getDemoData())
     } finally {
       setIsLoading(false)

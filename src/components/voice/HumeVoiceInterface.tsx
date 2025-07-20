@@ -52,6 +52,7 @@ export function HumeVoiceInterface({
   const [sessionDuration, setSessionDuration] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
   const [showZepContext, setShowZepContext] = useState(true)
+  const [sessionId] = useState(`voice-session-${Date.now()}`) // Generate consistent session ID
   const audioRef = useRef<HTMLAudioElement>(null)
 
   // Track session duration
@@ -348,8 +349,8 @@ export function HumeVoiceInterface({
               <CardContent>
                 {showZepContext ? (
                   <ZepRelationshipView
-                    sessionId={`voice-session-${sessionDuration}`}
-                    userId={`voice-user-${sessionType}`}
+                    sessionId={sessionId}
+                    userId="current-user"
                     isVisible={true}
                   />
                 ) : (
