@@ -102,14 +102,44 @@ export function ZepRelationshipView({
           setContextData(adaptedContext)
           setLastUpdated(new Date())
         } else {
-          setContextData(getDemoData())
+          // No context data available
+          setContextData({
+            relationships: [],
+            insights: [],
+            trinityEvolution: { confidence: 0 },
+            conversationSummary: {
+              totalMessages: 0,
+              keyTopics: [],
+              emotionalTone: 'neutral'
+            }
+          })
         }
       } else {
-        setContextData(getDemoData())
+        // API error - show empty state
+        setContextData({
+          relationships: [],
+          insights: [],
+          trinityEvolution: { confidence: 0 },
+          conversationSummary: {
+            totalMessages: 0,
+            keyTopics: [],
+            emotionalTone: 'neutral'
+          }
+        })
       }
     } catch (error) {
       console.error('Failed to fetch live context:', error)
-      setContextData(getDemoData())
+      // Error state - show empty rather than misleading demo data
+      setContextData({
+        relationships: [],
+        insights: [],
+        trinityEvolution: { confidence: 0 },
+        conversationSummary: {
+          totalMessages: 0,
+          keyTopics: [],
+          emotionalTone: 'neutral'
+        }
+      })
     } finally {
       setIsLoading(false)
     }
@@ -122,8 +152,17 @@ export function ZepRelationshipView({
       const interval = setInterval(fetchZepContext, 30000)
       return () => clearInterval(interval)
     } else if (isVisible) {
-      // Show demo data if no session
-      setContextData(getDemoData())
+      // Show empty state if no session - don't show misleading demo data
+      setContextData({
+        relationships: [],
+        insights: [],
+        trinityEvolution: { confidence: 0 },
+        conversationSummary: {
+          totalMessages: 0,
+          keyTopics: [],
+          emotionalTone: 'neutral'
+        }
+      })
     }
   }, [isVisible, sessionId, userId, fetchZepContext])
 
@@ -237,7 +276,7 @@ export function ZepRelationshipView({
       )}
 
       {/* Network Visualization */}
-      {contextData.relationships.length > 0 && (
+      {contextData.relationships.length > 0 ? (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -278,6 +317,25 @@ export function ZepRelationshipView({
                 </div>
                 <div className="text-slate-600">Solutions</div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Network className="h-4 w-4 text-purple-600" />
+              Contextual Connections
+            </CardTitle>
+            <CardDescription className="text-xs">
+              How your interests, goals, and experiences interconnect
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-slate-500">
+              <Network className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <p className="text-sm font-medium mb-1">No connections detected yet</p>
+              <p className="text-xs">Start a voice conversation to see contextual relationships emerge</p>
             </div>
           </CardContent>
         </Card>

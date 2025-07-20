@@ -155,74 +155,25 @@ export async function POST(request: NextRequest) {
     });
     
     if (recentMessages.length === 0) {
-      // Return demo relationships for testing (matches "football, Spain, holiday" conversation)
-      const demoRelationships = [
-        {
-          id: 'demo-1',
-          type: 'Interest-Goal Connection',
-          from: 'football',
-          to: 'Spain holiday',
-          strength: 0.9,
-          context: 'Love of football drives goal of Spain holiday',
-          extractedAt: new Date().toISOString(),
-          category: 'connection',
-          connectionType: 'drives'
-        },
-        {
-          id: 'demo-2',
-          type: 'Cultural Connection',
-          from: 'Spain',
-          to: 'holiday',
-          strength: 0.8,
-          context: 'Spain connects to holiday planning',
-          extractedAt: new Date().toISOString(),
-          category: 'semantic',
-          connectionType: 'enables'
-        },
-        {
-          id: 'demo-3',
-          type: 'Topic Association',
-          from: 'football',
-          to: 'Spain',
-          strength: 0.85,
-          context: 'Football and Spain frequently co-occur in conversation',
-          extractedAt: new Date().toISOString(),
-          category: 'semantic',
-          connectionType: 'co-occurs with'
-        }
-      ];
-      
+      // No conversation data available - return empty state instead of misleading demo data
       return NextResponse.json({
         context: {
-          relationships: demoRelationships,
-          insights: [
-            {
-              type: 'goal',
-              content: 'Football passion inspiring Spain holiday plans',
-              confidence: 0.9,
-              timestamp: new Date().toISOString()
-            },
-            {
-              type: 'growth',
-              content: 'Cultural interests emerging through sports enthusiasm',
-              confidence: 0.8,
-              timestamp: new Date().toISOString()
-            }
-          ],
-          trinityEvolution: {
-            quest: 'Exploring Spain through football passion',
-            service: 'Sharing love for football and Spanish culture', 
-            pledge: 'Planning meaningful holiday to Spain',
-            confidence: 0.7
-          },
+          relationships: [],
+          insights: [],
+          trinityEvolution: { confidence: 0 },
           conversationSummary: {
             totalMessages: 0,
-            keyTopics: ['Football', 'Spain', 'Holiday'],
-            emotionalTone: 'enthusiastic'
+            keyTopics: [],
+            emotionalTone: 'neutral'
           }
         }
       });
     }
+    
+    // Legacy demo code for reference (remove after real data works)
+    /*
+      const demoRelationships = [
+    */
     
     // Extract conversation content for analysis
     const conversationContent = recentMessages.map(msg => msg.content);
