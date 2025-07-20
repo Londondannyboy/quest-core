@@ -33,8 +33,11 @@ export async function GET(request: NextRequest) {
     await zepClient.addMessage(testSessionId, 'assistant', 'That sounds exciting! Football is popular in Spain. What draws you to Spanish football culture?');
     console.log('[Zep Test] Assistant message added successfully');
     
-    // Test context retrieval
-    const context = await zepClient.getCoachingContext(userId, 'Tell me more about your interests', testSessionId);
+    // Wait a moment for Zep to process
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Test context retrieval with the football/Spain query
+    const context = await zepClient.getCoachingContext(userId, 'football spain', testSessionId);
     console.log('[Zep Test] Context retrieved:', {
       relevantFactsCount: context.relevantFacts.length,
       conversationHistoryCount: context.conversationHistory.length,

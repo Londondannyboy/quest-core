@@ -137,6 +137,40 @@ export class QuestZepClient {
   }
 
   /**
+   * Extract key phrases from conversation content for fact extraction
+   */
+  private extractKeyPhrasesFromContent(content: string): string[] {
+    const phrases: string[] = [];
+    const text = content.toLowerCase();
+    
+    // Extract interests
+    const interestMatches = text.match(/(?:love|enjoy|passionate about|interested in|like|awesome|amazing)\s+([^.!?]+)/g);
+    if (interestMatches) {
+      phrases.push(...interestMatches.map(match => `User ${match.trim()}`));
+    }
+    
+    // Extract goals and plans
+    const goalMatches = text.match(/(?:want to|planning to|going to|dream of|hope to)\s+([^.!?]+)/g);
+    if (goalMatches) {
+      phrases.push(...goalMatches.map(match => `User ${match.trim()}`));
+    }
+    
+    // Extract locations and places
+    const locationMatches = text.match(/\b(spain|spanish|madrid|barcelona|europe|travel|holiday|vacation|visit)\b/g);
+    if (locationMatches) {
+      phrases.push(...locationMatches.map(loc => `User mentioned ${loc}`));
+    }
+    
+    // Extract activities and sports
+    const activityMatches = text.match(/\b(football|soccer|sports|match|team|play|game)\b/g);
+    if (activityMatches) {
+      phrases.push(...activityMatches.map(activity => `User interested in ${activity}`));
+    }
+    
+    return [...new Set(phrases)].slice(0, 10); // Remove duplicates and limit
+  }
+
+  /**
    * Get coaching context for a user session
    */
   async getCoachingContext(
@@ -166,10 +200,35 @@ export class QuestZepClient {
       // Extract user preferences and insights
       const userSummary = await this.getUserSummary(userId);
 
+      // Get relevant facts from Zep memory
+      let relevantFacts: string[] = [];
+      if (sessionId) {
+        try {
+          // Get session memory which may include extracted insights
+          const memory = await this.zep.memory.get(sessionId);
+          if (memory?.summary?.content) {
+            relevantFacts.push(memory.summary.content);
+          }
+          
+          // For now, skip search since API is unclear - focus on conversation content
+          console.log('[Zep] Memory retrieved, summary:', memory?.summary?.content || 'none yet');
+          
+          // Fallback: extract key phrases from recent conversation
+          if (relevantFacts.length === 0 && conversationHistory.length > 0) {
+            const recentContent = conversationHistory.slice(-3).map(msg => msg.content).join(' ');
+            relevantFacts = this.extractKeyPhrasesFromContent(recentContent);
+          }
+        } catch (error) {
+          console.log('[Zep] Could not retrieve facts, using conversation content:', error);
+          // Fallback: use recent conversation content as facts
+          relevantFacts = conversationHistory.slice(-2).map(msg => msg.content);
+        }
+      }
+
       return {
         sessionId: sessionId || 'new-session',
         userId,
-        relevantFacts: [], // Will implement search later
+        relevantFacts,
         trinity: this.extractTrinityFromSummary(userSummary),
         userPreferences: userSummary?.metadata || {},
         conversationHistory,
