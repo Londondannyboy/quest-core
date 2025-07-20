@@ -18,7 +18,8 @@ import {
   AlertCircle,
   CheckCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  Network
 } from 'lucide-react'
 import { ZepRelationshipView } from './ZepRelationshipView'
 
@@ -52,7 +53,9 @@ export function HumeVoiceInterface({
   const [sessionDuration, setSessionDuration] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
   const [showZepContext, setShowZepContext] = useState(true)
+  const [showBottomGraph, setShowBottomGraph] = useState(true)
   const [sessionId] = useState(`voice-session-${Date.now()}`) // Generate consistent session ID
+  const [lastMessageCount, setLastMessageCount] = useState(0)
   const audioRef = useRef<HTMLAudioElement>(null)
 
   // Track session duration
@@ -84,6 +87,9 @@ export function HumeVoiceInterface({
       if (lastMessage.type === 'user_message') {
         updateEmotionalState(lastMessage.message.content || '')
       }
+      
+      // Trigger graph refresh after each exchange
+      setLastMessageCount(prev => prev + 1)
     }
     
     // Handle errors
@@ -439,6 +445,48 @@ export function HumeVoiceInterface({
             </Card>
           </div>
         </div>
+
+        {/* Bottom Contextual Graph Panel */}
+        {showBottomGraph && (
+          <div className="mt-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Network className="h-5 w-5 text-purple-600" />
+                    Live Contextual Relationships
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      Updates after each exchange
+                    </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setShowBottomGraph(!showBottomGraph)}
+                    >
+                      <EyeOff className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <CardDescription>
+                  See how your conversation topics connect in real-time - like "football" linking to "Spain holiday"
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="w-full bg-slate-50 rounded-lg p-4">
+                  <ZepRelationshipView
+                    sessionId={sessionId}
+                    userId="current-user"
+                    isVisible={true}
+                    refreshTrigger={lastMessageCount}
+                    fullWidth={true}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   )

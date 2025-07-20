@@ -57,12 +57,16 @@ interface ZepRelationshipViewProps {
   sessionId?: string
   userId?: string
   isVisible: boolean
+  refreshTrigger?: number
+  fullWidth?: boolean
 }
 
 export function ZepRelationshipView({ 
   sessionId, 
   userId, 
-  isVisible 
+  isVisible,
+  refreshTrigger,
+  fullWidth = false
 }: ZepRelationshipViewProps) {
   const [contextData, setContextData] = useState<ZepContextData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -79,6 +83,13 @@ export function ZepRelationshipView({
       setContextData(getDemoData())
     }
   }, [isVisible, sessionId, userId])
+
+  // Refresh when conversation changes (real-time updates)
+  useEffect(() => {
+    if (isVisible && refreshTrigger !== undefined && refreshTrigger > 0) {
+      fetchZepContext()
+    }
+  }, [refreshTrigger])
 
   const fetchZepContext = async () => {
     if (!sessionId || !userId) return
@@ -176,20 +187,22 @@ export function ZepRelationshipView({
   }
 
   return (
-    <div className="space-y-4 max-h-96 overflow-y-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Brain className="h-5 w-5 text-purple-600" />
-          Memory Context
-        </h3>
-        {lastUpdated && (
-          <div className="flex items-center gap-1 text-xs text-slate-500">
-            <Clock className="h-3 w-3" />
-            {lastUpdated.toLocaleTimeString()}
-          </div>
-        )}
-      </div>
+    <div className={`space-y-4 ${fullWidth ? 'max-h-none' : 'max-h-96'} overflow-y-auto`}>
+      {/* Header - only show in sidebar mode */}
+      {!fullWidth && (
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Brain className="h-5 w-5 text-purple-600" />
+            Memory Context
+          </h3>
+          {lastUpdated && (
+            <div className="flex items-center gap-1 text-xs text-slate-500">
+              <Clock className="h-3 w-3" />
+              {lastUpdated.toLocaleTimeString()}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Trinity Evolution */}
       {contextData.trinityEvolution.confidence > 0.5 && (
@@ -240,8 +253,8 @@ export function ZepRelationshipView({
             <div className="mb-4 w-full">
               <ProfessionalNetworkMini 
                 relationships={contextData.relationships}
-                width={320}
-                height={220}
+                width={fullWidth ? 800 : 320}
+                height={fullWidth ? 400 : 220}
               />
             </div>
 
