@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { 
@@ -82,16 +82,16 @@ export function ZepRelationshipView({
       // Show demo data if no session
       setContextData(getDemoData())
     }
-  }, [isVisible, sessionId, userId])
+  }, [isVisible, sessionId, userId, fetchZepContext])
 
   // Refresh when conversation changes (real-time updates)
   useEffect(() => {
     if (isVisible && refreshTrigger !== undefined && refreshTrigger > 0) {
       fetchZepContext()
     }
-  }, [refreshTrigger])
+  }, [refreshTrigger, isVisible, fetchZepContext])
 
-  const fetchZepContext = async () => {
+  const fetchZepContext = useCallback(async () => {
     if (!sessionId || !userId) return
     
     setIsLoading(true)
@@ -132,7 +132,7 @@ export function ZepRelationshipView({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [sessionId, userId])
 
   const getDemoData = (): ZepContextData => ({
     relationships: [

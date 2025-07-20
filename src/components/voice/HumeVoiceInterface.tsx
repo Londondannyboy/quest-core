@@ -470,7 +470,7 @@ export function HumeVoiceInterface({
                   </div>
                 </div>
                 <CardDescription>
-                  See how your conversation topics connect in real-time - like "football" linking to "Spain holiday"
+                  See how your conversation topics connect in real-time - like &quot;football&quot; linking to &quot;Spain holiday&quot;
                 </CardDescription>
               </CardHeader>
               <CardContent>
