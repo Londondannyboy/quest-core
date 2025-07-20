@@ -3,6 +3,43 @@ import { auth } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { getOrCreateUser, createConversation, addMessageToConversation } from '@/lib/db/users';
+import { aiClient, type CoachType } from '@/lib/ai-client';
+
+/**
+ * Determine appropriate coach type from user message content
+ */
+function determineCoachType(message: string): CoachType {
+  if (!message) return 'master';
+  
+  const content = message.toLowerCase();
+  
+  // Career-focused keywords
+  if (content.includes('career') || content.includes('job') || content.includes('role') || 
+      content.includes('promotion') || content.includes('transition') || content.includes('industry')) {
+    return 'career';
+  }
+  
+  // Skills-focused keywords
+  if (content.includes('skill') || content.includes('learn') || content.includes('training') || 
+      content.includes('certification') || content.includes('technical') || content.includes('programming')) {
+    return 'skills';
+  }
+  
+  // Leadership-focused keywords
+  if (content.includes('leadership') || content.includes('manage') || content.includes('team') || 
+      content.includes('mentor') || content.includes('communication') || content.includes('feedback')) {
+    return 'leadership';
+  }
+  
+  // Network-focused keywords
+  if (content.includes('network') || content.includes('relationship') || content.includes('connect') || 
+      content.includes('referral') || content.includes('contact') || content.includes('interview')) {
+    return 'network';
+  }
+  
+  // Default to master coach for orchestration
+  return 'master';
+}
 
 export async function POST(request: NextRequest) {
   console.log('[CLM] Received request from Hume');
@@ -86,31 +123,53 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Generate contextual response based on user data
+        // Generate AI response using OpenRouter
         let responseText = '';
+        let aiResponse;
         
-        if (!userContent || messages.length <= 2) {
-          const userName = dbUser?.name ? `, ${dbUser.name}` : '';
-          responseText = `Hello${userName}! I'm Quest Coach. I'm here to help you explore your professional identity. What brings you here today?`;
-        } else if (userContent.toLowerCase().includes('hello') || userContent.toLowerCase().includes('hi')) {
-          responseText = "Great to meet you! I'd love to learn more about your professional journey. What aspect of your career would you like to explore?";
-        } else if (userContent.toLowerCase().includes('trinity')) {
-          // Check if user has Trinity core
-          const hasTrinity = dbUser?.trinityCore !== null;
-          if (hasTrinity) {
-            responseText = "I see you've already started working on your Trinity. Would you like to review your current statements or explore them deeper?";
+        try {
+          // Build context from user data
+          const context = {
+            userName: dbUser?.name,
+            hasProfile: !!dbUser,
+            hasTrinity: !!dbUser?.trinityCore,
+            skillCount: dbUser?.userSkills?.length || 0,
+            workExperienceCount: dbUser?.workExperiences?.length || 0,
+            isFirstMessage: !userContent || messages.length <= 2
+          };
+
+          // Determine coach type based on conversation content
+          const coachType = determineCoachType(userContent);
+          
+          // Generate response using OpenRouter
+          aiResponse = await aiClient.generateResponse({
+            sessionId: session_id || `session-${Date.now()}`,
+            userId: dbUser?.id || 'anonymous',
+            coach: coachType,
+            message: userContent,
+            context
+          });
+          
+          responseText = aiResponse.content;
+          
+          console.log('[CLM] OpenRouter response:', {
+            coach: coachType,
+            model: aiResponse.model,
+            cost: aiResponse.cost,
+            tokens: aiResponse.tokensUsed,
+            responseTime: aiResponse.responseTime
+          });
+          
+        } catch (error) {
+          console.error('[CLM] OpenRouter error:', error);
+          
+          // Fallback to contextual hard-coded responses
+          if (!userContent || messages.length <= 2) {
+            const userName = dbUser?.name ? `, ${dbUser.name}` : '';
+            responseText = `Hello${userName}! I'm Quest Coach. I'm here to help you explore your professional identity. What brings you here today?`;
           } else {
-            responseText = "The Trinity System helps you discover your Quest, Service, and Pledge. Which element speaks to you most right now?";
+            responseText = "I'm having a brief technical moment. Could you tell me more about what you'd like to explore in your career?";
           }
-        } else if (userContent.toLowerCase().includes('skills') || userContent.toLowerCase().includes('skill')) {
-          const skillCount = dbUser?.userSkills?.length || 0;
-          if (skillCount > 0) {
-            responseText = `I see you've identified ${skillCount} skills so far. Would you like to explore how to develop them further or discover new ones?`;
-          } else {
-            responseText = "Let's explore your skills together. What are some things you're naturally good at or enjoy doing?";
-          }
-        } else {
-          responseText = "That's interesting. Tell me more about what you're hoping to achieve in your career journey.";
         }
 
         console.log('[CLM] Responding with:', responseText);

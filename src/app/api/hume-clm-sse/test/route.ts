@@ -6,6 +6,7 @@ export async function GET() {
     endpoint: '/api/hume-clm-sse/chat/completions',
     environment: {
       hasOpenAI: !!process.env.OPENAI_API_KEY,
+      hasOpenRouter: !!process.env.OPEN_ROUTER_API_KEY,
       timestamp: new Date().toISOString()
     }
   })
