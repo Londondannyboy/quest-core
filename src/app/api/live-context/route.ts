@@ -126,14 +126,18 @@ function extractContextualRelationships(conversationContent: string[]) {
 export async function POST(request: NextRequest) {
   try {
     const { sessionId } = await request.json();
+    console.log('[Live Context] Request for session:', sessionId);
     
     // Get authenticated user
     const { userId } = await auth();
     if (!userId) {
+      console.log('[Live Context] No authenticated user');
       return NextResponse.json({
         error: 'Not authenticated'
       }, { status: 401 });
     }
+    
+    console.log('[Live Context] Authenticated user:', userId);
     
     // Initialize Zep client and get conversation data
     const zepClient = new QuestZepClient();
@@ -143,7 +147,7 @@ export async function POST(request: NextRequest) {
       await zepClient.initializeUser(userId);
       
       // Get Zep memory context and facts
-      const context = await zepClient.getCoachingContext(userId, sessionId);
+      const context = await zepClient.getCoachingContext(userId, '', sessionId);
       
       if (!context || context.relevantFacts.length === 0) {
         // No conversation data in Zep yet
