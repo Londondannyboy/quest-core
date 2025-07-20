@@ -7,22 +7,27 @@ function extractContextualRelationships(conversationContent: string[]) {
   const relationships: any[] = [];
   const fullContent = conversationContent.join(' ').toLowerCase();
   
-  // Interest → Goal Connections
+  // Interest → Goal Connections (optimized for Zep facts)
   const interestGoalPatterns = [
     {
-      interest: /(?:love|enjoy|passionate about|interested in|awesome)\s*(football|soccer|sports|spain|spanish|travel|traveling|holiday|vacation)/gi,
-      goal: /(?:want to|hoping to|planning to|dream of|going to|visit|holiday|vacation)\s*(spain|spanish|madrid|barcelona|travel|holiday|vacation)/gi,
-      connection: 'drives'
+      interest: /\b(football|soccer|sports)\b/gi,
+      goal: /\b(spain|spanish|holiday.*spain|travel.*spain)\b/gi,
+      connection: 'drives interest in'
     },
     {
-      interest: /(?:football|soccer|sports)(?:\s+is)?\s*(?:awesome|amazing|great|way|cool)/gi,
-      goal: /(?:visit|go to|holiday in|vacation in|travel to)\s*(spain|spanish|madrid|barcelona)/gi,
-      connection: 'inspires'
+      interest: /\bfootball\b/gi,
+      goal: /\b(holiday planning|travel planning)\b/gi,
+      connection: 'motivates'
     },
     {
-      interest: /(?:football|soccer)/gi,
-      goal: /(?:spain|spanish|holiday|vacation|travel)/gi,
+      interest: /\b(football matches|la liga)\b/gi,
+      goal: /\b(spain|spanish culture)\b/gi,
       connection: 'connects to'
+    },
+    {
+      interest: /\bspanish culture\b/gi,
+      goal: /\b(holiday planning|travel planning)\b/gi,
+      connection: 'influences'
     }
   ];
   
@@ -166,7 +171,23 @@ export async function POST(request: NextRequest) {
       }
       
       // Extract conversation content from Zep facts for relationship analysis
-      const conversationContent = context.relevantFacts;
+      console.log('[Live Context] Raw Zep facts:', context.relevantFacts.length);
+      
+      // Clean up verbose Zep facts into key phrases for relationship extraction
+      const conversationContent = context.relevantFacts.map(fact => {
+        // Extract key entities from verbose Zep descriptions
+        const entities = [];
+        if (fact.includes('football')) entities.push('football');
+        if (fact.includes('Spain') || fact.includes('Spanish')) entities.push('Spain');
+        if (fact.includes('holiday') || fact.includes('visit')) entities.push('holiday planning');
+        if (fact.includes('La Liga') || fact.includes('matches')) entities.push('football matches');
+        if (fact.includes('culture')) entities.push('Spanish culture');
+        if (fact.includes('cities')) entities.push('travel planning');
+        
+        return entities.join(' ');
+      }).filter(Boolean);
+      
+      console.log('[Live Context] Cleaned content for analysis:', conversationContent);
     
       // Extract contextual relationships from Zep facts
       const relationships = extractContextualRelationships(conversationContent);
