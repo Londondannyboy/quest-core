@@ -16,8 +16,11 @@ import {
   Brain,
   Settings,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Eye,
+  EyeOff
 } from 'lucide-react'
+import { ZepRelationshipView } from './ZepRelationshipView'
 
 interface HumeVoiceInterfaceProps {
   sessionType: 'trinity' | 'skills' | 'career' | 'wellness'
@@ -48,6 +51,7 @@ export function HumeVoiceInterface({
   })
   const [sessionDuration, setSessionDuration] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
+  const [showZepContext, setShowZepContext] = useState(true)
   const audioRef = useRef<HTMLAudioElement>(null)
 
   // Track session duration
@@ -261,6 +265,15 @@ export function HumeVoiceInterface({
                           {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                         </Button>
                         
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => setShowZepContext(!showZepContext)}
+                          title="Toggle Memory Context"
+                        >
+                          {showZepContext ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </Button>
+                        
                         <Button variant="outline" size="icon">
                           <Settings className="h-4 w-4" />
                         </Button>
@@ -312,6 +325,37 @@ export function HumeVoiceInterface({
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Zep Memory Context */}
+            {showZepContext && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <Brain className="h-5 w-5 text-purple-600" />
+                      Memory & Context
+                    </span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setShowZepContext(false)}
+                    >
+                      <EyeOff className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
+                  <CardDescription>
+                    Live insights from your conversation
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ZepRelationshipView
+                    sessionId={`voice-session-${Date.now()}`} // Generate session ID
+                    userId="current-user" // Would get from auth context
+                    isVisible={showZepContext && isConnected}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
             {/* Emotional State */}
             <Card>
               <CardHeader>

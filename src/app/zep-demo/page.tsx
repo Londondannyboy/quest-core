@@ -80,6 +80,25 @@ export default function ZepDemoPage() {
     }
   ]
 
+  const testConnection = async () => {
+    setIsRunning(true)
+    try {
+      const response = await fetch('/api/test-zep-demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ simple: true })
+      })
+      
+      const data = await response.json()
+      alert(`Zep Connection: ${data.zepConnected ? 'SUCCESS' : 'FAILED'}`)
+    } catch (error) {
+      console.error('Connection test error:', error)
+      alert('Connection test failed - check console')
+    } finally {
+      setIsRunning(false)
+    }
+  }
+
   const runDemo = async (reset = false) => {
     setIsRunning(true)
     try {
@@ -154,6 +173,16 @@ export default function ZepDemoPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-4">
+            <Button 
+              onClick={() => testConnection()}
+              disabled={isRunning}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <CheckCircle className="h-4 w-4" />
+              Test Zep Connection
+            </Button>
+            
             <Button 
               onClick={() => runDemo(false)} 
               disabled={isRunning}

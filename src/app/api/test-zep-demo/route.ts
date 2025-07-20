@@ -17,7 +17,18 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { scenario = 'career-transition', reset = false } = await request.json();
+    const { scenario = 'career-transition', reset = false, simple = false } = await request.json();
+    
+    // Simple connectivity test
+    if (simple) {
+      const testResult = await zepClient.testConnection();
+      return NextResponse.json({
+        status: 'success',
+        simple: true,
+        zepConnected: testResult,
+        timestamp: new Date().toISOString()
+      });
+    }
     
     const testUserId = `demo-user-${scenario}`;
     const sessionId = `demo-session-${scenario}-${Date.now()}`;

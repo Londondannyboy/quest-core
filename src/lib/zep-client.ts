@@ -43,8 +43,13 @@ export class QuestZepClient {
 
   constructor() {
     // Initialize Zep client with API key
+    const apiKey = process.env.ZEP_API_KEY || process.env.zeb_api_key;
+    if (!apiKey) {
+      throw new Error('Zep API key not found. Set ZEP_API_KEY or zeb_api_key environment variable.');
+    }
+    
     this.zep = new ZepClient({
-      apiKey: process.env.ZEP_API_KEY!,
+      apiKey: apiKey,
       baseUrl: process.env.ZEP_BASE_URL || 'https://api.getzep.com'
     });
   }
