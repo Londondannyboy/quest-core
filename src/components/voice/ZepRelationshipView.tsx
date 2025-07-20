@@ -13,6 +13,7 @@ import {
   Network,
   BarChart3
 } from 'lucide-react'
+import { ProfessionalNetworkMini } from './ProfessionalNetworkMini'
 
 interface ZepRelationship {
   id: string
@@ -244,69 +245,13 @@ export function ZepRelationshipView({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative bg-slate-50 rounded-lg p-4 mb-4">
-              <div className="flex items-center justify-center">
-                <div className="relative">
-                  {/* Central User Node */}
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    YOU
-                  </div>
-                  
-                  {/* Connection Lines and Nodes */}
-                  {contextData.relationships.slice(0, 4).map((rel, index) => {
-                    const angle = (index * 90) - 45; // Distribute around circle
-                    const radius = 60;
-                    const x = Math.cos(angle * Math.PI / 180) * radius;
-                    const y = Math.sin(angle * Math.PI / 180) * radius;
-                    
-                    const getNodeColor = (category?: string) => {
-                      switch (category) {
-                        case 'person': return 'bg-blue-500';
-                        case 'organization': return 'bg-purple-500';
-                        case 'skill': return 'bg-green-500';
-                        case 'goal': return 'bg-orange-500';
-                        default: return 'bg-slate-500';
-                      }
-                    };
-
-                    return (
-                      <div key={rel.id} className="absolute">
-                        {/* Connection Line */}
-                        <div
-                          className="absolute w-px bg-slate-300"
-                          style={{
-                            height: `${radius}px`,
-                            left: '24px',
-                            top: '24px',
-                            transformOrigin: 'bottom',
-                            transform: `rotate(${angle}deg)`,
-                            opacity: rel.strength
-                          }}
-                        />
-                        
-                        {/* Relationship Node */}
-                        <div
-                          className="absolute"
-                          style={{
-                            left: `${24 + x}px`,
-                            top: `${24 + y}px`,
-                            transform: 'translate(-50%, -50%)'
-                          }}
-                        >
-                          <div className={`w-8 h-8 ${getNodeColor(rel.category)} rounded-full flex items-center justify-center text-white text-xs font-bold relative group`}>
-                            {rel.to.charAt(0).toUpperCase()}
-                            
-                            {/* Hover Tooltip */}
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                              {rel.to} ({Math.round(rel.strength * 100)}%)
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+            {/* Interactive Network Graph */}
+            <div className="mb-4">
+              <ProfessionalNetworkMini 
+                relationships={contextData.relationships}
+                width={280}
+                height={180}
+              />
             </div>
 
             {/* Network Statistics */}
