@@ -94,11 +94,12 @@ export function ProfessionalNetworkMini({
       .attr('width', width)
       .attr('height', height)
 
-    // Create force simulation
+    // Create force simulation with better spacing
     const simulation = d3.forceSimulation(nodes as any)
-      .force('link', d3.forceLink(links).id((d: any) => d.id).distance(60))
-      .force('charge', d3.forceManyBody().strength(-200))
+      .force('link', d3.forceLink(links).id((d: any) => d.id).distance(80))
+      .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('collision', d3.forceCollide().radius(25))
 
     // Color scale for different node types
     const getNodeColor = (type: string, sentiment?: string) => {
@@ -142,12 +143,15 @@ export function ProfessionalNetworkMini({
       .selectAll('text')
       .data(nodes)
       .enter().append('text')
-      .text((d: any) => d.name.length > 8 ? d.name.substring(0, 8) + '...' : d.name)
-      .attr('font-size', '10px')
+      .text((d: any) => d.name.length > 12 ? d.name.substring(0, 12) + '...' : d.name)
+      .attr('font-size', '11px')
       .attr('font-weight', (d: any) => d.type === 'user' ? 'bold' : 'normal')
       .attr('text-anchor', 'middle')
       .attr('dy', '0.3em')
-      .attr('fill', '#374151')
+      .attr('fill', '#1f2937')
+      .attr('stroke', '#ffffff')
+      .attr('stroke-width', '2px')
+      .attr('paint-order', 'stroke')
 
     // Add tooltips
     node.append('title')
@@ -167,7 +171,7 @@ export function ProfessionalNetworkMini({
 
       labels
         .attr('x', (d: any) => d.x)
-        .attr('y', (d: any) => d.y + getNodeSize(d.type, d.strength) + 12)
+        .attr('y', (d: any) => d.y + getNodeSize(d.type, d.strength) + 16)
     })
 
     // Cleanup

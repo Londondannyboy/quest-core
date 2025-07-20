@@ -237,11 +237,11 @@ export function ZepRelationshipView({
           </CardHeader>
           <CardContent>
             {/* Interactive Network Graph */}
-            <div className="mb-4">
+            <div className="mb-4 w-full">
               <ProfessionalNetworkMini 
                 relationships={contextData.relationships}
-                width={280}
-                height={180}
+                width={320}
+                height={220}
               />
             </div>
 
