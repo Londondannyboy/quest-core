@@ -83,8 +83,8 @@ export function HumeVoiceInterface({
       
       setConversation(prev => [...prev, turn])
       
-      // Store message in database for Zep integration
-      storeMessageInDatabase(turn)
+      // Store message directly in Zep for memory processing
+      storeMessageInZep(turn)
       
       // Update emotional state based on conversation
       if (lastMessage.type === 'user_message') {
@@ -134,20 +134,24 @@ export function HumeVoiceInterface({
     }
   }
 
-  const storeMessageInDatabase = async (turn: ConversationTurn) => {
+  const storeMessageInZep = async (turn: ConversationTurn) => {
     try {
-      await fetch('/api/voice-message', {
+      await fetch('/api/zep-message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId,
           role: turn.type === 'user' ? 'user' : 'assistant',
           content: turn.content,
-          timestamp: turn.timestamp
+          metadata: {
+            timestamp: turn.timestamp.toISOString(),
+            emotion: turn.emotion,
+            sessionType: sessionType
+          }
         })
       })
     } catch (error) {
-      console.error('Failed to store message in database:', error)
+      console.error('Failed to store message in Zep:', error)
     }
   }
 

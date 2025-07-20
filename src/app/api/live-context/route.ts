@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { prisma } from '@/lib/prisma';
+import { QuestZepClient } from '@/lib/zep-client';
 
 // Extract contextual relationships from recent conversation content
 function extractContextualRelationships(conversationContent: string[]) {
@@ -135,27 +135,100 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
     
-    // Get recent conversation messages from the database
-    const recentMessages = await prisma.message.findMany({
-      where: {
-        conversation: {
-          userId: userId,
-          sessionId: sessionId
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: 20, // Last 20 messages
-      select: {
-        role: true,
-        content: true,
-        createdAt: true
-      }
-    });
+    // Initialize Zep client and get conversation data
+    const zepClient = new QuestZepClient();
     
-    if (recentMessages.length === 0) {
-      // No conversation data available - return empty state instead of misleading demo data
+    try {
+      // Ensure user exists in Zep
+      await zepClient.initializeUser(userId);
+      
+      // Get Zep memory context and facts
+      const context = await zepClient.getCoachingContext(userId, sessionId);
+      
+      if (!context || context.relevantFacts.length === 0) {
+        // No conversation data in Zep yet
+        return NextResponse.json({
+          context: {
+            relationships: [],
+            insights: [],
+            trinityEvolution: { confidence: 0 },
+            conversationSummary: {
+              totalMessages: 0,
+              keyTopics: [],
+              emotionalTone: 'neutral'
+            }
+          }
+        });
+      }
+      
+      // Extract conversation content from Zep facts for relationship analysis
+      const conversationContent = context.relevantFacts;
+    
+      // Extract contextual relationships from Zep facts
+      const relationships = extractContextualRelationships(conversationContent);
+      
+      // Use Zep's Trinity insights if available
+      const trinityData = context.trinity || { confidence: 0 };
+      
+      // Generate insights from Zep context
+      const insights: Array<{type: string, content: string, confidence: number, timestamp: string}> = [];
+      
+      for (const insight of context.insights || []) {
+        if (typeof insight === 'string') {
+          insights.push({
+            type: 'general',
+            content: insight,
+            confidence: 0.8,
+            timestamp: new Date().toISOString()
+          });
+        } else {
+          insights.push({
+            type: (insight as any).type || 'general',
+            content: (insight as any).content || String(insight),
+            confidence: (insight as any).confidence || 0.8,
+            timestamp: new Date().toISOString()
+          });
+        }
+      }
+      
+      if (relationships.some(r => r.category === 'connection')) {
+        insights.push({
+          type: 'goal',
+          content: 'Personal interests are connecting to life goals',
+          confidence: 0.8,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      // Extract key topics from Zep facts and relationships
+      const keyTopics = [...new Set([
+        ...relationships.flatMap(r => [r.from, r.to]),
+        ...context.relevantFacts.slice(0, 3)
+      ])].map(topic => topic.charAt(0).toUpperCase() + topic.slice(1)).slice(0, 5);
+      
+      return NextResponse.json({
+        context: {
+          relationships,
+          insights,
+          trinityEvolution: {
+            quest: trinityData.quest || (relationships.length > 0 ? 'Exploring interests and goals' : undefined),
+            service: trinityData.service || (relationships.length > 0 ? 'Sharing personal passions' : undefined),
+            pledge: trinityData.pledge || (relationships.length > 0 ? 'Following through on interests' : undefined),
+            confidence: trinityData.confidence || (relationships.length > 0 ? 0.6 : 0)
+          },
+          conversationSummary: {
+            totalMessages: context.conversationHistory.length,
+            keyTopics,
+            emotionalTone: 'engaged'
+          }
+        },
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (zepError) {
+      console.error('[Live Context] Zep error:', zepError);
+      
+      // Return empty state if Zep fails
       return NextResponse.json({
         context: {
           relationships: [],
@@ -169,62 +242,6 @@ export async function POST(request: NextRequest) {
         }
       });
     }
-    
-    // Legacy demo code for reference (remove after real data works)
-    /*
-      const demoRelationships = [
-    */
-    
-    // Extract conversation content for analysis
-    const conversationContent = recentMessages.map(msg => msg.content);
-    
-    // Extract contextual relationships
-    const relationships = extractContextualRelationships(conversationContent);
-    
-    // Generate insights based on relationships
-    const insights = [];
-    if (relationships.some(r => r.category === 'connection')) {
-      insights.push({
-        type: 'goal',
-        content: 'Personal interests are connecting to life goals',
-        confidence: 0.8,
-        timestamp: new Date().toISOString()
-      });
-    }
-    
-    if (relationships.some(r => r.from.includes('spain') || r.to.includes('spain'))) {
-      insights.push({
-        type: 'growth',
-        content: 'Developing interest in Spanish culture and travel',
-        confidence: 0.7,
-        timestamp: new Date().toISOString()
-      });
-    }
-    
-    // Extract key topics from relationships
-    const keyTopics = [...new Set(
-      relationships.flatMap(r => [r.from, r.to])
-        .map(topic => topic.charAt(0).toUpperCase() + topic.slice(1))
-    )].slice(0, 5);
-    
-    return NextResponse.json({
-      context: {
-        relationships,
-        insights,
-        trinityEvolution: {
-          quest: relationships.length > 0 ? 'Exploring cultural connections through personal interests' : undefined,
-          service: relationships.length > 0 ? 'Sharing passion for sports and culture' : undefined,
-          pledge: relationships.length > 0 ? 'Learning and experiencing new cultures' : undefined,
-          confidence: relationships.length > 0 ? 0.6 : 0
-        },
-        conversationSummary: {
-          totalMessages: recentMessages.length,
-          keyTopics,
-          emotionalTone: 'engaged'
-        }
-      },
-      timestamp: new Date().toISOString()
-    });
     
   } catch (error) {
     console.error('[Live Context] Error:', error);

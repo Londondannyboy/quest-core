@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
         data: {
           userId: userId,
           sessionId: sessionId,
-          title: 'Voice Coaching Session',
           type: 'voice_coaching'
         }
       });
