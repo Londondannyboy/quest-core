@@ -28,6 +28,16 @@ function extractContextualRelationships(conversationContent: string[]) {
       interest: /\bspanish culture\b/gi,
       goal: /\b(holiday planning|travel planning)\b/gi,
       connection: 'influences'
+    },
+    {
+      interest: /\b(tapas|spanish cuisine)\b/gi,
+      goal: /\b(spain|holiday planning|dining experiences)\b/gi,
+      connection: 'enhances interest in'
+    },
+    {
+      interest: /\b(beaches|coastal experiences)\b/gi,
+      goal: /\b(spain|holiday planning|beach activities)\b/gi,
+      connection: 'motivates visit to'
     }
   ];
   
@@ -59,6 +69,16 @@ function extractContextualRelationships(conversationContent: string[]) {
       sport: /(?:football|soccer|sports)/gi,
       culture: /(?:spain|spanish|madrid|barcelona|la liga)/gi,
       connection: 'connects to'
+    },
+    {
+      sport: /(?:tapas|spanish cuisine|dining experiences)/gi,
+      culture: /(?:spain|spanish culture|holiday planning)/gi,
+      connection: 'enriches experience of'
+    },
+    {
+      sport: /(?:beaches|coastal experiences|beach activities)/gi,
+      culture: /(?:spain|spanish|holiday planning|mediterranean)/gi,
+      connection: 'complements'
     }
   ];
   
@@ -175,14 +195,32 @@ export async function POST(request: NextRequest) {
       
       // Clean up verbose Zep facts into key phrases for relationship extraction
       const conversationContent = context.relevantFacts.map(fact => {
-        // Extract key entities from verbose Zep descriptions
+        // Dynamic entity extraction from Zep facts
         const entities = [];
-        if (fact.includes('football')) entities.push('football');
-        if (fact.includes('Spain') || fact.includes('Spanish')) entities.push('Spain');
-        if (fact.includes('holiday') || fact.includes('visit')) entities.push('holiday planning');
-        if (fact.includes('La Liga') || fact.includes('matches')) entities.push('football matches');
-        if (fact.includes('culture')) entities.push('Spanish culture');
-        if (fact.includes('cities')) entities.push('travel planning');
+        const factLower = fact.toLowerCase();
+        
+        // Core topics (existing)
+        if (factLower.includes('football')) entities.push('football');
+        if (factLower.includes('spain') || factLower.includes('spanish')) entities.push('Spain');
+        if (factLower.includes('holiday') || factLower.includes('visit')) entities.push('holiday planning');
+        if (factLower.includes('la liga') || factLower.includes('matches')) entities.push('football matches');
+        if (factLower.includes('culture')) entities.push('Spanish culture');
+        if (factLower.includes('cities')) entities.push('travel planning');
+        
+        // Food & Dining (NEW)
+        if (factLower.includes('tapas')) entities.push('tapas');
+        if (factLower.includes('food') || factLower.includes('cuisine') || factLower.includes('dining')) entities.push('Spanish cuisine');
+        if (factLower.includes('restaurant') || factLower.includes('eating')) entities.push('dining experiences');
+        
+        // Beach & Leisure (NEW)
+        if (factLower.includes('beach') || factLower.includes('beaches')) entities.push('beaches');
+        if (factLower.includes('coast') || factLower.includes('mediterranean')) entities.push('coastal experiences');
+        if (factLower.includes('sun') || factLower.includes('swimming')) entities.push('beach activities');
+        
+        // Activities & Experiences (NEW)
+        if (factLower.includes('museum') || factLower.includes('art')) entities.push('cultural activities');
+        if (factLower.includes('bar') || factLower.includes('nightlife')) entities.push('nightlife');
+        if (factLower.includes('walk') || factLower.includes('explore')) entities.push('exploration');
         
         return entities.join(' ');
       }).filter(Boolean);
