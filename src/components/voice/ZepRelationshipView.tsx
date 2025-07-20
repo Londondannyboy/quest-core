@@ -73,23 +73,56 @@ export function ZepRelationshipView({
   }, [isVisible, sessionId, userId])
 
   const fetchZepContext = async () => {
-    if (!sessionId || !userId) return
-    
     setIsLoading(true)
     try {
-      const response = await fetch('/api/zep-context', {
+      // First, get the latest demo session data
+      const sessionResponse = await fetch('/api/zep-sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, userId })
+        body: JSON.stringify({ action: 'get-latest-demo-session' })
       })
       
-      if (response.ok) {
-        const data = await response.json()
-        setContextData(data.context)
-        setLastUpdated(new Date())
+      if (sessionResponse.ok) {
+        const sessionData = await sessionResponse.json()
+        
+        if (sessionData.status === 'success' && sessionData.sessionData) {
+          // Convert Zep context to our format
+          const zepContext = sessionData.sessionData.context
+          const adaptedContext: ZepContextData = {
+            relationships: zepContext.relationships || [],
+            insights: zepContext.insights?.map((insight: string) => ({
+              type: 'goal' as const,
+              content: insight,
+              confidence: 0.8,
+              timestamp: new Date().toISOString()
+            })) || [],
+            trinityEvolution: {
+              quest: zepContext.trinity?.quest,
+              service: zepContext.trinity?.service,
+              pledge: zepContext.trinity?.pledge,
+              confidence: zepContext.trinity?.confidence || 0.75
+            },
+            conversationSummary: {
+              totalMessages: zepContext.conversationHistory?.length || 0,
+              keyTopics: ['Career Transition', 'Product Management', 'Skills Development'],
+              emotionalTone: 'determined'
+            }
+          }
+          
+          setContextData(adaptedContext)
+          setLastUpdated(new Date())
+        } else {
+          // Fallback to demo data if no real session found
+          setContextData(getDemoData())
+        }
+      } else {
+        // Fallback to demo data on error
+        setContextData(getDemoData())
       }
     } catch (error) {
       console.error('Failed to fetch Zep context:', error)
+      // Fallback to demo data on error
+      setContextData(getDemoData())
     } finally {
       setIsLoading(false)
     }

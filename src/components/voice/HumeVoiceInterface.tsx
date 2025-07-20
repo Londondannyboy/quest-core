@@ -348,8 +348,8 @@ export function HumeVoiceInterface({
               <CardContent>
                 {showZepContext ? (
                   <ZepRelationshipView
-                    sessionId={`voice-session-${Date.now()}`}
-                    userId="demo-user"
+                    sessionId={`voice-session-${sessionDuration}`}
+                    userId={`voice-user-${sessionType}`}
                     isVisible={true}
                   />
                 ) : (
