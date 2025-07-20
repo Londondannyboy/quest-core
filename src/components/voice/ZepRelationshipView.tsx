@@ -72,25 +72,6 @@ export function ZepRelationshipView({
   const [isLoading, setIsLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
-  useEffect(() => {
-    if (isVisible && sessionId && userId) {
-      fetchZepContext()
-      // Auto-refresh every 30 seconds during active session
-      const interval = setInterval(fetchZepContext, 30000)
-      return () => clearInterval(interval)
-    } else if (isVisible) {
-      // Show demo data if no session
-      setContextData(getDemoData())
-    }
-  }, [isVisible, sessionId, userId, fetchZepContext])
-
-  // Refresh when conversation changes (real-time updates)
-  useEffect(() => {
-    if (isVisible && refreshTrigger !== undefined && refreshTrigger > 0) {
-      fetchZepContext()
-    }
-  }, [refreshTrigger, isVisible, fetchZepContext])
-
   const fetchZepContext = useCallback(async () => {
     if (!sessionId || !userId) return
     
@@ -133,6 +114,25 @@ export function ZepRelationshipView({
       setIsLoading(false)
     }
   }, [sessionId, userId])
+
+  useEffect(() => {
+    if (isVisible && sessionId && userId) {
+      fetchZepContext()
+      // Auto-refresh every 30 seconds during active session
+      const interval = setInterval(fetchZepContext, 30000)
+      return () => clearInterval(interval)
+    } else if (isVisible) {
+      // Show demo data if no session
+      setContextData(getDemoData())
+    }
+  }, [isVisible, sessionId, userId, fetchZepContext])
+
+  // Refresh when conversation changes (real-time updates)
+  useEffect(() => {
+    if (isVisible && refreshTrigger !== undefined && refreshTrigger > 0) {
+      fetchZepContext()
+    }
+  }, [refreshTrigger, isVisible, fetchZepContext])
 
   const getDemoData = (): ZepContextData => ({
     relationships: [
