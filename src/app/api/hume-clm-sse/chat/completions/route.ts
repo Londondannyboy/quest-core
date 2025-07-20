@@ -141,6 +141,8 @@ export async function POST(request: NextRequest) {
           // Determine coach type based on conversation content
           const coachType = determineCoachType(userContent);
           
+          console.log('[CLM] 🚀 Using OpenRouter with coach:', coachType);
+          
           // Generate response using OpenRouter
           aiResponse = await aiClient.generateResponse({
             sessionId: session_id || `session-${Date.now()}`,
@@ -152,12 +154,13 @@ export async function POST(request: NextRequest) {
           
           responseText = aiResponse.content;
           
-          console.log('[CLM] OpenRouter response:', {
+          console.log('[CLM] ✅ OpenRouter SUCCESS:', {
             coach: coachType,
             model: aiResponse.model,
-            cost: aiResponse.cost,
+            cost: `$${aiResponse.cost.toFixed(6)}`,
             tokens: aiResponse.tokensUsed,
-            responseTime: aiResponse.responseTime
+            responseTime: `${aiResponse.responseTime}ms`,
+            timestamp: new Date().toISOString()
           });
           
         } catch (error) {
