@@ -38,6 +38,16 @@ function extractContextualRelationships(conversationContent: string[]) {
       interest: /\b(beaches|coastal experiences)\b/gi,
       goal: /\b(spain|holiday planning|beach activities)\b/gi,
       connection: 'motivates visit to'
+    },
+    {
+      interest: /\bbaseball\b/gi,
+      goal: /\b(valencia|madrid|barcelona|spain|sports events)\b/gi,
+      connection: 'creates interest in'
+    },
+    {
+      interest: /\b(valencia|madrid|barcelona|seville)\b/gi,
+      goal: /\b(spain|holiday planning|travel planning|sports events)\b/gi,
+      connection: 'focuses travel on'
     }
   ];
   
@@ -171,10 +181,21 @@ export async function POST(request: NextRequest) {
       // Ensure user exists in Zep
       await zepClient.initializeUser(userId);
       
-      // Get Zep memory context and facts
+      // Get Zep memory context and facts (current session + cross-session history)
       const context = await zepClient.getCoachingContext(userId, '', sessionId);
       
-      if (!context || context.relevantFacts.length === 0) {
+      // ALSO get cross-session memory for persistent relationships
+      const crossSessionContext = await zepClient.getCoachingContext(userId, 'football spain tapas beaches valencia baseball');
+      
+      // Combine current session facts with historical facts
+      const allRelevantFacts = [
+        ...context.relevantFacts,
+        ...crossSessionContext.relevantFacts
+      ];
+      
+      console.log('[Live Context] Total facts (current + historical):', allRelevantFacts.length);
+      
+      if (allRelevantFacts.length === 0) {
         // No conversation data in Zep yet
         return NextResponse.json({
           context: {
@@ -191,10 +212,10 @@ export async function POST(request: NextRequest) {
       }
       
       // Extract conversation content from Zep facts for relationship analysis
-      console.log('[Live Context] Raw Zep facts:', context.relevantFacts.length);
+      console.log('[Live Context] Raw Zep facts:', allRelevantFacts.length);
       
       // Clean up verbose Zep facts into key phrases for relationship extraction
-      const conversationContent = context.relevantFacts.map(fact => {
+      const conversationContent = allRelevantFacts.map(fact => {
         // Dynamic entity extraction from Zep facts
         const entities = [];
         const factLower = fact.toLowerCase();
@@ -217,7 +238,17 @@ export async function POST(request: NextRequest) {
         if (factLower.includes('coast') || factLower.includes('mediterranean')) entities.push('coastal experiences');
         if (factLower.includes('sun') || factLower.includes('swimming')) entities.push('beach activities');
         
-        // Activities & Experiences (NEW)
+        // Cities & Locations (NEW)
+        if (factLower.includes('valencia')) entities.push('Valencia');
+        if (factLower.includes('madrid')) entities.push('Madrid');
+        if (factLower.includes('barcelona')) entities.push('Barcelona');
+        if (factLower.includes('seville') || factLower.includes('sevilla')) entities.push('Seville');
+        
+        // Sports & Activities (EXPANDED)
+        if (factLower.includes('baseball')) entities.push('baseball');
+        if (factLower.includes('game') || factLower.includes('match')) entities.push('sports events');
+        
+        // Activities & Experiences
         if (factLower.includes('museum') || factLower.includes('art')) entities.push('cultural activities');
         if (factLower.includes('bar') || factLower.includes('nightlife')) entities.push('nightlife');
         if (factLower.includes('walk') || factLower.includes('explore')) entities.push('exploration');

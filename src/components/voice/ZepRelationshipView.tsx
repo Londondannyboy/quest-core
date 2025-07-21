@@ -148,8 +148,8 @@ export function ZepRelationshipView({
   useEffect(() => {
     if (isVisible && sessionId && userId) {
       fetchZepContext()
-      // Auto-refresh every 30 seconds during active session
-      const interval = setInterval(fetchZepContext, 30000)
+      // Auto-refresh every 10 seconds during active session for more responsive updates
+      const interval = setInterval(fetchZepContext, 10000)
       return () => clearInterval(interval)
     } else if (isVisible) {
       // Show empty state if no session - don't show misleading demo data
