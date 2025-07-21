@@ -2,6 +2,29 @@
 
 > **Architecture Decision**: Hybrid approach with PostgreSQL as single source of truth and Zep for conversational memory management
 
+## 🎯 **Current Status: 70% Complete**
+
+### ✅ **What's Working**
+- **API Connection**: Zep client successfully connects with both ZEP_API_KEY and zeb_api_key
+- **Message Storage**: Voice conversations stored in Zep memory via `/api/zep-message`
+- **Fact Extraction**: Zep extracts 13+ detailed entities from conversations
+- **Contextual Visualization**: Bottom panel graph (800x400px) shows relationships
+- **Test Endpoint**: `/api/zep-test` confirms integration working
+- **Entity Recognition**: football, Spain, tapas, beaches, Valencia, baseball
+
+### ❌ **What's Not Working**
+- **Real-time Updates**: Graph doesn't update when new topics mentioned (France, French food)
+- **Cross-session Memory**: Previous conversations not persisting, graph starts empty
+- **Dynamic Topics**: Entity recognition limited to hardcoded patterns
+- **Update Frequency**: 10-second refresh not reflecting changes
+
+### 🔄 **Current Architecture (Implemented)**
+```
+Voice Input → Zep Memory → Fact Extraction → Contextual Relationships → Graph
+                    ↓
+            Periodic Insights → PostgreSQL DeepInsights
+```
+
 ## 🎯 **Integration Overview**
 
 ### **Why Zep for Quest Core**
@@ -854,6 +877,87 @@ export async function exportUserZepData(userId: string) {
 - [ ] Ensure GDPR compliance
 - [ ] Create backup and recovery procedures
 
+## 🔍 **Current Implementation Issues & Solutions**
+
+### **Issue 1: No Real-Time Updates**
+**Problem**: Graph doesn't update when mentioning new topics (France, French food)
+**Root Causes**:
+- Entity extraction hardcoded to specific patterns
+- Refresh trigger mechanism may not be working
+- Zep fact extraction delay
+
+**Solution**:
+```typescript
+// Move from hardcoded patterns to dynamic extraction
+const extractDynamicEntities = (fact: string) => {
+  // Use NLP-based extraction instead of if statements
+  const entities = nlpExtractor.extract(fact);
+  return entities;
+}
+```
+
+### **Issue 2: Cross-Session Memory Not Working**
+**Problem**: Graph starts empty despite previous conversations
+**Root Causes**:
+- Session-based queries vs user-level queries
+- Zep facts may not persist permanently
+- Query method needs adjustment
+
+**Solution**:
+```typescript
+// Query user-level facts, not just session
+const allUserFacts = await zep.memory.searchUserMemory(userId, {
+  limit: 50,
+  includeAllSessions: true
+});
+```
+
+### **Issue 3: Limited Entity Recognition**
+**Problem**: Only recognizes predefined countries/foods
+**Current State**: Hardcoded patterns for Spain, football, etc.
+**Needed**: Dynamic NLP-based entity extraction
+
+### **Key Files & Endpoints**
+- `/src/lib/zep-client.ts` - Zep client with fact extraction
+- `/src/app/api/zep-message/route.ts` - Stores voice messages
+- `/src/app/api/live-context/route.ts` - Extracts relationships
+- `/src/app/api/zep-test/route.ts` - Debug endpoint
+- `/src/components/voice/ZepRelationshipView.tsx` - Graph display
+
+## 📋 **Implementation Checklist (Updated)**
+
+### **Phase 1: Core Setup** ✅
+- [x] Install Zep SDK and configure environment
+- [x] Update user creation flow to include Zep
+- [x] Test user ID consistency across systems
+- [x] Implement basic session management
+
+### **Phase 2: Voice Integration** 🟡
+- [x] Enhance HumeVoiceInterface with Zep session tracking
+- [x] Implement context retrieval for coaching responses
+- [x] Add conversation storage to Zep
+- [ ] Test voice coaching with memory continuity (**Issue: Cross-session not working**)
+
+### **Phase 3: Real-Time Updates** ❌
+- [ ] Fix refresh trigger mechanism
+- [ ] Implement dynamic entity extraction
+- [ ] Add proper session vs user-level queries
+- [ ] Ensure fact persistence
+
+### **Phase 4: Data Sync** 🟡
+- [x] Implement session insights sync to PostgreSQL (structure in place)
+- [ ] Create business data sync to Zep
+- [ ] Build consistency validation tools
+- [ ] Test full data flow integrity
+
+### **Phase 5: Production Readiness**
+- [ ] Implement error handling and fallbacks
+- [ ] Add performance monitoring
+- [ ] Ensure GDPR compliance
+- [ ] Create backup and recovery procedures
+
 ---
 
 **Zep Integration** - Bringing persistent memory and temporal knowledge graphs to Quest Core's AI coaching system for truly personalized professional development.
+
+**Current Focus**: Fixing real-time updates and cross-session memory to complete the integration.
