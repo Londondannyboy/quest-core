@@ -59,7 +59,9 @@ export class ApifyClient {
   ): Promise<ApifyRunResult> {
     const { waitForFinish = true, ...runOptions } = options;
 
-    // Start the actor run
+    // Start the actor run  
+    console.log('[ApifyClient] Starting actor run:', actorId);
+    console.log('[ApifyClient] Full URL:', `${this.baseURL}/acts/${actorId}/runs`);
     const runResponse = await fetch(`${this.baseURL}/acts/${actorId}/runs`, {
       method: 'POST',
       headers: {
