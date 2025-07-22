@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { enrichmentPipeline } from '@/lib/scrapers';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,6 +12,19 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('[Test Scraping] Starting enrichment test for:', userId);
+    
+    // Check if API keys are available
+    if (!process.env.SCRAPFLY_API_KEY || !process.env.HARVEST_API_KEY) {
+      return NextResponse.json({
+        error: 'Scraping services not configured',
+        details: 'Missing required API keys for Scrapfly or Harvest services',
+        testMode,
+        timestamp: new Date().toISOString()
+      }, { status: 503 });
+    }
+    
+    // Dynamically import the enrichment pipeline to avoid initialization issues
+    const { enrichmentPipeline } = await import('@/lib/scrapers');
     
     // Test the enrichment pipeline
     const startTime = Date.now();
@@ -66,17 +78,20 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    // Check environment variables
+    // Check environment variables safely
     const hasScrapflyKey = !!process.env.SCRAPFLY_API_KEY;
     const hasHarvestKey = !!process.env.HARVEST_API_KEY;
     
+    // Basic status response without requiring any external dependencies
     return NextResponse.json({
       status: 'Scraping Infrastructure Status',
       environment: {
         scrapflyConfigured: hasScrapflyKey,
         harvestConfigured: hasHarvestKey,
         rateLimiting: true,
-        cacheEnabled: true
+        cacheEnabled: true,
+        production: process.env.NODE_ENV === 'production',
+        vercel: !!process.env.VERCEL
       },
       endpoints: {
         profileScraping: 'POST /api/test-scraping with linkedinUrl',
@@ -87,6 +102,9 @@ export async function GET() {
         linkedinUrl: 'https://www.linkedin.com/in/username',
         email: 'user@company.com'
       },
+      notes: !hasScrapflyKey || !hasHarvestKey ? 
+        'Some API keys missing - scraping functionality may be limited' : 
+        'All systems operational',
       timestamp: new Date().toISOString()
     });
     
@@ -94,7 +112,8 @@ export async function GET() {
     console.error('[Test Scraping GET] Error:', error);
     
     return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Status check failed'
+      error: error instanceof Error ? error.message : 'Status check failed',
+      timestamp: new Date().toISOString()
     }, { status: 500 });
   }
 }
