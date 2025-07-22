@@ -1,4 +1,4 @@
-import { ScrapflyClient, ScrapeConfig } from 'scrapfly-sdk';
+import { apifyClient, APIFY_ACTORS, ApifyRunOutput } from './apify-client';
 
 export interface LinkedInProfile {
   // Basic Information
@@ -61,21 +61,16 @@ export interface LinkedInProfile {
 }
 
 export class ProfileScraper {
-  private client: ScrapflyClient;
   private rateLimitDelay: number = 2000; // 2 seconds between requests
   private lastRequestTime: number = 0;
   
-  constructor(apiKey?: string) {
-    const key = apiKey || process.env.SCRAPFLY_API_KEY;
-    if (!key) {
-      throw new Error('Scrapfly API key not found. Set SCRAPFLY_API_KEY environment variable.');
-    }
-    
-    this.client = new ScrapflyClient({ key });
+  constructor() {
+    // Apify client is initialized as singleton, no API key needed here
+    // The client will throw if APIFY_API_KEY is not set
   }
   
   /**
-   * Scrape a LinkedIn profile by URL
+   * Scrape a LinkedIn profile by URL using Apify
    * @param profileUrl LinkedIn profile URL (e.g., https://www.linkedin.com/in/username)
    * @returns Parsed LinkedIn profile data
    */
@@ -89,35 +84,35 @@ export class ProfileScraper {
         throw new Error('Invalid LinkedIn profile URL');
       }
       
-      // Configure scrape request
-      const scrapeConfig = new ScrapeConfig({
-        url: profileUrl,
-        asp: true, // Anti-bot bypass
-        country: 'US',
-        render_js: false, // LinkedIn data is in static HTML
-        timeout: 30000,
-        retry: true,
-        cache: true,
-        cache_ttl: 3600, // Cache for 1 hour
-      });
+      console.log('[ProfileScraper] Starting Apify LinkedIn scrape:', profileUrl);
       
-      // Execute scrape
-      console.log('[ProfileScraper] Scraping profile:', profileUrl);
-      const result = await this.client.scrape(scrapeConfig);
+      // Use Apify LinkedIn Profile Scraper
+      const results = await apifyClient.scrape(
+        APIFY_ACTORS.LINKEDIN_PROFILE,
+        {
+          startUrls: [{ url: profileUrl }],
+          includeUnfollowedCompanies: false,
+          saveToContacts: false,
+        },
+        {
+          timeout: 120, // 2 minutes timeout
+          memory: 1024, // 1GB memory
+        }
+      );
       
-      // Check if scraping was successful - try-catch approach since type info unclear
-      if (!result) {
-        throw new Error('Scraping failed: No result returned');
+      if (!results || results.length === 0) {
+        throw new Error('No profile data returned from Apify');
       }
       
-      // Parse the scraped data
-      const profile = this.parseProfileData(result, profileUrl);
+      // Parse the first result (should be the profile)
+      const profileData = results[0];
+      const profile = this.parseApifyProfileData(profileData, profileUrl);
       
-      console.log('[ProfileScraper] Successfully scraped profile:', profile.name);
+      console.log('[ProfileScraper] Successfully scraped profile via Apify:', profile.name);
       return profile;
       
     } catch (error) {
-      console.error('[ProfileScraper] Error scraping profile:', error);
+      console.error('[ProfileScraper] Error scraping profile via Apify:', error);
       
       // Return partial profile on error
       return {
@@ -156,44 +151,54 @@ export class ProfileScraper {
   }
   
   /**
-   * Parse scraped HTML/JSON data into structured profile
+   * Parse Apify LinkedIn profile data into structured profile
    */
-  private parseProfileData(result: any, profileUrl: string): LinkedInProfile {
+  private parseApifyProfileData(apifyData: ApifyRunOutput, profileUrl: string): LinkedInProfile {
     try {
-      const selector = result.selector;
+      console.log('[ProfileScraper] Parsing Apify profile data:', JSON.stringify(apifyData, null, 2));
       
-      // Try to get structured data from JSON-LD
-      const jsonLdScript = selector.xpath("//script[@type='application/ld+json']/text()").get();
-      let structuredData: any = {};
-      
-      if (jsonLdScript) {
-        try {
-          structuredData = JSON.parse(jsonLdScript);
-        } catch (e) {
-          console.log('[ProfileScraper] Could not parse JSON-LD data');
-        }
-      }
-      
-      // Extract profile data using multiple strategies
+      // Apify LinkedIn Profile Scraper returns structured data
       const profile: LinkedInProfile = {
-        name: this.extractName(selector, structuredData),
-        headline: this.extractHeadline(selector, structuredData),
-        location: this.extractLocation(selector, structuredData),
-        about: this.extractAbout(selector),
-        profilePicture: this.extractProfilePicture(selector, structuredData),
-        currentPosition: this.extractCurrentPosition(selector),
-        experience: this.extractExperience(selector),
-        education: this.extractEducation(selector),
-        skills: this.extractSkills(selector),
+        name: apifyData.fullName || apifyData.name || 'Unknown',
+        headline: apifyData.headline || apifyData.tagline,
+        location: apifyData.location || apifyData.locationName,
+        about: apifyData.about || apifyData.summary,
+        profilePicture: apifyData.profilePicture || apifyData.photoUrl,
+        backgroundImage: apifyData.backgroundImage,
+        
+        // Current position from experience array
+        currentPosition: apifyData.experience && apifyData.experience.length > 0 ? {
+          title: apifyData.experience[0].title,
+          company: apifyData.experience[0].companyName,
+          companyLogo: apifyData.experience[0].companyLogo,
+          startDate: apifyData.experience[0].startDate,
+          location: apifyData.experience[0].location,
+        } : undefined,
+        
+        // Work experience
+        experience: this.parseApifyExperience(apifyData.experience || []),
+        
+        // Education
+        education: this.parseApifyEducation(apifyData.education || []),
+        
+        // Skills
+        skills: this.parseApifySkills(apifyData.skills || []),
+        
+        // Languages
+        languages: apifyData.languages || [],
+        
+        // Certifications
+        certifications: this.parseApifyCertifications(apifyData.certifications || []),
+        
         profileUrl,
         scrapedAt: new Date(),
-        isComplete: true
+        isComplete: !!(apifyData.fullName || apifyData.name) // Complete if we got a name
       };
       
       return profile;
       
     } catch (error) {
-      console.error('[ProfileScraper] Error parsing profile data:', error);
+      console.error('[ProfileScraper] Error parsing Apify profile data:', error);
       return {
         name: 'Parse Error',
         profileUrl,
@@ -203,116 +208,52 @@ export class ProfileScraper {
     }
   }
   
-  // Extraction helper methods
-  private extractName(selector: any, structuredData: any): string {
-    // Try structured data first
-    if (structuredData?.name) return structuredData.name;
-    
-    // Fallback to HTML selectors
-    const nameSelectors = [
-      "//h1[contains(@class, 'top-card-layout__title')]/text()",
-      "//h1[@class='text-heading-xlarge inline t-24 v-align-middle break-words']/text()",
-      "//div[@class='ph5 pb5']//h1/text()"
-    ];
-    
-    for (const sel of nameSelectors) {
-      const name = selector.xpath(sel).get();
-      if (name) return name.trim();
-    }
-    
-    return 'Unknown';
+  // Apify data parsing helper methods
+  private parseApifyExperience(experienceData: any[]): LinkedInProfile['experience'] {
+    return experienceData.map(exp => ({
+      title: exp.title || exp.positionName,
+      company: exp.companyName || exp.company,
+      companyLogo: exp.companyLogo,
+      location: exp.location,
+      startDate: exp.startDate,
+      endDate: exp.endDate,
+      duration: exp.duration,
+      description: exp.description,
+    }));
   }
   
-  private extractHeadline(selector: any, structuredData: any): string | undefined {
-    if (structuredData?.jobTitle) return structuredData.jobTitle;
-    
-    const headlineSelectors = [
-      "//div[contains(@class, 'top-card-layout__headline')]/text()",
-      "//h2[@class='mt1 t-18 t-black t-normal break-words']/text()",
-      "//div[@class='ph5 pb5']//h2/text()"
-    ];
-    
-    for (const sel of headlineSelectors) {
-      const headline = selector.xpath(sel).get();
-      if (headline) return headline.trim();
-    }
-    
-    return undefined;
+  private parseApifyEducation(educationData: any[]): LinkedInProfile['education'] {
+    return educationData.map(edu => ({
+      school: edu.schoolName || edu.institution,
+      degree: edu.degree || edu.degreeName,
+      fieldOfStudy: edu.fieldOfStudy,
+      startDate: edu.startDate,
+      endDate: edu.endDate,
+      description: edu.description,
+    }));
   }
   
-  private extractLocation(selector: any, structuredData: any): string | undefined {
-    if (structuredData?.address?.addressLocality) {
-      return structuredData.address.addressLocality;
+  private parseApifySkills(skillsData: any[]): LinkedInProfile['skills'] {
+    if (Array.isArray(skillsData)) {
+      return skillsData.map(skill => {
+        if (typeof skill === 'string') {
+          return { name: skill };
+        }
+        return {
+          name: skill.name || skill.skillName,
+          endorsements: skill.endorsements || skill.endorsementCount,
+        };
+      });
     }
-    
-    const locationSelectors = [
-      "//span[contains(@class, 'top-card__subline-item')]/text()",
-      "//span[@class='t-16 t-black t-normal inline-block']/text()"
-    ];
-    
-    for (const sel of locationSelectors) {
-      const location = selector.xpath(sel).get();
-      if (location && !location.includes('follower')) {
-        return location.trim();
-      }
-    }
-    
-    return undefined;
-  }
-  
-  private extractAbout(selector: any): string | undefined {
-    const aboutSelectors = [
-      "//section[contains(@class, 'summary')]//span[@aria-hidden='true']/text()",
-      "//section[@id='about']//span[contains(@class, 'visually-hidden')]/following-sibling::span/text()"
-    ];
-    
-    for (const sel of aboutSelectors) {
-      const about = selector.xpath(sel).get();
-      if (about) return about.trim();
-    }
-    
-    return undefined;
-  }
-  
-  private extractProfilePicture(selector: any, structuredData: any): string | undefined {
-    if (structuredData?.image) return structuredData.image;
-    
-    const pictureSelectors = [
-      "//img[contains(@class, 'profile-photo-edit__preview')]/@src",
-      "//img[contains(@class, 'presence-entity__image')]/@src",
-      "//button[@aria-label='Change profile photo']//img/@src"
-    ];
-    
-    for (const sel of pictureSelectors) {
-      const picture = selector.xpath(sel).get();
-      if (picture) return picture;
-    }
-    
-    return undefined;
-  }
-  
-  private extractCurrentPosition(selector: any): LinkedInProfile['currentPosition'] | undefined {
-    // This would need more sophisticated parsing of the experience section
-    // For now, return undefined - can be enhanced based on actual HTML structure
-    return undefined;
-  }
-  
-  private extractExperience(selector: any): LinkedInProfile['experience'] {
-    // Would parse the experience section
-    // Placeholder for actual implementation
     return [];
   }
   
-  private extractEducation(selector: any): LinkedInProfile['education'] {
-    // Would parse the education section
-    // Placeholder for actual implementation
-    return [];
-  }
-  
-  private extractSkills(selector: any): LinkedInProfile['skills'] {
-    // Would parse the skills section
-    // Placeholder for actual implementation
-    return [];
+  private parseApifyCertifications(certificationsData: any[]): LinkedInProfile['certifications'] {
+    return certificationsData.map(cert => ({
+      name: cert.name || cert.certificationName,
+      issuingOrganization: cert.issuingOrganization || cert.authority,
+      issueDate: cert.issueDate || cert.dateObtained,
+    }));
   }
   
   /**
@@ -360,5 +301,5 @@ export class ProfileScraper {
   }
 }
 
-// Export singleton instance
+// Export singleton instance (no API key needed - uses Apify client)
 export const profileScraper = new ProfileScraper();

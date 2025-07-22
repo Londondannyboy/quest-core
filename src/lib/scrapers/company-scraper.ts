@@ -1,3 +1,5 @@
+import { apifyClient, APIFY_ACTORS, ApifyRunOutput } from './apify-client';
+
 export interface CompanyData {
   // Basic Information
   name: string;
@@ -55,7 +57,7 @@ export interface CompanyData {
   
   // Metadata
   scrapedAt: Date;
-  dataSource: 'harvest' | 'clearbit' | 'manual';
+  dataSource: 'harvest' | 'clearbit' | 'manual' | 'apify';
   confidence: number; // 0-1 score
 }
 
@@ -82,21 +84,16 @@ export interface HarvestApiResponse {
 }
 
 export class CompanyScraper {
-  private apiKey: string;
-  private baseUrl: string = 'https://api.harvest.ai/v1'; // Update with actual Harvest API URL
   private rateLimitDelay: number = 1000; // 1 second between requests
   private lastRequestTime: number = 0;
   
-  constructor(apiKey?: string) {
-    const key = apiKey || process.env.HARVEST_API_KEY;
-    if (!key) {
-      throw new Error('Harvest API key not found. Set HARVEST_API_KEY environment variable.');
-    }
-    this.apiKey = key;
+  constructor() {
+    // Apify client is initialized as singleton, no API key needed here
+    // The client will throw if APIFY_API_KEY is not set
   }
   
   /**
-   * Scrape company data by domain
+   * Scrape company data by domain using Apify
    * @param domain Company domain (e.g., "google.com")
    * @returns Structured company data
    */
@@ -108,46 +105,143 @@ export class CompanyScraper {
       // Clean domain
       const cleanDomain = this.cleanDomain(domain);
       
-      console.log('[CompanyScraper] Fetching company data for:', cleanDomain);
+      console.log('[CompanyScraper] Starting Apify company scrape for:', cleanDomain);
       
-      // Make API request to Harvest
-      const response = await fetch(`${this.baseUrl}/companies/domain/${cleanDomain}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+      // Try to scrape the company website for basic information
+      const websiteUrl = `https://${cleanDomain}`;
+      
+      const results = await apifyClient.scrape(
+        APIFY_ACTORS.WEB_SCRAPER,
+        {
+          startUrls: [{ url: websiteUrl }],
+          globs: [{ glob: `${websiteUrl}/**` }],
+          pageFunction: `
+            async function pageFunction(context) {
+              const { page, request } = context;
+              
+              // Extract company information from the website
+              const title = await page.title();
+              const description = await page.$eval('meta[name="description"]', el => el.content).catch(() => '');
+              const keywords = await page.$eval('meta[name="keywords"]', el => el.content).catch(() => '');
+              
+              // Try to find company information in common selectors
+              const companyInfo = await page.evaluate(() => {
+                // Common patterns for company information
+                const selectors = [
+                  'h1', 'h2', '.company-name', '.brand', '#company-name',
+                  '[data-company]', '.about', '.about-us', '#about'
+                ];
+                
+                let foundInfo = {};
+                selectors.forEach(selector => {
+                  try {
+                    const element = document.querySelector(selector);
+                    if (element && element.textContent) {
+                      foundInfo[selector] = element.textContent.trim();
+                    }
+                  } catch (e) {}
+                });
+                
+                return foundInfo;
+              });
+              
+              return {
+                url: request.url,
+                title,
+                description,
+                keywords,
+                companyInfo,
+                domain: '${cleanDomain}'
+              };
+            }
+          `,
+        },
+        {
+          timeout: 60, // 1 minute timeout
+          memory: 512, // 512MB memory
         }
-      });
+      );
       
-      if (!response.ok) {
-        throw new Error(`Harvest API error: ${response.status} ${response.statusText}`);
+      if (!results || results.length === 0) {
+        throw new Error('No company data returned from Apify');
       }
       
-      const data: HarvestApiResponse = await response.json();
+      // Parse the scraped data
+      const scrapedData = results[0];
+      const companyData = this.parseApifyCompanyData(scrapedData, cleanDomain);
       
-      // Transform Harvest data to our schema
-      const companyData = this.transformHarvestData(data, cleanDomain);
-      
-      console.log('[CompanyScraper] Successfully scraped company:', companyData.name);
+      console.log('[CompanyScraper] Successfully scraped company via Apify:', companyData.name);
       return companyData;
       
     } catch (error) {
-      console.error('[CompanyScraper] Error scraping company:', error);
+      console.error('[CompanyScraper] Error scraping company via Apify:', error);
       
       // Return minimal data on error
       return {
         name: domain,
         domain,
         scrapedAt: new Date(),
-        dataSource: 'harvest',
+        dataSource: 'apify',
         confidence: 0
       };
     }
   }
   
   /**
-   * Scrape company data by LinkedIn URL
+   * Parse Apify company data into structured format
+   */
+  private parseApifyCompanyData(apifyData: ApifyRunOutput, domain: string): CompanyData {
+    try {
+      console.log('[CompanyScraper] Parsing Apify company data:', JSON.stringify(apifyData, null, 2));
+      
+      // Extract company name from various sources
+      let companyName = domain;
+      if (apifyData.title) {
+        companyName = apifyData.title.replace(/\s*-\s*.*$/, '').trim(); // Remove taglines
+      }
+      
+      // Look for better company names in the scraped content
+      if (apifyData.companyInfo) {
+        const infoValues = Object.values(apifyData.companyInfo);
+        for (const value of infoValues) {
+          if (typeof value === 'string' && value.length > 0 && value.length < 100) {
+            // Prefer shorter, cleaner company names
+            if (!companyName || value.length < companyName.length) {
+              companyName = value;
+            }
+          }
+        }
+      }
+      
+      return {
+        name: companyName,
+        domain,
+        description: apifyData.description || '',
+        website: apifyData.url || `https://${domain}`,
+        
+        // Extract from metadata if available
+        specialties: apifyData.keywords ? apifyData.keywords.split(',').map((k: string) => k.trim()) : [],
+        
+        // Metadata
+        scrapedAt: new Date(),
+        dataSource: 'apify',
+        confidence: apifyData.title ? 0.8 : 0.3, // Higher confidence if we got a title
+      };
+      
+    } catch (error) {
+      console.error('[CompanyScraper] Error parsing Apify company data:', error);
+      return {
+        name: domain,
+        domain,
+        scrapedAt: new Date(),
+        dataSource: 'apify',
+        confidence: 0
+      };
+    }
+  }
+  
+  /**
+   * Scrape company data by LinkedIn URL using Apify
    * @param linkedinUrl Company LinkedIn URL
    * @returns Structured company data
    */
@@ -155,41 +249,147 @@ export class CompanyScraper {
     try {
       await this.enforceRateLimit();
       
-      // Extract company identifier from LinkedIn URL
-      const companyId = this.extractLinkedInCompanyId(linkedinUrl);
-      if (!companyId) {
+      // Validate LinkedIn URL
+      if (!this.isValidLinkedInCompanyUrl(linkedinUrl)) {
         throw new Error('Invalid LinkedIn company URL');
       }
       
-      console.log('[CompanyScraper] Fetching company data for LinkedIn:', companyId);
+      console.log('[CompanyScraper] Starting Apify LinkedIn company scrape:', linkedinUrl);
       
-      // Make API request
-      const response = await fetch(`${this.baseUrl}/companies/linkedin/${companyId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
+      // Use Apify LinkedIn Company Scraper
+      const results = await apifyClient.scrape(
+        APIFY_ACTORS.LINKEDIN_COMPANY,
+        {
+          startUrls: [{ url: linkedinUrl }],
+          includeEmployees: false, // We only want company data, not employee list
+        },
+        {
+          timeout: 120, // 2 minutes timeout
+          memory: 1024, // 1GB memory
         }
-      });
+      );
       
-      if (!response.ok) {
-        throw new Error(`Harvest API error: ${response.status}`);
+      if (!results || results.length === 0) {
+        throw new Error('No company data returned from Apify');
       }
       
-      const data: HarvestApiResponse = await response.json();
-      return this.transformHarvestData(data, undefined, linkedinUrl);
+      // Parse the LinkedIn company data
+      const companyData = results[0];
+      const parsedCompany = this.parseApifyLinkedInCompanyData(companyData, linkedinUrl);
+      
+      console.log('[CompanyScraper] Successfully scraped LinkedIn company via Apify:', parsedCompany.name);
+      return parsedCompany;
       
     } catch (error) {
-      console.error('[CompanyScraper] Error scraping company by LinkedIn:', error);
+      console.error('[CompanyScraper] Error scraping company by LinkedIn via Apify:', error);
       
       return {
         name: 'Unknown',
         linkedinUrl,
         scrapedAt: new Date(),
-        dataSource: 'harvest',
+        dataSource: 'apify',
         confidence: 0
       };
     }
+  }
+  
+  /**
+   * Parse Apify LinkedIn company data into structured format
+   */
+  private parseApifyLinkedInCompanyData(apifyData: ApifyRunOutput, linkedinUrl: string): CompanyData {
+    try {
+      console.log('[CompanyScraper] Parsing Apify LinkedIn company data:', JSON.stringify(apifyData, null, 2));
+      
+      return {
+        name: apifyData.companyName || apifyData.name || 'Unknown',
+        domain: apifyData.website ? this.extractDomainFromUrl(apifyData.website) : undefined,
+        description: apifyData.description || apifyData.about,
+        logo: apifyData.logo || apifyData.logoUrl,
+        website: apifyData.website,
+        linkedinUrl,
+        
+        // Company details
+        industry: apifyData.industry,
+        size: apifyData.companySize ? {
+          range: apifyData.companySize,
+          exact: this.parseEmployeeCount(apifyData.companySize)
+        } : undefined,
+        founded: apifyData.founded ? parseInt(apifyData.founded) : undefined,
+        headquarters: apifyData.headquarters ? {
+          city: apifyData.headquarters.city,
+          state: apifyData.headquarters.state,
+          country: apifyData.headquarters.country,
+          address: apifyData.headquarters.address
+        } : undefined,
+        
+        // Business information
+        type: apifyData.companyType,
+        specialties: apifyData.specialties || [],
+        
+        // Metadata
+        scrapedAt: new Date(),
+        dataSource: 'apify',
+        confidence: 0.9, // High confidence for LinkedIn data
+      };
+      
+    } catch (error) {
+      console.error('[CompanyScraper] Error parsing Apify LinkedIn company data:', error);
+      return {
+        name: 'Unknown',
+        linkedinUrl,
+        scrapedAt: new Date(),
+        dataSource: 'apify',
+        confidence: 0
+      };
+    }
+  }
+  
+  /**
+   * Validate LinkedIn company URL format
+   */
+  private isValidLinkedInCompanyUrl(url: string): boolean {
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname.includes('linkedin.com') && 
+             (parsed.pathname.includes('/company/') || parsed.pathname.includes('/school/'));
+    } catch {
+      return false;
+    }
+  }
+  
+  /**
+   * Extract domain from URL
+   */
+  private extractDomainFromUrl(url: string): string | undefined {
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname.replace(/^www\./, '');
+    } catch {
+      return undefined;
+    }
+  }
+  
+  /**
+   * Parse employee count from size range
+   */
+  private parseEmployeeCount(sizeRange: string): number | undefined {
+    if (!sizeRange) return undefined;
+    
+    // Extract numbers from ranges like "1,001-5,000 employees"
+    const match = sizeRange.match(/(\d{1,3}(?:,\d{3})*)-(\d{1,3}(?:,\d{3})*)/);
+    if (match) {
+      const min = parseInt(match[1].replace(/,/g, ''));
+      const max = parseInt(match[2].replace(/,/g, ''));
+      return Math.floor((min + max) / 2); // Return average
+    }
+    
+    // Single number like "1,234 employees"
+    const singleMatch = sizeRange.match(/(\d{1,3}(?:,\d{3})*)/);
+    if (singleMatch) {
+      return parseInt(singleMatch[1].replace(/,/g, ''));
+    }
+    
+    return undefined;
   }
   
   /**
@@ -348,5 +548,5 @@ export class CompanyScraper {
   }
 }
 
-// Export singleton instance
+// Export singleton instance (no API key needed - uses Apify client)
 export const companyScraper = new CompanyScraper();

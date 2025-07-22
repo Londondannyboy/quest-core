@@ -50,7 +50,6 @@
     "react-force-graph": "^1.48.0",
     "react-force-graph-3d": "^1.28.0",
     "recharts": "^3.1.0",
-    "scrapfly-sdk": "^0.6.9",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^2.0.0",

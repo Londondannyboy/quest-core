@@ -13,11 +13,11 @@ export async function POST(request: NextRequest) {
     
     console.log('[Test Scraping] Starting enrichment test for:', userId);
     
-    // Check if API keys are available
-    if (!process.env.SCRAPFLY_API_KEY || !process.env.HARVEST_API_KEY) {
+    // Check if Apify API key is available
+    if (!process.env.APIFY_API_KEY) {
       return NextResponse.json({
         error: 'Scraping services not configured',
-        details: 'Missing required API keys for Scrapfly or Harvest services',
+        details: 'Missing APIFY_API_KEY environment variable',
         testMode,
         timestamp: new Date().toISOString()
       }, { status: 503 });
@@ -79,15 +79,15 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     // Check environment variables safely
-    const hasScrapflyKey = !!process.env.SCRAPFLY_API_KEY;
-    const hasHarvestKey = !!process.env.HARVEST_API_KEY;
+    const hasApifyKey = !!process.env.APIFY_API_KEY;
+    const hasApifyUserId = !!process.env.APIFY_USER_ID;
     
     // Basic status response without requiring any external dependencies
     return NextResponse.json({
-      status: 'Scraping Infrastructure Status',
+      status: 'Scraping Infrastructure Status (Apify)',
       environment: {
-        scrapflyConfigured: hasScrapflyKey,
-        harvestConfigured: hasHarvestKey,
+        apifyConfigured: hasApifyKey,
+        apifyUserIdConfigured: hasApifyUserId,
         rateLimiting: true,
         cacheEnabled: true,
         production: process.env.NODE_ENV === 'production',
@@ -102,9 +102,14 @@ export async function GET() {
         linkedinUrl: 'https://www.linkedin.com/in/username',
         email: 'user@company.com'
       },
-      notes: !hasScrapflyKey || !hasHarvestKey ? 
-        'Some API keys missing - scraping functionality may be limited' : 
-        'All systems operational',
+      apifyActors: {
+        linkedinProfile: 'apify/linkedin-profile-scraper',
+        linkedinCompany: 'apify/linkedin-company-scraper',
+        webScraper: 'apify/web-scraper'
+      },
+      notes: !hasApifyKey ? 
+        'APIFY_API_KEY missing - scraping functionality disabled' : 
+        'Apify integration ready - all systems operational',
       timestamp: new Date().toISOString()
     });
     
