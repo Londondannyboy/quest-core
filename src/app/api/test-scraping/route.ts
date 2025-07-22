@@ -13,11 +13,11 @@ export async function POST(request: NextRequest) {
     
     console.log('[Test Scraping] Starting enrichment test for:', userId);
     
-    // Check if Harvest API key is available
-    if (!process.env.HARVEST_API_KEY) {
+    // Check if Apify API key is available
+    if (!process.env.APIFY_API_KEY) {
       return NextResponse.json({
         error: 'Scraping services not configured',
-        details: 'Missing HARVEST_API_KEY environment variable',
+        details: 'Missing APIFY_API_KEY environment variable',
         testMode,
         timestamp: new Date().toISOString()
       }, { status: 503 });
@@ -79,21 +79,26 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     // Check environment variables safely
-    const hasHarvestKey = !!process.env.HARVEST_API_KEY;
+    const hasApifyKey = !!process.env.APIFY_API_KEY;
+    const hasApifyUserId = !!process.env.APIFY_USER_ID;
     
-    // Debug Harvest API connection
-    let harvestDebug = {};
-    if (hasHarvestKey) {
+    // Debug Apify API connection
+    let apifyDebug = {};
+    if (hasApifyKey) {
       try {
-        // Test Harvest API connection
-        const { harvestClient } = await import('@/lib/scrapers/harvest-client');
-        await harvestClient.testConnection();
-        harvestDebug = {
+        // Test Apify API connection
+        const { apifyClient } = await import('@/lib/scrapers/apify-client');
+        const userInfo = await apifyClient.testConnection();
+        apifyDebug = {
           apiWorking: true,
-          message: 'Harvest API connection successful'
+          message: 'Apify API connection successful',
+          userInfo: {
+            username: userInfo?.username,
+            id: userInfo?.id
+          }
         };
       } catch (error) {
-        harvestDebug = {
+        apifyDebug = {
           apiWorking: false,
           error: String(error)
         };
@@ -102,9 +107,10 @@ export async function GET() {
     
     // Basic status response without requiring any external dependencies
     return NextResponse.json({
-      status: 'Scraping Infrastructure Status (Harvest API)',
+      status: 'Scraping Infrastructure Status (Apify + Harvest Actors)',
       environment: {
-        harvestConfigured: hasHarvestKey,
+        apifyConfigured: hasApifyKey,
+        apifyUserIdConfigured: hasApifyUserId,
         rateLimiting: true,
         cacheEnabled: true,
         production: process.env.NODE_ENV === 'production',
@@ -116,18 +122,23 @@ export async function GET() {
         fullEnrichment: 'POST with userId, linkedinUrl, email'
       },
       example: {
-        linkedinUrl: 'https://www.linkedin.com/in/username',
+        linkedinUrl: 'https://www.linkedin.com/in/dankeegan',
         email: 'user@company.com'
       },
-      harvestCapabilities: {
-        linkedinProfiles: 'Full profile scraping with experience, education, skills',
-        companyData: 'Company information by domain or LinkedIn URL',
-        dataEnrichment: 'Professional relationship mapping'
+      harvestActors: {
+        linkedinProfile: 'harvestapi/linkedin-profile-search',
+        linkedinCompany: 'harvestapi/linkedin-company-search',
+        companyDomain: 'harvestapi/company-search'
       },
-      notes: !hasHarvestKey ? 
-        'HARVEST_API_KEY missing - scraping functionality disabled' : 
-        'Harvest API integration ready - proven working solution',
-      harvestDebug,
+      apifyCapabilities: {
+        linkedinProfiles: 'Full profile scraping with Harvest actors (proven working)',
+        companyData: 'Company information by domain or LinkedIn URL via Harvest',
+        dataEnrichment: 'Professional relationship mapping with Apify infrastructure'
+      },
+      notes: !hasApifyKey ? 
+        'APIFY_API_KEY missing - scraping functionality disabled' : 
+        'Apify + Harvest actors integration ready - proven working solution from AI Career Platform',
+      apifyDebug,
       timestamp: new Date().toISOString()
     });
     

@@ -1,4 +1,4 @@
-import { harvestClient, HarvestCompanyData } from './harvest-client';
+import { apifyClient, APIFY_ACTORS, ApifyRunOutput } from './apify-client';
 
 export interface CompanyData {
   // Basic Information
@@ -57,7 +57,7 @@ export interface CompanyData {
   
   // Metadata
   scrapedAt: Date;
-  dataSource: 'harvest' | 'clearbit' | 'manual';
+  dataSource: 'apify-harvest' | 'clearbit' | 'manual';
   confidence: number; // 0-1 score
 }
 
@@ -88,11 +88,11 @@ export class CompanyScraper {
   private lastRequestTime: number = 0;
   
   constructor() {
-    // Harvest client is initialized as singleton with HARVEST_API_KEY
+    // Apify client is initialized as singleton with APIFY_API_KEY
   }
   
   /**
-   * Scrape company data by domain using Harvest API
+   * Scrape company data by domain using Apify + Harvest actors
    * @param domain Company domain (e.g., "google.com")
    * @returns Structured company data
    */
@@ -104,46 +104,65 @@ export class CompanyScraper {
       // Clean domain
       const cleanDomain = this.cleanDomain(domain);
       
-      console.log('[CompanyScraper] Starting Harvest API company scrape for:', cleanDomain);
+      console.log('[CompanyScraper] Starting Apify Harvest company scrape for:', cleanDomain);
       
-      // Use Harvest API to scrape company data
-      const harvestCompany = await harvestClient.scrapeCompanyByDomain(cleanDomain);
+      // Try Harvest company domain actor first
+      let results: ApifyRunOutput[];
+      try {
+        console.log('[CompanyScraper] Using Harvest company domain actor:', APIFY_ACTORS.HARVEST_COMPANY_DOMAIN);
+        results = await apifyClient.scrape(APIFY_ACTORS.HARVEST_COMPANY_DOMAIN, {
+          domains: [cleanDomain],
+          includeDetails: true
+        });
+      } catch (harvestError) {
+        console.warn('[CompanyScraper] Harvest company actor failed:', harvestError);
+        throw harvestError; // Re-throw for now, can add fallbacks later
+      }
       
-      // Convert Harvest company to our standard format
+      if (!results || results.length === 0) {
+        throw new Error('No data returned from company scraper');
+      }
+      
+      const rawCompany = results[0];
+      
+      // Transform Apify/Harvest result to our standard format
       const companyData: CompanyData = {
-        name: harvestCompany.name,
-        domain: harvestCompany.domain,
-        description: harvestCompany.description,
-        logo: harvestCompany.logo,
-        website: harvestCompany.website,
-        linkedinUrl: harvestCompany.linkedinUrl,
+        name: rawCompany.name || rawCompany.companyName || cleanDomain,
+        domain: rawCompany.domain || cleanDomain,
+        description: rawCompany.description || rawCompany.about,
+        logo: rawCompany.logo || rawCompany.logoUrl,
+        website: rawCompany.website || `https://${cleanDomain}`,
+        linkedinUrl: rawCompany.linkedinUrl || rawCompany.linkedin_url,
         
-        industry: harvestCompany.industry,
-        size: harvestCompany.size,
-        founded: harvestCompany.founded,
-        headquarters: harvestCompany.headquarters,
+        industry: rawCompany.industry,
+        size: rawCompany.size ? {
+          range: rawCompany.size.range || rawCompany.size,
+          exact: rawCompany.size.employees || this.parseEmployeeCount(rawCompany.size)
+        } : undefined,
+        founded: rawCompany.founded ? parseInt(String(rawCompany.founded)) : undefined,
+        headquarters: rawCompany.headquarters || rawCompany.location,
         
-        type: harvestCompany.type,
-        specialties: harvestCompany.specialties,
-        revenue: harvestCompany.revenue,
+        type: rawCompany.type || rawCompany.companyType,
+        specialties: rawCompany.specialties || [],
+        revenue: rawCompany.revenue,
         
-        scrapedAt: harvestCompany.scrapedAt,
-        dataSource: 'harvest',
-        confidence: harvestCompany.confidence
+        scrapedAt: new Date(),
+        dataSource: 'apify-harvest',
+        confidence: rawCompany.confidence || 0.7
       };
       
-      console.log('[CompanyScraper] Successfully scraped company via Harvest API:', companyData.name);
+      console.log('[CompanyScraper] Successfully scraped company via Apify Harvest:', companyData.name);
       return companyData;
       
     } catch (error) {
-      console.error('[CompanyScraper] Error scraping company via Harvest API:', error);
+      console.error('[CompanyScraper] Error scraping company via Apify Harvest:', error);
       
       // Return minimal data on error
       return {
         name: domain,
         domain,
         scrapedAt: new Date(),
-        dataSource: 'harvest',
+        dataSource: 'apify-harvest',
         confidence: 0
       };
     }
@@ -151,7 +170,7 @@ export class CompanyScraper {
   
   
   /**
-   * Scrape company data by LinkedIn URL using Harvest API
+   * Scrape company data by LinkedIn URL using Apify + Harvest actors
    * @param linkedinUrl Company LinkedIn URL
    * @returns Structured company data
    */
@@ -164,45 +183,66 @@ export class CompanyScraper {
         throw new Error('Invalid LinkedIn company URL');
       }
       
-      console.log('[CompanyScraper] Starting Harvest API LinkedIn company scrape:', linkedinUrl);
+      console.log('[CompanyScraper] Starting Apify Harvest LinkedIn company scrape:', linkedinUrl);
       
-      // Use Harvest API to scrape LinkedIn company data
-      const harvestCompany = await harvestClient.scrapeCompanyByLinkedIn(linkedinUrl);
+      // Try Harvest LinkedIn company actor
+      let results: ApifyRunOutput[];
+      try {
+        console.log('[CompanyScraper] Using Harvest LinkedIn company actor:', APIFY_ACTORS.HARVEST_LINKEDIN_COMPANY);
+        results = await apifyClient.scrape(APIFY_ACTORS.HARVEST_LINKEDIN_COMPANY, {
+          companyUrls: [linkedinUrl],
+          includeDetails: true
+        });
+      } catch (harvestError) {
+        console.warn('[CompanyScraper] Harvest LinkedIn company actor failed, trying fallback:', harvestError);
+        // Fallback to alternative company scraper
+        results = await apifyClient.scrape(APIFY_ACTORS.LINKEDIN_COMPANY_FALLBACK, {
+          startUrls: [{ url: linkedinUrl }]
+        });
+      }
       
-      // Convert Harvest company to our standard format
+      if (!results || results.length === 0) {
+        throw new Error('No data returned from LinkedIn company scraper');
+      }
+      
+      const rawCompany = results[0];
+      
+      // Transform Apify/Harvest result to our standard format
       const companyData: CompanyData = {
-        name: harvestCompany.name,
-        domain: harvestCompany.domain,
-        description: harvestCompany.description,
-        logo: harvestCompany.logo,
-        website: harvestCompany.website,
-        linkedinUrl: harvestCompany.linkedinUrl,
+        name: rawCompany.name || rawCompany.companyName || 'Unknown Company',
+        domain: rawCompany.domain || this.extractDomainFromUrl(rawCompany.website),
+        description: rawCompany.description || rawCompany.about,
+        logo: rawCompany.logo || rawCompany.logoUrl,
+        website: rawCompany.website,
+        linkedinUrl,
         
-        industry: harvestCompany.industry,
-        size: harvestCompany.size,
-        founded: harvestCompany.founded,
-        headquarters: harvestCompany.headquarters,
+        industry: rawCompany.industry,
+        size: rawCompany.size ? {
+          range: rawCompany.size.range || rawCompany.companySize,
+          exact: rawCompany.size.employees || this.parseEmployeeCount(rawCompany.companySize)
+        } : undefined,
+        founded: rawCompany.founded ? parseInt(String(rawCompany.founded)) : undefined,
+        headquarters: rawCompany.headquarters,
         
-        type: harvestCompany.type,
-        specialties: harvestCompany.specialties,
-        revenue: harvestCompany.revenue,
+        type: rawCompany.type || rawCompany.companyType,
+        specialties: rawCompany.specialties || [],
         
-        scrapedAt: harvestCompany.scrapedAt,
-        dataSource: 'harvest',
-        confidence: harvestCompany.confidence
+        scrapedAt: new Date(),
+        dataSource: 'apify-harvest',
+        confidence: rawCompany.confidence || 0.8
       };
       
-      console.log('[CompanyScraper] Successfully scraped LinkedIn company via Harvest API:', companyData.name);
+      console.log('[CompanyScraper] Successfully scraped LinkedIn company via Apify Harvest:', companyData.name);
       return companyData;
       
     } catch (error) {
-      console.error('[CompanyScraper] Error scraping company by LinkedIn via Harvest API:', error);
+      console.error('[CompanyScraper] Error scraping company by LinkedIn via Apify Harvest:', error);
       
       return {
         name: 'Unknown',
         linkedinUrl,
         scrapedAt: new Date(),
-        dataSource: 'harvest',
+        dataSource: 'apify-harvest',
         confidence: 0
       };
     }
@@ -303,7 +343,7 @@ export class CompanyScraper {
         companies.push({
           name: identifier,
           scrapedAt: new Date(),
-          dataSource: 'harvest',
+          dataSource: 'apify-harvest',
           confidence: 0
         });
       }
@@ -348,7 +388,7 @@ export class CompanyScraper {
       })),
       
       scrapedAt: new Date(),
-      dataSource: 'harvest',
+      dataSource: 'apify-harvest',
       confidence: data.confidence || 0.7
     };
   }
@@ -413,5 +453,5 @@ export class CompanyScraper {
   }
 }
 
-// Export singleton instance (uses Harvest API client)
+// Export singleton instance (uses Apify + Harvest actors)
 export const companyScraper = new CompanyScraper();

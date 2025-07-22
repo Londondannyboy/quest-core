@@ -253,19 +253,16 @@ export const apifyClient = new ApifyClient();
 
 // Popular Apify actors for scraping
 export const APIFY_ACTORS = {
-  // Try different LinkedIn scrapers that might be available
-  LINKEDIN_PROFILE: 'trudax/linkedin-profile-scraper', // Alternative that's commonly used
-  LINKEDIN_PROFILE_ALT: 'apify/linkedin-profile-scraper', // Original attempt
+  // Harvest LinkedIn scrapers (proven working from AI Career Platform)
+  HARVEST_LINKEDIN_PROFILE: 'harvestapi/linkedin-profile-search',
+  HARVEST_LINKEDIN_COMPANY: 'harvestapi/linkedin-company-search', 
+  HARVEST_COMPANY_DOMAIN: 'harvestapi/company-search',
   
-  // LinkedIn company scraper  
-  LINKEDIN_COMPANY: 'apify/linkedin-company-scraper',
+  // Fallback options if Harvest actors are unavailable
+  LINKEDIN_PROFILE_FALLBACK: 'trudax/linkedin-profile-scraper',
+  LINKEDIN_COMPANY_FALLBACK: 'apify/linkedin-company-scraper',
   
-  // Web scraper for general use
+  // General web scraping
   WEB_SCRAPER: 'apify/web-scraper',
-  
-  // Cheerio scraper for structured data
   CHEERIO_SCRAPER: 'apify/cheerio-scraper',
-  
-  // LinkedIn scraper by Scrapfly (might be more reliable)
-  SCRAPFLY_LINKEDIN: 'scrapfly/linkedin-profile-scraper',
 } as const;

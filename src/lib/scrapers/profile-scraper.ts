@@ -1,4 +1,4 @@
-import { harvestClient, HarvestLinkedInProfile } from './harvest-client';
+import { apifyClient, APIFY_ACTORS, ApifyRunOutput } from './apify-client';
 
 export interface LinkedInProfile {
   // Basic Information
@@ -65,11 +65,11 @@ export class ProfileScraper {
   private lastRequestTime: number = 0;
   
   constructor() {
-    // Harvest client is initialized as singleton with HARVEST_API_KEY
+    // Apify client is initialized as singleton with APIFY_API_KEY
   }
   
   /**
-   * Scrape a LinkedIn profile by URL using Harvest API
+   * Scrape a LinkedIn profile by URL using Apify + Harvest actors
    * @param profileUrl LinkedIn profile URL (e.g., https://www.linkedin.com/in/username)
    * @returns Parsed LinkedIn profile data
    */
@@ -83,45 +83,100 @@ export class ProfileScraper {
         throw new Error('Invalid LinkedIn profile URL');
       }
       
-      console.log('[ProfileScraper] Starting Harvest API LinkedIn scrape:', profileUrl);
+      console.log('[ProfileScraper] Starting Apify Harvest LinkedIn scrape:', profileUrl);
       
       // Test connection first
       try {
-        await harvestClient.testConnection();
-        console.log('[ProfileScraper] Harvest API connection verified');
+        await apifyClient.testConnection();
+        console.log('[ProfileScraper] Apify connection verified');
       } catch (connectionError) {
-        console.error('[ProfileScraper] Harvest API connection failed:', connectionError);
-        throw new Error(`Harvest API connection failed: ${connectionError}`);
+        console.error('[ProfileScraper] Apify connection failed:', connectionError);
+        throw new Error(`Apify connection failed: ${connectionError}`);
       }
       
-      // Use Harvest API to scrape LinkedIn profile
-      const harvestProfile = await harvestClient.scrapeLinkedInProfile(profileUrl);
+      // Try Harvest LinkedIn actor first (proven working)
+      let results: ApifyRunOutput[];
+      try {
+        console.log('[ProfileScraper] Using Harvest LinkedIn actor:', APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE);
+        results = await apifyClient.scrape(APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE, {
+          profileUrls: [profileUrl],
+          includeExperience: true,
+          includeEducation: true,
+          includeSkills: true,
+          includeContact: true
+        });
+      } catch (harvestError) {
+        console.warn('[ProfileScraper] Harvest actor failed, trying fallback:', harvestError);
+        // Fallback to alternative LinkedIn scraper
+        results = await apifyClient.scrape(APIFY_ACTORS.LINKEDIN_PROFILE_FALLBACK, {
+          startUrls: [{ url: profileUrl }]
+        });
+      }
       
-      // Convert Harvest profile to our standard format
+      if (!results || results.length === 0) {
+        throw new Error('No data returned from LinkedIn scraper');
+      }
+      
+      const rawProfile = results[0];
+      
+      // Transform Apify result to our standard format
       const profile: LinkedInProfile = {
-        name: harvestProfile.name,
-        headline: harvestProfile.headline,
-        location: harvestProfile.location,
-        about: harvestProfile.about,
-        profilePicture: harvestProfile.profilePicture,
+        name: rawProfile.name || rawProfile.fullName || 'Unknown',
+        headline: rawProfile.headline || rawProfile.title,
+        location: rawProfile.location,
+        about: rawProfile.about || rawProfile.summary,
+        profilePicture: rawProfile.profilePicture || rawProfile.photoUrl,
         
-        currentPosition: harvestProfile.currentPosition,
-        experience: harvestProfile.experience,
-        education: harvestProfile.education,
-        skills: harvestProfile.skills,
-        languages: [], // Harvest might not provide this
-        certifications: [], // Harvest might not provide this
+        currentPosition: rawProfile.currentPosition ? {
+          title: rawProfile.currentPosition.title,
+          company: rawProfile.currentPosition.company,
+          companyLogo: rawProfile.currentPosition.companyLogo,
+          startDate: rawProfile.currentPosition.startDate,
+          location: rawProfile.currentPosition.location,
+        } : undefined,
+        
+        experience: rawProfile.experience?.map((exp: any) => ({
+          title: exp.title,
+          company: exp.company,
+          companyLogo: exp.companyLogo,
+          location: exp.location,
+          startDate: exp.startDate,
+          endDate: exp.endDate,
+          duration: exp.duration,
+          description: exp.description,
+        })) || [],
+        
+        education: rawProfile.education?.map((edu: any) => ({
+          school: edu.school || edu.institution,
+          degree: edu.degree,
+          fieldOfStudy: edu.fieldOfStudy,
+          startDate: edu.startDate,
+          endDate: edu.endDate,
+          description: edu.description,
+        })) || [],
+        
+        skills: rawProfile.skills?.map((skill: any) => ({
+          name: typeof skill === 'string' ? skill : skill.name,
+          endorsements: typeof skill === 'object' ? skill.endorsements : undefined,
+        })) || [],
+        
+        languages: rawProfile.languages || [],
+        certifications: rawProfile.certifications?.map((cert: any) => ({
+          name: cert.name,
+          issuingOrganization: cert.issuingOrganization,
+          issueDate: cert.issueDate,
+        })) || [],
         
         profileUrl,
         scrapedAt: new Date(),
-        isComplete: !!(harvestProfile.name && harvestProfile.name !== 'Unknown'),
+        isComplete: !!(rawProfile.name || rawProfile.fullName),
       };
       
-      console.log('[ProfileScraper] Successfully scraped profile via Harvest API:', profile.name);
+      console.log('[ProfileScraper] Successfully scraped profile via Apify Harvest:', profile.name);
       return profile;
       
     } catch (error) {
-      console.error('[ProfileScraper] Error scraping profile via Harvest API:', error);
+      console.error('[ProfileScraper] Error scraping profile via Apify Harvest:', error);
       
       // Return partial profile with error details
       return {
@@ -205,5 +260,5 @@ export class ProfileScraper {
   }
 }
 
-// Export singleton instance (uses Harvest API client)
+// Export singleton instance (uses Apify + Harvest actors)
 export const profileScraper = new ProfileScraper();
