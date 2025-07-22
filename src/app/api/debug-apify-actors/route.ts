@@ -11,13 +11,18 @@ export async function GET() {
     
     // List available actors
     const actors = await apifyClient.listActors();
-    console.log('[Debug Apify Actors] Found actors:', actors.length);
+    console.log('[Debug Apify Actors] Raw actors response:', actors);
+    
+    // Handle different response formats
+    const actorsList = Array.isArray(actors) ? actors : 
+                      (actors?.data?.items || actors?.items || []);
     
     return NextResponse.json({
       success: true,
       userInfo,
-      totalActors: actors.length,
-      actors: actors.map(actor => ({
+      rawActorsResponse: actors, // Include raw response for debugging
+      totalActors: actorsList.length,
+      actors: actorsList.map(actor => ({
         id: actor.id,
         name: actor.name,
         username: actor.username,
