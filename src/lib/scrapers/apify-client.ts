@@ -61,8 +61,15 @@ export class ApifyClient {
 
     // Start the actor run  
     console.log('[ApifyClient] Starting actor run:', actorId);
-    console.log('[ApifyClient] Full URL:', `${this.baseURL}/acts/${actorId}/runs`);
-    const runResponse = await fetch(`${this.baseURL}/acts/${actorId}/runs`, {
+    
+    // Check if this is a task ID (typically shorter alphanumeric) vs actor name
+    const isTaskId = actorId.match(/^[A-Za-z0-9]{15,20}$/);
+    const endpoint = isTaskId 
+      ? `${this.baseURL}/actor-tasks/${actorId}/runs`
+      : `${this.baseURL}/acts/${actorId}/runs`;
+    
+    console.log('[ApifyClient] Using endpoint:', endpoint);
+    const runResponse = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.apiKey}`,
