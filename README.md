@@ -225,4 +225,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Quest Core** - Discover your authentic professional identity through AI-powered coaching and intelligent skill development.
 
-*Built with ❤️ using Cole Medin's context engineering patterns*
+*Built with ❤️ using Cole Medin's context engineering patterns*# Force deployment trigger
