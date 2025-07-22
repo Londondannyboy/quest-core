@@ -254,7 +254,7 @@ export const apifyClient = new ApifyClient();
 // Popular Apify actors for scraping
 export const APIFY_ACTORS = {
   // Harvest LinkedIn scrapers (proven working from AI Career Platform)
-  HARVEST_LINKEDIN_PROFILE: 'harvestapi/linkedin-profile-search',
+  HARVEST_LINKEDIN_PROFILE: 'M2FMdjRVeF1HPGFcc', // Actual working Harvest actor ID
   HARVEST_LINKEDIN_COMPANY: 'harvestapi/linkedin-company-search', 
   HARVEST_COMPANY_DOMAIN: 'harvestapi/company-search',
   

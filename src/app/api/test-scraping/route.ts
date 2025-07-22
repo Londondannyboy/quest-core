@@ -126,7 +126,7 @@ export async function GET() {
         email: 'user@company.com'
       },
       harvestActors: {
-        linkedinProfile: 'harvestapi/linkedin-profile-search',
+        linkedinProfile: 'M2FMdjRVeF1HPGFcc', // Proven working Harvest actor ID
         linkedinCompany: 'harvestapi/linkedin-company-search',
         companyDomain: 'harvestapi/company-search'
       },
