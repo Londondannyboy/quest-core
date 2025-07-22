@@ -86,37 +86,66 @@ export class ProfileScraper {
       
       console.log('[ProfileScraper] Starting Apify LinkedIn scrape:', profileUrl);
       
-      // Use Apify LinkedIn Profile Scraper
-      const results = await apifyClient.scrape(
-        APIFY_ACTORS.LINKEDIN_PROFILE,
-        {
-          startUrls: [{ url: profileUrl }],
-          includeUnfollowedCompanies: false,
-          saveToContacts: false,
-        },
-        {
-          timeout: 120, // 2 minutes timeout
-          memory: 1024, // 1GB memory
-        }
-      );
-      
-      if (!results || results.length === 0) {
-        throw new Error('No profile data returned from Apify');
+      // Test connection first
+      try {
+        await apifyClient.testConnection();
+        console.log('[ProfileScraper] Apify connection verified');
+      } catch (connectionError) {
+        console.error('[ProfileScraper] Apify connection failed:', connectionError);
+        throw new Error(`Apify connection failed: ${connectionError}`);
       }
       
-      // Parse the first result (should be the profile)
-      const profileData = results[0];
-      const profile = this.parseApifyProfileData(profileData, profileUrl);
+      // Try different LinkedIn scrapers
+      const actorsToTry = [
+        { id: APIFY_ACTORS.LINKEDIN_PROFILE, name: 'trudax/linkedin-profile-scraper' },
+        { id: APIFY_ACTORS.LINKEDIN_PROFILE_ALT, name: 'apify/linkedin-profile-scraper' }
+      ];
       
-      console.log('[ProfileScraper] Successfully scraped profile via Apify:', profile.name);
-      return profile;
+      let lastError: Error | null = null;
+      
+      for (const actor of actorsToTry) {
+        try {
+          console.log(`[ProfileScraper] Trying actor: ${actor.name}`);
+          
+          // Use simpler input format that most LinkedIn scrapers accept
+          const results = await apifyClient.scrape(
+            actor.id,
+            {
+              startUrls: [profileUrl],
+              // Remove parameters that might not be supported
+            },
+            {
+              timeout: 180, // 3 minutes timeout
+              memory: 2048, // 2GB memory
+            }
+          );
+          
+          if (results && results.length > 0) {
+            console.log('[ProfileScraper] Got results from actor:', actor.name);
+            const profileData = results[0];
+            const profile = this.parseApifyProfileData(profileData, profileUrl);
+            
+            console.log('[ProfileScraper] Successfully scraped profile via Apify:', profile.name);
+            return profile;
+          } else {
+            console.log(`[ProfileScraper] No results from actor: ${actor.name}`);
+          }
+        } catch (error) {
+          console.error(`[ProfileScraper] Actor ${actor.name} failed:`, error);
+          lastError = error instanceof Error ? error : new Error(String(error));
+          // Continue to next actor
+        }
+      }
+      
+      // If we get here, all actors failed
+      throw new Error(`All LinkedIn actors failed. Last error: ${lastError?.message}`);
       
     } catch (error) {
       console.error('[ProfileScraper] Error scraping profile via Apify:', error);
       
-      // Return partial profile on error
+      // Return partial profile with error details
       return {
-        name: 'Unknown',
+        name: 'Error: ' + (error instanceof Error ? error.message : String(error)),
         profileUrl,
         scrapedAt: new Date(),
         isComplete: false

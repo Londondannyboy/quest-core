@@ -180,12 +180,71 @@ export class ApifyClient {
       memory?: number;
     } = {}
   ): Promise<ApifyRunOutput[]> {
-    const run = await this.runActor(actorId, input, {
-      ...options,
-      waitForFinish: true,
-    });
+    console.log('[ApifyClient] Starting scrape with actor:', actorId);
+    console.log('[ApifyClient] Input data:', JSON.stringify(input, null, 2));
+    console.log('[ApifyClient] Options:', options);
+    
+    try {
+      const run = await this.runActor(actorId, input, {
+        ...options,
+        waitForFinish: true,
+      });
 
-    return this.getRunResults(run.id);
+      return this.getRunResults(run.id);
+    } catch (error) {
+      console.error('[ApifyClient] Scrape failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * List available actors in the account
+   * @returns List of available actors
+   */
+  async listActors(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseURL}/acts`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to list actors: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('[ApifyClient] Failed to list actors:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Test the connection and API key
+   * @returns User information if successful
+   */
+  async testConnection(): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseURL}/users/me`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`API test failed: ${response.status} - ${JSON.stringify(error)}`);
+      }
+
+      const data = await response.json();
+      console.log('[ApifyClient] Connection successful, user:', data.data?.username);
+      return data.data;
+    } catch (error) {
+      console.error('[ApifyClient] Connection test failed:', error);
+      throw error;
+    }
   }
 }
 
@@ -194,8 +253,9 @@ export const apifyClient = new ApifyClient();
 
 // Popular Apify actors for scraping
 export const APIFY_ACTORS = {
-  // LinkedIn profile scraper
-  LINKEDIN_PROFILE: 'apify/linkedin-profile-scraper',
+  // Try different LinkedIn scrapers that might be available
+  LINKEDIN_PROFILE: 'trudax/linkedin-profile-scraper', // Alternative that's commonly used
+  LINKEDIN_PROFILE_ALT: 'apify/linkedin-profile-scraper', // Original attempt
   
   // LinkedIn company scraper  
   LINKEDIN_COMPANY: 'apify/linkedin-company-scraper',
@@ -205,4 +265,7 @@ export const APIFY_ACTORS = {
   
   // Cheerio scraper for structured data
   CHEERIO_SCRAPER: 'apify/cheerio-scraper',
+  
+  // LinkedIn scraper by Scrapfly (might be more reliable)
+  SCRAPFLY_LINKEDIN: 'scrapfly/linkedin-profile-scraper',
 } as const;
