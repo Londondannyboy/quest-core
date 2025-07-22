@@ -1,4 +1,4 @@
-import { apifyClient, APIFY_ACTORS, ApifyRunOutput } from './apify-client';
+import { harvestClient, HarvestCompanyData } from './harvest-client';
 
 export interface CompanyData {
   // Basic Information
@@ -88,12 +88,11 @@ export class CompanyScraper {
   private lastRequestTime: number = 0;
   
   constructor() {
-    // Apify client is initialized as singleton, no API key needed here
-    // The client will throw if APIFY_API_KEY is not set
+    // Harvest client is initialized as singleton with HARVEST_API_KEY
   }
   
   /**
-   * Scrape company data by domain using Apify
+   * Scrape company data by domain using Harvest API
    * @param domain Company domain (e.g., "google.com")
    * @returns Structured company data
    */
@@ -105,83 +104,46 @@ export class CompanyScraper {
       // Clean domain
       const cleanDomain = this.cleanDomain(domain);
       
-      console.log('[CompanyScraper] Starting Apify company scrape for:', cleanDomain);
+      console.log('[CompanyScraper] Starting Harvest API company scrape for:', cleanDomain);
       
-      // Try to scrape the company website for basic information
-      const websiteUrl = `https://${cleanDomain}`;
+      // Use Harvest API to scrape company data
+      const harvestCompany = await harvestClient.scrapeCompanyByDomain(cleanDomain);
       
-      const results = await apifyClient.scrape(
-        APIFY_ACTORS.WEB_SCRAPER,
-        {
-          startUrls: [{ url: websiteUrl }],
-          globs: [{ glob: `${websiteUrl}/**` }],
-          pageFunction: `
-            async function pageFunction(context) {
-              const { page, request } = context;
-              
-              // Extract company information from the website
-              const title = await page.title();
-              const description = await page.$eval('meta[name="description"]', el => el.content).catch(() => '');
-              const keywords = await page.$eval('meta[name="keywords"]', el => el.content).catch(() => '');
-              
-              // Try to find company information in common selectors
-              const companyInfo = await page.evaluate(() => {
-                // Common patterns for company information
-                const selectors = [
-                  'h1', 'h2', '.company-name', '.brand', '#company-name',
-                  '[data-company]', '.about', '.about-us', '#about'
-                ];
-                
-                let foundInfo = {};
-                selectors.forEach(selector => {
-                  try {
-                    const element = document.querySelector(selector);
-                    if (element && element.textContent) {
-                      foundInfo[selector] = element.textContent.trim();
-                    }
-                  } catch (e) {}
-                });
-                
-                return foundInfo;
-              });
-              
-              return {
-                url: request.url,
-                title,
-                description,
-                keywords,
-                companyInfo,
-                domain: '${cleanDomain}'
-              };
-            }
-          `,
-        },
-        {
-          timeout: 60, // 1 minute timeout
-          memory: 512, // 512MB memory
-        }
-      );
+      // Convert Harvest company to our standard format
+      const companyData: CompanyData = {
+        name: harvestCompany.name,
+        domain: harvestCompany.domain,
+        description: harvestCompany.description,
+        logo: harvestCompany.logo,
+        website: harvestCompany.website,
+        linkedinUrl: harvestCompany.linkedinUrl,
+        
+        industry: harvestCompany.industry,
+        size: harvestCompany.size,
+        founded: harvestCompany.founded,
+        headquarters: harvestCompany.headquarters,
+        
+        type: harvestCompany.type,
+        specialties: harvestCompany.specialties,
+        revenue: harvestCompany.revenue,
+        
+        scrapedAt: harvestCompany.scrapedAt,
+        dataSource: 'harvest',
+        confidence: harvestCompany.confidence
+      };
       
-      if (!results || results.length === 0) {
-        throw new Error('No company data returned from Apify');
-      }
-      
-      // Parse the scraped data
-      const scrapedData = results[0];
-      const companyData = this.parseApifyCompanyData(scrapedData, cleanDomain);
-      
-      console.log('[CompanyScraper] Successfully scraped company via Apify:', companyData.name);
+      console.log('[CompanyScraper] Successfully scraped company via Harvest API:', companyData.name);
       return companyData;
       
     } catch (error) {
-      console.error('[CompanyScraper] Error scraping company via Apify:', error);
+      console.error('[CompanyScraper] Error scraping company via Harvest API:', error);
       
       // Return minimal data on error
       return {
         name: domain,
         domain,
         scrapedAt: new Date(),
-        dataSource: 'apify',
+        dataSource: 'harvest',
         confidence: 0
       };
     }
@@ -241,7 +203,7 @@ export class CompanyScraper {
   }
   
   /**
-   * Scrape company data by LinkedIn URL using Apify
+   * Scrape company data by LinkedIn URL using Harvest API
    * @param linkedinUrl Company LinkedIn URL
    * @returns Structured company data
    */
@@ -254,40 +216,45 @@ export class CompanyScraper {
         throw new Error('Invalid LinkedIn company URL');
       }
       
-      console.log('[CompanyScraper] Starting Apify LinkedIn company scrape:', linkedinUrl);
+      console.log('[CompanyScraper] Starting Harvest API LinkedIn company scrape:', linkedinUrl);
       
-      // Use Apify LinkedIn Company Scraper
-      const results = await apifyClient.scrape(
-        APIFY_ACTORS.LINKEDIN_COMPANY,
-        {
-          startUrls: [{ url: linkedinUrl }],
-          includeEmployees: false, // We only want company data, not employee list
-        },
-        {
-          timeout: 120, // 2 minutes timeout
-          memory: 1024, // 1GB memory
-        }
-      );
+      // Use Harvest API to scrape LinkedIn company data
+      const harvestCompany = await harvestClient.scrapeCompanyByLinkedIn(linkedinUrl);
       
-      if (!results || results.length === 0) {
-        throw new Error('No company data returned from Apify');
-      }
+      // Convert Harvest company to our standard format
+      const companyData: CompanyData = {
+        name: harvestCompany.name,
+        domain: harvestCompany.domain,
+        description: harvestCompany.description,
+        logo: harvestCompany.logo,
+        website: harvestCompany.website,
+        linkedinUrl: harvestCompany.linkedinUrl,
+        
+        industry: harvestCompany.industry,
+        size: harvestCompany.size,
+        founded: harvestCompany.founded,
+        headquarters: harvestCompany.headquarters,
+        
+        type: harvestCompany.type,
+        specialties: harvestCompany.specialties,
+        revenue: harvestCompany.revenue,
+        
+        scrapedAt: harvestCompany.scrapedAt,
+        dataSource: 'harvest',
+        confidence: harvestCompany.confidence
+      };
       
-      // Parse the LinkedIn company data
-      const companyData = results[0];
-      const parsedCompany = this.parseApifyLinkedInCompanyData(companyData, linkedinUrl);
-      
-      console.log('[CompanyScraper] Successfully scraped LinkedIn company via Apify:', parsedCompany.name);
-      return parsedCompany;
+      console.log('[CompanyScraper] Successfully scraped LinkedIn company via Harvest API:', companyData.name);
+      return companyData;
       
     } catch (error) {
-      console.error('[CompanyScraper] Error scraping company by LinkedIn via Apify:', error);
+      console.error('[CompanyScraper] Error scraping company by LinkedIn via Harvest API:', error);
       
       return {
         name: 'Unknown',
         linkedinUrl,
         scrapedAt: new Date(),
-        dataSource: 'apify',
+        dataSource: 'harvest',
         confidence: 0
       };
     }
