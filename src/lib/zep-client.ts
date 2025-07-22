@@ -38,7 +38,7 @@ export interface SessionSummary {
  * Provides persistent memory, context extraction, and Trinity evolution tracking
  */
 export class QuestZepClient {
-  private zep: ZepClient;
+  public zep: ZepClient;
   private initialized: boolean = false;
 
   constructor() {
@@ -102,6 +102,9 @@ export class QuestZepClient {
       });
 
       console.log('[Zep] Session created:', { userId, sessionId, sessionType });
+      
+      // Track session in user metadata for cross-session memory
+      await this.addUserSession(userId, sessionId);
     } catch (error) {
       console.error('[Zep] Error creating session:', error);
       throw error;
@@ -130,6 +133,30 @@ export class QuestZepClient {
       });
 
       console.log('[Zep] Message added:', { sessionId, role, contentLength: content.length });
+      
+      // If it's a user message, extract facts and update user metadata
+      if (role === 'user' && metadata?.userId) {
+        try {
+          const facts = this.extractKeyPhrasesFromContent(content);
+          if (facts.length > 0) {
+            const userSummary = await this.getUserSummary(metadata.userId);
+            const existingFacts = userSummary?.metadata?.facts || [];
+            const updatedFacts = [...new Set([...existingFacts, ...facts])];
+            
+            await this.zep.user.update(metadata.userId, {
+              metadata: {
+                ...userSummary?.metadata,
+                facts: updatedFacts,
+                lastUpdated: new Date().toISOString()
+              }
+            });
+            
+            console.log('[Zep] Updated user facts:', { userId: metadata.userId, newFacts: facts.length });
+          }
+        } catch (error) {
+          console.log('[Zep] Could not update user facts:', error);
+        }
+      }
     } catch (error) {
       console.error('[Zep] Error adding message:', error);
       throw error;
@@ -143,31 +170,55 @@ export class QuestZepClient {
     const phrases: string[] = [];
     const text = content.toLowerCase();
     
-    // Extract interests
-    const interestMatches = text.match(/(?:love|enjoy|passionate about|interested in|like|awesome|amazing)\s+([^.!?]+)/g);
+    // Extract interests with context
+    const interestMatches = text.match(/(?:love|enjoy|passionate about|interested in|like|awesome|amazing|great|wonderful)\s+([^.!?,]+)/g);
     if (interestMatches) {
       phrases.push(...interestMatches.map(match => `User ${match.trim()}`));
     }
     
     // Extract goals and plans
-    const goalMatches = text.match(/(?:want to|planning to|going to|dream of|hope to)\s+([^.!?]+)/g);
+    const goalMatches = text.match(/(?:want to|planning to|going to|dream of|hope to|thinking about|considering)\s+([^.!?,]+)/g);
     if (goalMatches) {
       phrases.push(...goalMatches.map(match => `User ${match.trim()}`));
     }
     
-    // Extract locations and places
-    const locationMatches = text.match(/\b(spain|spanish|madrid|barcelona|europe|travel|holiday|vacation|visit)\b/g);
-    if (locationMatches) {
-      phrases.push(...locationMatches.map(loc => `User mentioned ${loc}`));
+    // Extract ALL countries and places dynamically
+    const countryMatches = text.match(/\b([A-Z][a-z]+(?:ia|land|any|ce|il|ay|en|an|al|co|es|ugal|ance|many|pan|ly|den|way|um|key))\b/gi);
+    if (countryMatches) {
+      phrases.push(...countryMatches.map(country => `User mentioned ${country}`));
     }
     
-    // Extract activities and sports
-    const activityMatches = text.match(/\b(football|soccer|sports|match|team|play|game)\b/g);
+    // Extract cities (capitalized words that might be cities)
+    const cityMatches = text.match(/\b(paris|london|rome|berlin|tokyo|madrid|barcelona|valencia|lisbon|amsterdam|prague|vienna|budapest|athens|milan|venice|florence|munich|hamburg|frankfurt|zurich|geneva|stockholm|oslo|copenhagen|dublin|edinburgh|glasgow|manchester|liverpool|bristol|oxford|cambridge)\b/gi);
+    if (cityMatches) {
+      phrases.push(...cityMatches.map(city => `User mentioned ${city}`));
+    }
+    
+    // Extract food and cuisine mentions
+    const foodMatches = text.match(/\b(food|cuisine|dish|restaurant|cafe|bar|tapas|paella|pasta|pizza|sushi|curry|wine|cheese|bread|coffee|tea|breakfast|lunch|dinner|meal|eating|dining|cooking|recipe)\b/gi);
+    if (foodMatches) {
+      phrases.push(...foodMatches.map(food => `User interested in ${food}`));
+    }
+    
+    // Extract activities and hobbies
+    const activityMatches = text.match(/\b(football|soccer|basketball|tennis|golf|swimming|running|cycling|hiking|climbing|surfing|skiing|dancing|music|art|museum|gallery|theater|cinema|movie|book|reading|writing|photography|travel|trip|vacation|holiday|adventure|explore|visit|tour|beach|mountain|park|nature)\b/gi);
     if (activityMatches) {
       phrases.push(...activityMatches.map(activity => `User interested in ${activity}`));
     }
     
-    return [...new Set(phrases)].slice(0, 10); // Remove duplicates and limit
+    // Extract emotions and preferences
+    const emotionMatches = text.match(/(?:feel|feeling|felt)\s+([^.!?,]+)/g);
+    if (emotionMatches) {
+      phrases.push(...emotionMatches.map(match => `User ${match.trim()}`));
+    }
+    
+    // Extract "I am" statements
+    const iAmMatches = text.match(/(?:i am|i'm|i)\s+(a|an)?\s*([^.!?,]+)/g);
+    if (iAmMatches) {
+      phrases.push(...iAmMatches.slice(0, 3).map(match => `User is ${match.replace(/i am|i'm|i/i, '').trim()}`));
+    }
+    
+    return [...new Set(phrases)].slice(0, 15); // Remove duplicates and increase limit
   }
 
   /**
@@ -329,10 +380,68 @@ export class QuestZepClient {
       return false;
     }
   }
+  
+  /**
+   * Get all sessions for a user (for cross-session memory)
+   */
+  async getUserSessions(userId: string): Promise<any[]> {
+    try {
+      // Get user metadata which might contain session history
+      const userSummary = await this.getUserSummary(userId);
+      const sessionIds = userSummary?.metadata?.sessions || [];
+      
+      // Try to get memories from recent sessions
+      const sessions = [];
+      for (const sessionId of sessionIds.slice(-5)) { // Last 5 sessions
+        try {
+          const memory = await this.zep.memory.get(sessionId);
+          if (memory) {
+            sessions.push({
+              sessionId,
+              summary: memory.summary,
+              facts: memory.facts || []
+            });
+          }
+        } catch (error) {
+          console.log('[Zep] Could not retrieve session:', sessionId);
+        }
+      }
+      
+      return sessions;
+    } catch (error) {
+      console.error('[Zep] Error getting user sessions:', error);
+      return [];
+    }
+  }
+  
+  /**
+   * Update user sessions list
+   */
+  async addUserSession(userId: string, sessionId: string): Promise<void> {
+    try {
+      const userSummary = await this.getUserSummary(userId);
+      const existingSessions = userSummary?.metadata?.sessions || [];
+      
+      if (!existingSessions.includes(sessionId)) {
+        await this.zep.user.update(userId, {
+          metadata: {
+            ...userSummary?.metadata,
+            sessions: [...existingSessions, sessionId],
+            lastSessionId: sessionId,
+            lastSessionDate: new Date().toISOString()
+          }
+        });
+        
+        console.log('[Zep] Added session to user metadata:', { userId, sessionId });
+      }
+    } catch (error) {
+      console.log('[Zep] Could not update user sessions:', error);
+    }
+  }
 
   // Private helper methods
 
-  private async getUserSummary(userId: string): Promise<any> {
+  async getUserSummary(userId: string): Promise<any> {
     try {
       return await this.zep.user.get(userId);
     } catch (error) {

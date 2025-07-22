@@ -29,8 +29,11 @@ export async function POST(request: NextRequest) {
       console.log('[Zep] Session already exists or other error:', error);
     }
     
-    // Add message to Zep memory
-    await zepClient.addMessage(sessionId, role, content, metadata);
+    // Add message to Zep memory with userId in metadata for fact extraction
+    await zepClient.addMessage(sessionId, role, content, {
+      ...metadata,
+      userId // Include userId for user metadata updates
+    });
     
     console.log('[Zep] Message stored:', { userId, sessionId, role, contentLength: content.length });
     

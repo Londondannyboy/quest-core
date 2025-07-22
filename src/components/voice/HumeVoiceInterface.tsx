@@ -99,7 +99,7 @@ export function HumeVoiceInterface({
     if (lastMessage.type === 'error') {
       console.error('Hume error:', lastMessage)
     }
-  }, [messages])
+  }, [messages, storeMessageInZep])
   
   // Auto-reconnect on disconnect
   useEffect(() => {
@@ -134,7 +134,7 @@ export function HumeVoiceInterface({
     }
   }
 
-  const storeMessageInZep = async (turn: ConversationTurn) => {
+  const storeMessageInZep = useCallback(async (turn: ConversationTurn) => {
     try {
       await fetch('/api/zep-message', {
         method: 'POST',
@@ -153,7 +153,7 @@ export function HumeVoiceInterface({
     } catch (error) {
       console.error('Failed to store message in Zep:', error)
     }
-  }
+  }, [sessionId, sessionType])
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60)

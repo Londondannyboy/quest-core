@@ -7,47 +7,37 @@ function extractContextualRelationships(conversationContent: string[]) {
   const relationships: any[] = [];
   const fullContent = conversationContent.join(' ').toLowerCase();
   
-  // Interest → Goal Connections (optimized for Zep facts)
+  // Dynamic Interest → Goal Connections
   const interestGoalPatterns = [
+    // Sports connections
     {
-      interest: /\b(football|soccer|sports)\b/gi,
-      goal: /\b(spain|spanish|holiday.*spain|travel.*spain)\b/gi,
+      interest: /\b(football|soccer|basketball|tennis|golf|sports|match|game|team)\b/gi,
+      goal: /\b([a-z]+(?:ia|land|any|ce|il|ay|en|an|al|co)\b|travel|trip|visit|holiday|vacation)\b/gi,
       connection: 'drives interest in'
     },
+    // Food & Culture connections
     {
-      interest: /\bfootball\b/gi,
-      goal: /\b(holiday planning|travel planning)\b/gi,
-      connection: 'motivates'
-    },
-    {
-      interest: /\b(football matches|la liga)\b/gi,
-      goal: /\b(spain|spanish culture)\b/gi,
-      connection: 'connects to'
-    },
-    {
-      interest: /\bspanish culture\b/gi,
-      goal: /\b(holiday planning|travel planning)\b/gi,
-      connection: 'influences'
-    },
-    {
-      interest: /\b(tapas|spanish cuisine)\b/gi,
-      goal: /\b(spain|holiday planning|dining experiences)\b/gi,
+      interest: /\b(food|cuisine|dish|tapas|paella|wine|cheese|pasta|pizza|sushi|restaurant|dining|cooking)\b/gi,
+      goal: /\b([a-z]+(?:ia|land|any|ce|il|ay|en|an|al|co)\b|culture|experience|explore|taste|discover)\b/gi,
       connection: 'enhances interest in'
     },
+    // Travel & Places connections
     {
-      interest: /\b(beaches|coastal experiences)\b/gi,
-      goal: /\b(spain|holiday planning|beach activities)\b/gi,
-      connection: 'motivates visit to'
+      interest: /\b(beach|mountain|city|museum|art|gallery|castle|palace|park)\b/gi,
+      goal: /\b(travel|trip|visit|holiday|vacation|explore|discover|adventure|tour)\b/gi,
+      connection: 'motivates'
     },
+    // Activities & Experiences
     {
-      interest: /\bbaseball\b/gi,
-      goal: /\b(valencia|madrid|barcelona|spain|sports events)\b/gi,
-      connection: 'creates interest in'
+      interest: /\b(music|dance|art|theater|cinema|photography|hiking|cycling|swimming)\b/gi,
+      goal: /\b(experience|explore|learn|discover|enjoy|participate)\b/gi,
+      connection: 'leads to'
     },
+    // Emotion & Goal connections
     {
-      interest: /\b(valencia|madrid|barcelona|seville)\b/gi,
-      goal: /\b(spain|holiday planning|travel planning|sports events)\b/gi,
-      connection: 'focuses travel on'
+      interest: /\b(love|enjoy|passionate|interested|excited)\b/gi,
+      goal: /\b(plan|dream|hope|want|wish|goal|future)\b/gi,
+      connection: 'inspires'
     }
   ];
   
@@ -185,12 +175,36 @@ export async function POST(request: NextRequest) {
       const context = await zepClient.getCoachingContext(userId, '', sessionId);
       
       // ALSO get cross-session memory for persistent relationships
-      const crossSessionContext = await zepClient.getCoachingContext(userId, 'football spain tapas beaches valencia baseball');
+      // Instead of hardcoded search, use a broader query to capture all user interests
+      const crossSessionContext = await zepClient.getCoachingContext(userId, '');
       
-      // Combine current session facts with historical facts
+      // Get user's full memory to ensure we capture all topics
+      let allUserFacts: string[] = [];
+      try {
+        // Try to get all user facts from Zep (not just session-specific)
+        const userMemory = await zepClient.getUserSummary(userId);
+        if (userMemory?.metadata?.facts) {
+          allUserFacts = userMemory.metadata.facts;
+        }
+        
+        // Also get facts from recent sessions
+        const recentSessions = await zepClient.getUserSessions(userId);
+        for (const session of recentSessions) {
+          if (session.facts && Array.isArray(session.facts)) {
+            allUserFacts.push(...session.facts);
+          }
+        }
+      } catch (error) {
+        console.log('[Live Context] Could not retrieve full user memory:', error);
+      }
+      
+      // Combine all sources of facts for comprehensive context
       const allRelevantFacts = [
-        ...context.relevantFacts,
-        ...crossSessionContext.relevantFacts
+        ...new Set([
+          ...context.relevantFacts,
+          ...crossSessionContext.relevantFacts,
+          ...allUserFacts
+        ])
       ];
       
       console.log('[Live Context] Total facts (current + historical):', allRelevantFacts.length);
@@ -220,38 +234,64 @@ export async function POST(request: NextRequest) {
         const entities = [];
         const factLower = fact.toLowerCase();
         
-        // Core topics (existing)
-        if (factLower.includes('football')) entities.push('football');
-        if (factLower.includes('spain') || factLower.includes('spanish')) entities.push('Spain');
-        if (factLower.includes('holiday') || factLower.includes('visit')) entities.push('holiday planning');
-        if (factLower.includes('la liga') || factLower.includes('matches')) entities.push('football matches');
-        if (factLower.includes('culture')) entities.push('Spanish culture');
-        if (factLower.includes('cities')) entities.push('travel planning');
+        // Extract ALL proper nouns and significant words dynamically
+        // This ensures we capture any country, city, food, or activity mentioned
         
-        // Food & Dining (NEW)
-        if (factLower.includes('tapas')) entities.push('tapas');
-        if (factLower.includes('food') || factLower.includes('cuisine') || factLower.includes('dining')) entities.push('Spanish cuisine');
-        if (factLower.includes('restaurant') || factLower.includes('eating')) entities.push('dining experiences');
+        // Countries - dynamic extraction
+        const countryPatterns = /\b(france|french|spain|spanish|italy|italian|germany|german|england|english|portugal|portuguese|greece|greek|japan|japanese|china|chinese|mexico|mexican|brazil|brazilian|india|indian|thailand|thai|vietnam|vietnamese|korea|korean)\b/gi;
+        const countryMatches = factLower.match(countryPatterns);
+        if (countryMatches) {
+          countryMatches.forEach(country => {
+            const normalized = country.charAt(0).toUpperCase() + country.slice(1);
+            entities.push(normalized);
+          });
+        }
         
-        // Beach & Leisure (NEW)
-        if (factLower.includes('beach') || factLower.includes('beaches')) entities.push('beaches');
-        if (factLower.includes('coast') || factLower.includes('mediterranean')) entities.push('coastal experiences');
-        if (factLower.includes('sun') || factLower.includes('swimming')) entities.push('beach activities');
+        // Food & Cuisine - dynamic extraction
+        const foodPatterns = /\b(tapas|paella|wine|cheese|bread|pasta|pizza|sushi|curry|noodles|rice|seafood|meat|vegetarian|vegan|breakfast|lunch|dinner|dessert|coffee|tea|restaurant|cafe|bar|food|cuisine|dish|meal|eating|dining|cooking|recipe)\b/gi;
+        const foodMatches = factLower.match(foodPatterns);
+        if (foodMatches) {
+          foodMatches.forEach(food => {
+            entities.push(food);
+          });
+        }
         
-        // Cities & Locations (NEW)
-        if (factLower.includes('valencia')) entities.push('Valencia');
-        if (factLower.includes('madrid')) entities.push('Madrid');
-        if (factLower.includes('barcelona')) entities.push('Barcelona');
-        if (factLower.includes('seville') || factLower.includes('sevilla')) entities.push('Seville');
+        // Activities & Interests - dynamic extraction
+        const activityPatterns = /\b(football|soccer|basketball|tennis|golf|swimming|running|cycling|hiking|climbing|surfing|skiing|dancing|music|art|museum|gallery|theater|cinema|movie|book|reading|writing|photography|travel|trip|vacation|holiday|visit|explore|adventure|tour|sightseeing)\b/gi;
+        const activityMatches = factLower.match(activityPatterns);
+        if (activityMatches) {
+          activityMatches.forEach(activity => {
+            entities.push(activity);
+          });
+        }
         
-        // Sports & Activities (EXPANDED)
-        if (factLower.includes('baseball')) entities.push('baseball');
-        if (factLower.includes('game') || factLower.includes('match')) entities.push('sports events');
+        // Cities & Places - dynamic extraction (broader)
+        const placePatterns = /\b(paris|london|rome|berlin|tokyo|beijing|new york|los angeles|madrid|barcelona|valencia|seville|lisbon|amsterdam|prague|vienna|budapest|athens|cairo|dubai|sydney|melbourne|toronto|vancouver|beach|mountain|lake|river|park|garden|castle|palace|church|cathedral|bridge|tower|square|market|mall|shop|store|airport|station|hotel|home|office|school|university)\b/gi;
+        const placeMatches = factLower.match(placePatterns);
+        if (placeMatches) {
+          placeMatches.forEach(place => {
+            const normalized = place.charAt(0).toUpperCase() + place.slice(1);
+            entities.push(normalized);
+          });
+        }
         
-        // Activities & Experiences
-        if (factLower.includes('museum') || factLower.includes('art')) entities.push('cultural activities');
-        if (factLower.includes('bar') || factLower.includes('nightlife')) entities.push('nightlife');
-        if (factLower.includes('walk') || factLower.includes('explore')) entities.push('exploration');
+        // Emotions & Feelings - for better context
+        const emotionPatterns = /\b(love|like|enjoy|passionate|interested|excited|happy|amazing|awesome|great|wonderful|beautiful|fantastic|incredible|dream|hope|want|wish|plan|goal)\b/gi;
+        const emotionMatches = factLower.match(emotionPatterns);
+        if (emotionMatches) {
+          emotionMatches.forEach(emotion => {
+            entities.push(emotion);
+          });
+        }
+        
+        // Also keep the original fact if it's short enough and no entities were found
+        if (entities.length === 0 && fact.length < 100) {
+          // Extract key phrases from the fact itself
+          const keyWords = fact.split(/\s+/)
+            .filter(word => word.length > 4 && !['about', 'there', 'which', 'would', 'could', 'should', 'their', 'these', 'those'].includes(word.toLowerCase()))
+            .slice(0, 3);
+          entities.push(...keyWords);
+        }
         
         return entities.join(' ');
       }).filter(Boolean);
