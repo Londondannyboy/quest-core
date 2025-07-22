@@ -57,7 +57,7 @@ export interface CompanyData {
   
   // Metadata
   scrapedAt: Date;
-  dataSource: 'harvest' | 'clearbit' | 'manual' | 'apify';
+  dataSource: 'harvest' | 'clearbit' | 'manual';
   confidence: number; // 0-1 score
 }
 
@@ -149,58 +149,6 @@ export class CompanyScraper {
     }
   }
   
-  /**
-   * Parse Apify company data into structured format
-   */
-  private parseApifyCompanyData(apifyData: ApifyRunOutput, domain: string): CompanyData {
-    try {
-      console.log('[CompanyScraper] Parsing Apify company data:', JSON.stringify(apifyData, null, 2));
-      
-      // Extract company name from various sources
-      let companyName = domain;
-      if (apifyData.title) {
-        companyName = apifyData.title.replace(/\s*-\s*.*$/, '').trim(); // Remove taglines
-      }
-      
-      // Look for better company names in the scraped content
-      if (apifyData.companyInfo) {
-        const infoValues = Object.values(apifyData.companyInfo);
-        for (const value of infoValues) {
-          if (typeof value === 'string' && value.length > 0 && value.length < 100) {
-            // Prefer shorter, cleaner company names
-            if (!companyName || value.length < companyName.length) {
-              companyName = value;
-            }
-          }
-        }
-      }
-      
-      return {
-        name: companyName,
-        domain,
-        description: apifyData.description || '',
-        website: apifyData.url || `https://${domain}`,
-        
-        // Extract from metadata if available
-        specialties: apifyData.keywords ? apifyData.keywords.split(',').map((k: string) => k.trim()) : [],
-        
-        // Metadata
-        scrapedAt: new Date(),
-        dataSource: 'apify',
-        confidence: apifyData.title ? 0.8 : 0.3, // Higher confidence if we got a title
-      };
-      
-    } catch (error) {
-      console.error('[CompanyScraper] Error parsing Apify company data:', error);
-      return {
-        name: domain,
-        domain,
-        scrapedAt: new Date(),
-        dataSource: 'apify',
-        confidence: 0
-      };
-    }
-  }
   
   /**
    * Scrape company data by LinkedIn URL using Harvest API
@@ -260,56 +208,6 @@ export class CompanyScraper {
     }
   }
   
-  /**
-   * Parse Apify LinkedIn company data into structured format
-   */
-  private parseApifyLinkedInCompanyData(apifyData: ApifyRunOutput, linkedinUrl: string): CompanyData {
-    try {
-      console.log('[CompanyScraper] Parsing Apify LinkedIn company data:', JSON.stringify(apifyData, null, 2));
-      
-      return {
-        name: apifyData.companyName || apifyData.name || 'Unknown',
-        domain: apifyData.website ? this.extractDomainFromUrl(apifyData.website) : undefined,
-        description: apifyData.description || apifyData.about,
-        logo: apifyData.logo || apifyData.logoUrl,
-        website: apifyData.website,
-        linkedinUrl,
-        
-        // Company details
-        industry: apifyData.industry,
-        size: apifyData.companySize ? {
-          range: apifyData.companySize,
-          exact: this.parseEmployeeCount(apifyData.companySize)
-        } : undefined,
-        founded: apifyData.founded ? parseInt(apifyData.founded) : undefined,
-        headquarters: apifyData.headquarters ? {
-          city: apifyData.headquarters.city,
-          state: apifyData.headquarters.state,
-          country: apifyData.headquarters.country,
-          address: apifyData.headquarters.address
-        } : undefined,
-        
-        // Business information
-        type: apifyData.companyType,
-        specialties: apifyData.specialties || [],
-        
-        // Metadata
-        scrapedAt: new Date(),
-        dataSource: 'apify',
-        confidence: 0.9, // High confidence for LinkedIn data
-      };
-      
-    } catch (error) {
-      console.error('[CompanyScraper] Error parsing Apify LinkedIn company data:', error);
-      return {
-        name: 'Unknown',
-        linkedinUrl,
-        scrapedAt: new Date(),
-        dataSource: 'apify',
-        confidence: 0
-      };
-    }
-  }
   
   /**
    * Validate LinkedIn company URL format
@@ -515,5 +413,5 @@ export class CompanyScraper {
   }
 }
 
-// Export singleton instance (no API key needed - uses Apify client)
+// Export singleton instance (uses Harvest API client)
 export const companyScraper = new CompanyScraper();
