@@ -82,6 +82,34 @@ export async function GET() {
     const hasApifyKey = !!process.env.APIFY_API_KEY;
     const hasApifyUserId = !!process.env.APIFY_USER_ID;
     
+    // Debug Apify connection
+    let apifyDebug = {};
+    if (hasApifyKey) {
+      try {
+        const response = await fetch('https://api.apify.com/v2/users/me', {
+          headers: {
+            'Authorization': `Bearer ${process.env.APIFY_API_KEY}`,
+          },
+        });
+        const userData = await response.json();
+        
+        apifyDebug = {
+          apiWorking: response.ok,
+          status: response.status,
+          userInfo: response.ok ? {
+            id: userData.data?.id,
+            username: userData.data?.username
+          } : null,
+          error: !response.ok ? userData : null
+        };
+      } catch (error) {
+        apifyDebug = {
+          apiWorking: false,
+          error: String(error)
+        };
+      }
+    }
+    
     // Basic status response without requiring any external dependencies
     return NextResponse.json({
       status: 'Scraping Infrastructure Status (Apify)',
@@ -110,6 +138,7 @@ export async function GET() {
       notes: !hasApifyKey ? 
         'APIFY_API_KEY missing - scraping functionality disabled' : 
         'Apify integration ready - all systems operational',
+      apifyDebug,
       timestamp: new Date().toISOString()
     });
     
