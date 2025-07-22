@@ -9,7 +9,13 @@ export { EnrichmentPipeline, enrichmentPipeline } from './enrichment-pipeline';
 export type { EnrichedUserData } from './enrichment-pipeline';
 
 // Utility functions
-export { extractLinkedInUsername, buildLinkedInUrl } from './utils';
+export { 
+  extractLinkedInUsername, 
+  buildLinkedInUrl,
+  cleanDomain,
+  isValidDomain,
+  isValidLinkedInUrl 
+} from './utils';
 
 // Rate limiting configuration
 export const SCRAPING_CONFIG = {
