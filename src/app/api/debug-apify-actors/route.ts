@@ -10,7 +10,7 @@ export async function GET() {
     console.log('[Debug Apify Actors] User info:', userInfo);
     
     // List available actors
-    const actors = await apifyClient.listActors();
+    const actors: any = await apifyClient.listActors();
     console.log('[Debug Apify Actors] Raw actors response:', actors);
     
     // Handle different response formats
