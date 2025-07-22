@@ -105,8 +105,9 @@ export class ProfileScraper {
       console.log('[ProfileScraper] Scraping profile:', profileUrl);
       const result = await this.client.scrape(scrapeConfig);
       
-      if (!result.success) {
-        throw new Error(`Scraping failed: ${result.error}`);
+      // Check if scraping was successful
+      if (!result || result.status_code !== 200) {
+        throw new Error(`Scraping failed: ${result?.status_code || 'Unknown error'}`);
       }
       
       // Parse the scraped data

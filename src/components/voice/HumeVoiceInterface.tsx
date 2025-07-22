@@ -68,6 +68,28 @@ export function HumeVoiceInterface({
     }
   }, [status.value])
 
+  // Store message in Zep for memory processing
+  const storeMessageInZep = useCallback(async (turn: ConversationTurn) => {
+    try {
+      await fetch('/api/zep-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          role: turn.type === 'user' ? 'user' : 'assistant',
+          content: turn.content,
+          metadata: {
+            timestamp: turn.timestamp.toISOString(),
+            emotion: turn.emotion,
+            sessionType: sessionType
+          }
+        })
+      })
+    } catch (error) {
+      console.error('Failed to store message in Zep:', error)
+    }
+  }, [sessionId, sessionType])
+
   // Process Hume messages
   useEffect(() => {
     const lastMessage = messages[messages.length - 1]
@@ -133,27 +155,6 @@ export function HumeVoiceInterface({
       console.error('Failed to disconnect:', error)
     }
   }
-
-  const storeMessageInZep = useCallback(async (turn: ConversationTurn) => {
-    try {
-      await fetch('/api/zep-message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId,
-          role: turn.type === 'user' ? 'user' : 'assistant',
-          content: turn.content,
-          metadata: {
-            timestamp: turn.timestamp.toISOString(),
-            emotion: turn.emotion,
-            sessionType: sessionType
-          }
-        })
-      })
-    } catch (error) {
-      console.error('Failed to store message in Zep:', error)
-    }
-  }, [sessionId, sessionType])
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60)

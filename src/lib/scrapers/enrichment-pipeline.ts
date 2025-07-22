@@ -277,33 +277,34 @@ export class EnrichmentPipeline {
     insights: EnrichedUserData['insights']
   ): Promise<void> {
     try {
-      // Store or update user enrichment data
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          metadata: {
-            enrichment: {
-              profile: profile ? {
-                name: profile.name,
-                headline: profile.headline,
-                location: profile.location,
-                skills: profile.skills?.map(s => s.name),
-                profilePicture: profile.profilePicture
-              } : null,
-              companies: companies.map(c => ({
-                name: c.name,
-                domain: c.domain,
-                industry: c.industry,
-                size: c.size?.range
-              })),
-              insights,
-              enrichedAt: new Date()
-            }
-          }
-        }
-      });
+      // TODO: Store enrichment data in dedicated enrichment table
+      // Currently disabled due to missing metadata field in User schema
+      // await prisma.user.update({
+      //   where: { id: userId },
+      //   data: {
+      //     metadata: {
+      //       enrichment: {
+      //         profile: profile ? {
+      //           name: profile.name,
+      //           headline: profile.headline,
+      //           location: profile.location,
+      //           skills: profile.skills?.map(s => s.name),
+      //           profilePicture: profile.profilePicture
+      //         } : null,
+      //         companies: companies.map(c => ({
+      //           name: c.name,
+      //           domain: c.domain,
+      //           industry: c.industry,
+      //           size: c.size?.range
+      //         })),
+      //         insights,
+      //         enrichedAt: new Date()
+      //       }
+      //     }
+      //   }
+      // });
       
-      console.log('[EnrichmentPipeline] Stored enrichment data for user:', userId);
+      console.log('[EnrichmentPipeline] Enrichment data ready for user:', userId);
     } catch (error) {
       console.error('[EnrichmentPipeline] Error storing enrichment data:', error);
     }
