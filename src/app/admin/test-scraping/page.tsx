@@ -186,7 +186,7 @@ export default function TestScrapingPage() {
             
             {!isLoading && !error && !result && (
               <div className="text-center p-8 text-gray-500">
-                <p>Click "Test LinkedIn Scraping" to start</p>
+                <p>Click &quot;Test LinkedIn Scraping&quot; to start</p>
               </div>
             )}
           </CardContent>
