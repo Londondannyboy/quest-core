@@ -27,15 +27,13 @@ export default function TestScrapingPage() {
     try {
       console.log('Starting scraping test for:', linkedinUrl);
       
-      const response = await fetch('/api/test-scraping', {
+      const response = await fetch('/api/test-profile-simple', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          linkedinUrl: linkedinUrl.trim(),
-          email: email.trim(),
-          testMode: true
+          linkedinUrl: linkedinUrl.trim()
         })
       });
 
