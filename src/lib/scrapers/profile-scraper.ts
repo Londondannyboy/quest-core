@@ -114,59 +114,64 @@ export class ProfileScraper {
         throw new Error('No data returned from LinkedIn scraper');
       }
       
-      const rawProfile = results[0];
+      const rawResult = results[0];
+      const rawProfile = rawResult.element || rawResult; // Quest scraper uses 'element' wrapper
       
-      // Transform Apify result to our standard format
+      // Transform Quest/Apify result to our standard format
       const profile: LinkedInProfile = {
-        name: rawProfile.name || rawProfile.fullName || 'Unknown',
-        headline: rawProfile.headline || rawProfile.title,
-        location: rawProfile.location,
-        about: rawProfile.about || rawProfile.summary,
-        profilePicture: rawProfile.profilePicture || rawProfile.photoUrl,
+        name: `${rawProfile.firstName || ''} ${rawProfile.lastName || ''}`.trim() || rawProfile.name || 'Unknown',
+        headline: rawProfile.headline,
+        location: rawProfile.location?.linkedinText || rawProfile.location?.parsed?.text || rawProfile.location,
+        about: rawProfile.about,
+        profilePicture: rawProfile.photo || rawProfile.profilePicture,
         
-        currentPosition: rawProfile.currentPosition ? {
-          title: rawProfile.currentPosition.title,
-          company: rawProfile.currentPosition.company,
-          companyLogo: rawProfile.currentPosition.companyLogo,
-          startDate: rawProfile.currentPosition.startDate,
-          location: rawProfile.currentPosition.location,
+        currentPosition: rawProfile.currentPosition?.[0] ? {
+          title: rawProfile.experience?.[0]?.position || 'Position',
+          company: rawProfile.currentPosition[0].companyName,
+          companyLogo: undefined,
+          startDate: rawProfile.experience?.[0]?.startDate?.text,
+          location: rawProfile.experience?.[0]?.location,
         } : undefined,
         
         experience: rawProfile.experience?.map((exp: any) => ({
-          title: exp.title,
-          company: exp.company,
+          title: exp.position || exp.title,
+          company: exp.companyName || exp.company,
           companyLogo: exp.companyLogo,
           location: exp.location,
-          startDate: exp.startDate,
-          endDate: exp.endDate,
+          startDate: exp.startDate?.text || exp.startDate,
+          endDate: exp.endDate?.text || exp.endDate,
           duration: exp.duration,
           description: exp.description,
         })) || [],
         
         education: rawProfile.education?.map((edu: any) => ({
-          school: edu.school || edu.institution,
+          school: edu.schoolName || edu.school,
           degree: edu.degree,
           fieldOfStudy: edu.fieldOfStudy,
-          startDate: edu.startDate,
-          endDate: edu.endDate,
-          description: edu.description,
+          startDate: edu.startDate?.text || edu.startDate,
+          endDate: edu.endDate?.text || edu.endDate,
+          description: edu.description || edu.insights,
         })) || [],
         
         skills: rawProfile.skills?.map((skill: any) => ({
           name: typeof skill === 'string' ? skill : skill.name,
-          endorsements: typeof skill === 'object' ? skill.endorsements : undefined,
+          endorsements: typeof skill === 'object' ? 
+            (typeof skill.endorsements === 'string' ? 
+              parseInt(skill.endorsements.match(/\d+/)?.[0] || '0') : 
+              skill.endorsements) : 
+            undefined,
         })) || [],
         
         languages: rawProfile.languages || [],
         certifications: rawProfile.certifications?.map((cert: any) => ({
-          name: cert.name,
-          issuingOrganization: cert.issuingOrganization,
+          name: cert.name || cert.title,
+          issuingOrganization: cert.issuingOrganization || cert.issuedBy,
           issueDate: cert.issueDate,
         })) || [],
         
         profileUrl,
         scrapedAt: new Date(),
-        isComplete: !!(rawProfile.name || rawProfile.fullName),
+        isComplete: !!(rawProfile.firstName || rawProfile.name),
       };
       
       console.log('[ProfileScraper] Successfully scraped profile via Apify Harvest:', profile.name);
