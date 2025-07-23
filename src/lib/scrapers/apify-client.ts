@@ -270,6 +270,7 @@ export const APIFY_ACTORS = {
   QUEST_PROFILE_ACTOR: 'infrastructure_quest/quest-profile-scraper',
   HARVEST_COMPANY_ACTOR: 'harvestapi/linkedin-company-employees',
   HARVEST_COMPANY_DOMAIN: 'harvestapi/company-search', // Company domain scraper
+  HARVEST_LINKEDIN_COMPANY: 'harvestapi/linkedin-company-search', // LinkedIn company scraper
   
   // Fallback options
   LINKEDIN_PROFILE_FALLBACK: 'trudax/linkedin-profile-scraper',
