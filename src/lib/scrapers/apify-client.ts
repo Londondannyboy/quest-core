@@ -262,12 +262,12 @@ export const apifyClient = new ApifyClient();
 
 // Popular Apify actors for scraping
 export const APIFY_ACTORS = {
-  // Harvest LinkedIn scrapers (task IDs for proven working scrapers)
-  HARVEST_LINKEDIN_PROFILE: 'harvestapi/linkedin-profile-scraper', // Use actor name for now
+  // Quest Core custom scrapers (proven working task IDs)
+  HARVEST_LINKEDIN_PROFILE: 'l4Rzg56H5cbFETmgx', // quest-profile-scraper task
   HARVEST_LINKEDIN_EMPLOYEES: 'Z4hQMjDxMd5Gk4Cmj', // Company employees scraper task
   
-  // Actor names
-  HARVEST_PROFILE_ACTOR: 'harvestapi/linkedin-profile-scraper',
+  // Actor names if creating new tasks
+  QUEST_PROFILE_ACTOR: 'infrastructure_quest/quest-profile-scraper',
   HARVEST_COMPANY_ACTOR: 'harvestapi/linkedin-company-employees',
   
   // Fallback options

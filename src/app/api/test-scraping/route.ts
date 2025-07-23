@@ -126,9 +126,9 @@ export async function GET() {
         email: 'user@company.com'
       },
       harvestActors: {
-        linkedinProfile: 'harvestapi/linkedin-profile-scraper', // Individual profile scraper actor
+        linkedinProfile: 'l4Rzg56H5cbFETmgx', // quest-profile-scraper task (infrastructure_quest)
         linkedinEmployees: 'Z4hQMjDxMd5Gk4Cmj', // Company employees scraper task  
-        profileActor: 'harvestapi/linkedin-profile-scraper' // Actor name
+        profileActor: 'infrastructure_quest/quest-profile-scraper' // Actor name
       },
       apifyCapabilities: {
         linkedinProfiles: 'Full profile scraping with Harvest actors (proven working)',

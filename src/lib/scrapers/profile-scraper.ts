@@ -99,12 +99,8 @@ export class ProfileScraper {
       try {
         console.log('[ProfileScraper] Using Harvest LinkedIn actor:', APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE);
         results = await apifyClient.scrape(APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE, {
-          startUrls: [profileUrl],
-          // Individual profile scraper may have different input format
-          proxy: {
-            useApifyProxy: true,
-            apifyProxyGroups: ['RESIDENTIAL']
-          }
+          urls: [profileUrl],
+          queries: [profileUrl]
         });
       } catch (harvestError) {
         console.warn('[ProfileScraper] Harvest actor failed, trying fallback:', harvestError);
