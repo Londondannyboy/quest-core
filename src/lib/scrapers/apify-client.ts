@@ -262,12 +262,15 @@ export const apifyClient = new ApifyClient();
 
 // Popular Apify actors for scraping
 export const APIFY_ACTORS = {
-  // Harvest LinkedIn scrapers (proven working from AI Career Platform)
-  HARVEST_LINKEDIN_PROFILE: 'M2FMdjRVeF1HPGFcc', // Actual working Harvest actor ID
-  HARVEST_LINKEDIN_COMPANY: 'harvestapi/linkedin-company-search', 
-  HARVEST_COMPANY_DOMAIN: 'harvestapi/company-search',
+  // Harvest LinkedIn scrapers (task IDs for proven working scrapers)
+  HARVEST_LINKEDIN_PROFILE: 'Z4hQMjDxMd5Gk4Cmj', // Individual profile scraper task
+  HARVEST_LINKEDIN_EMPLOYEES: 'M2FMdjRVeF1HPGFcc', // Company employees scraper task
   
-  // Fallback options if Harvest actors are unavailable
+  // Actor names if creating new tasks
+  HARVEST_PROFILE_ACTOR: 'harvestapi/linkedin-profile-scraper',
+  HARVEST_COMPANY_ACTOR: 'harvestapi/linkedin-company-employees',
+  
+  // Fallback options
   LINKEDIN_PROFILE_FALLBACK: 'trudax/linkedin-profile-scraper',
   LINKEDIN_COMPANY_FALLBACK: 'apify/linkedin-company-scraper',
   

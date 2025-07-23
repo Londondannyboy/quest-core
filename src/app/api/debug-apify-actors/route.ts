@@ -22,7 +22,7 @@ export async function GET() {
       userInfo,
       rawActorsResponse: actors, // Include raw response for debugging
       totalActors: actorsList.length,
-      actors: actorsList.map(actor => ({
+      actors: actorsList.map((actor: any) => ({
         id: actor.id,
         name: actor.name,
         username: actor.username,
