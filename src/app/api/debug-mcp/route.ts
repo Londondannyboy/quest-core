@@ -52,15 +52,12 @@ export async function POST(request: Request) {
 
     console.log('[Debug MCP] Testing LinkedIn scraping via MCP:', linkedinUrl);
     
-    // Test a simple actor run
-    const result = await mcpApifyClient.runActor('harvestapi/linkedin-profile-scraper', {
-      queries: [linkedinUrl],
-      urls: [linkedinUrl]
-    });
+    // Test LinkedIn profile scraper
+    const result = await mcpApifyClient.runLinkedInProfileScraper(linkedinUrl);
     
     return NextResponse.json({
       success: true,
-      message: 'MCP actor execution successful',
+      message: 'MCP LinkedIn scraper execution successful',
       result,
       timestamp: new Date().toISOString()
     });

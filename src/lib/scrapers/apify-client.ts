@@ -181,7 +181,7 @@ export class ApifyClient {
 
   /**
    * Run an actor and get results in one call
-   * @param actorId The Apify actor ID
+   * @param actorId The Apify actor ID or task ID
    * @param input Input data
    * @param options Run options
    * @returns Scraped data results
@@ -194,7 +194,7 @@ export class ApifyClient {
       memory?: number;
     } = {}
   ): Promise<ApifyRunOutput[]> {
-    console.log('[ApifyClient] Starting scrape with actor:', actorId);
+    console.log('[ApifyClient] Starting scrape with actor/task:', actorId);
     console.log('[ApifyClient] Input data:', JSON.stringify(input, null, 2));
     console.log('[ApifyClient] Options:', options);
     
@@ -209,6 +209,28 @@ export class ApifyClient {
       console.error('[ApifyClient] Scrape failed:', error);
       throw error;
     }
+  }
+
+  /**
+   * Scrape LinkedIn profile using the confirmed working task
+   * @param linkedinUrl LinkedIn profile URL
+   * @returns Scraped profile data
+   */
+  async scrapeLinkedInProfile(linkedinUrl: string): Promise<ApifyRunOutput[]> {
+    // Use the exact task ID and input format provided by user
+    const taskId = APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE_TASK;
+    const input = {
+      queries: [linkedinUrl],
+      urls: [linkedinUrl]
+    };
+
+    console.log('[ApifyClient] Scraping LinkedIn profile with confirmed task:', taskId);
+    console.log('[ApifyClient] LinkedIn URL:', linkedinUrl);
+
+    return this.scrape(taskId, input, {
+      timeout: 300, // 5 minutes
+      memory: 1024  // 1GB
+    });
   }
 
   /**
@@ -265,13 +287,14 @@ export class ApifyClient {
 // Export singleton instance
 export const apifyClient = new ApifyClient();
 
-// Popular Apify actors for scraping
+// Popular Apify actors and tasks for scraping
 export const APIFY_ACTORS = {
-  // Use confirmed working actor names
-  HARVEST_LINKEDIN_PROFILE: 'trudax/linkedin-profile-scraper', // Confirmed working LinkedIn scraper
+  // Use confirmed working task IDs from user
+  HARVEST_LINKEDIN_PROFILE_TASK: 'LpVuK3Zozwuipa5bp', // Confirmed working task ID for harvestapi/linkedin-profile-scraper
   HARVEST_LINKEDIN_EMPLOYEES: 'harvestapi/linkedin-company-employees', // Company employees scraper
   
   // Actor names if creating new tasks
+  HARVEST_LINKEDIN_PROFILE_ACTOR: 'harvestapi/linkedin-profile-scraper', // Actor name for profile scraper
   QUEST_PROFILE_ACTOR: 'infrastructure_quest/quest-profile-scraper',
   HARVEST_COMPANY_ACTOR: 'harvestapi/linkedin-company-employees',
   HARVEST_COMPANY_DOMAIN: 'harvestapi/company-search', // Company domain scraper
