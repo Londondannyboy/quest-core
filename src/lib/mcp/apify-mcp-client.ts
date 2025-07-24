@@ -38,6 +38,7 @@ export class MCPApifyClient {
 
     try {
       console.log('[MCPApifyClient] Connecting to Apify MCP server via stdio...');
+      console.log('[MCPApifyClient] Using APIFY_TOKEN:', this.apiKey ? 'SET' : 'MISSING');
       
       // Create MCP client
       this.client = new Client({
@@ -53,10 +54,14 @@ export class MCPApifyClient {
         args: ["@apify/actors-mcp-server"],
         env: {
           ...process.env,
-          APIFY_TOKEN: this.apiKey
+          APIFY_TOKEN: this.apiKey,
+          // Add debugging
+          DEBUG: "mcp:*"
         }
       });
 
+      console.log('[MCPApifyClient] Starting MCP server subprocess...');
+      
       // Connect to the MCP server
       await this.client.connect(this.transport);
       this.isConnected = true;
@@ -147,14 +152,17 @@ export class MCPApifyClient {
       console.log('[MCPApifyClient] Available tools:', tools.map(t => t.name));
       
       // Look for LinkedIn profile scraper tool (MCP auto-generates tool names)
-      const linkedInTool = tools.find(tool => 
-        tool.name.includes('linkedin') && 
-        tool.name.includes('profile') ||
-        tool.name.includes('harvestapi')
-      );
+      const linkedInTool = tools.find(tool => {
+        const name = tool.name.toLowerCase();
+        return (name.includes('linkedin') && name.includes('profile')) ||
+               name.includes('harvestapi') ||
+               name.includes('harvest') ||
+               tool.name === 'LpVuK3Zozwuipa5bp'; // Your specific task ID
+      });
       
       if (!linkedInTool) {
-        throw new Error('LinkedIn profile scraper tool not found in MCP server');
+        console.error('[MCPApifyClient] Available tools:', tools.map(t => t.name));
+        throw new Error(`LinkedIn profile scraper tool not found. Available tools: ${tools.map(t => t.name).join(', ')}`);
       }
       
       console.log('[MCPApifyClient] Using tool:', linkedInTool.name);
