@@ -1,4 +1,5 @@
 import { apifyClient, ApifyRunOutput } from './apify-client';
+import { mcpApifyClient, MCPApifyRunOutput } from '../mcp/apify-mcp-client';
 
 export interface LinkedInProfile {
   // Basic Information
@@ -63,13 +64,16 @@ export interface LinkedInProfile {
 export class ProfileScraper {
   private rateLimitDelay: number = 2000; // 2 seconds between requests
   private lastRequestTime: number = 0;
+  private useMCP: boolean;
   
   constructor() {
-    // Direct Apify client is initialized as singleton with APIFY_API_KEY
+    // Check environment flag to decide between MCP and Direct API
+    this.useMCP = process.env.USE_APIFY_MCP === 'true';
+    console.log('[ProfileScraper] Using', this.useMCP ? 'MCP' : 'Direct API', 'integration');
   }
   
   /**
-   * Scrape a LinkedIn profile by URL using Direct Apify API
+   * Scrape a LinkedIn profile by URL using MCP or Direct API based on configuration
    * @param profileUrl LinkedIn profile URL (e.g., https://www.linkedin.com/in/username)
    * @returns Parsed LinkedIn profile data
    */
@@ -83,28 +87,38 @@ export class ProfileScraper {
         throw new Error('Invalid LinkedIn profile URL');
       }
       
-      console.log('[ProfileScraper] Starting Direct API LinkedIn scrape:', profileUrl);
+      console.log(`[ProfileScraper] Starting ${this.useMCP ? 'MCP' : 'Direct API'} LinkedIn scrape:`, profileUrl);
       
-      // Test API connection first
-      try {
-        await apifyClient.testConnection();
-        console.log('[ProfileScraper] Apify API connection verified');
-      } catch (connectionError) {
-        console.error('[ProfileScraper] Apify API connection failed:', connectionError);
-        throw new Error(`Apify API connection failed: ${connectionError}`);
-      }
+      // Use MCP or Direct API based on configuration
+      let results: (ApifyRunOutput | MCPApifyRunOutput)[];
       
-      // Use direct API approach with the confirmed working task
-      let results: ApifyRunOutput[];
-      try {
-        console.log('[ProfileScraper] Running harvestapi/linkedin-profile-scraper via Direct API...');
+      if (this.useMCP) {
+        // Test MCP connection first
+        try {
+          await mcpApifyClient.testConnection();
+          console.log('[ProfileScraper] MCP connection verified');
+        } catch (connectionError) {
+          console.error('[ProfileScraper] MCP connection failed:', connectionError);
+          console.log('[ProfileScraper] Falling back to Direct API...');
+          // Create new instance with Direct API mode for fallback
+          const directScraper = new ProfileScraper();
+          directScraper['useMCP'] = false;
+          return directScraper.scrapeProfile(profileUrl);
+        }
         
-        // Use the confirmed working task ID and input format
-        results = await apifyClient.scrapeLinkedInProfile(profileUrl);
-        
-      } catch (apiError) {
-        console.error('[ProfileScraper] Direct API LinkedIn scraper failed:', apiError);
-        throw new Error(`LinkedIn scraping via Direct API failed: ${apiError}`);
+        try {
+          console.log('[ProfileScraper] Running harvestapi/linkedin-profile-scraper via MCP...');
+          results = await mcpApifyClient.runLinkedInProfileScraper(profileUrl);
+        } catch (mcpError) {
+          console.error('[ProfileScraper] MCP LinkedIn scraper failed:', mcpError);
+          console.log('[ProfileScraper] Falling back to Direct API...');
+          // Create new instance with Direct API mode for fallback
+          const directScraper = new ProfileScraper();
+          directScraper['useMCP'] = false;
+          return directScraper.scrapeProfile(profileUrl);
+        }
+      } else {
+        results = await this.getRawResults(profileUrl);
       }
       
       if (!results || results.length === 0) {
@@ -171,11 +185,11 @@ export class ProfileScraper {
         isComplete: !!(rawProfile.firstName || rawProfile.name),
       };
       
-      console.log('[ProfileScraper] Successfully scraped profile via Direct API:', profile.name);
+      console.log(`[ProfileScraper] Successfully scraped profile via ${this.useMCP ? 'MCP' : 'Direct API'}:`, profile.name);
       return profile;
       
     } catch (error) {
-      console.error('[ProfileScraper] Error scraping profile via Direct API:', error);
+      console.error(`[ProfileScraper] Error scraping profile via ${this.useMCP ? 'MCP' : 'Direct API'}:`, error);
       
       // Return partial profile with error details
       return {
@@ -184,6 +198,32 @@ export class ProfileScraper {
         scrapedAt: new Date(),
         isComplete: false
       };
+    }
+  }
+
+  /**
+   * Get raw results using Direct API
+   */
+  private async getRawResults(profileUrl: string): Promise<(ApifyRunOutput | MCPApifyRunOutput)[]> {
+    // Test API connection first
+    try {
+      await apifyClient.testConnection();
+      console.log('[ProfileScraper] Apify Direct API connection verified');
+    } catch (connectionError) {
+      console.error('[ProfileScraper] Apify Direct API connection failed:', connectionError);
+      throw new Error(`Apify Direct API connection failed: ${connectionError}`);
+    }
+    
+    try {
+      console.log('[ProfileScraper] Running harvestapi/linkedin-profile-scraper via Direct API...');
+      
+      // Use the confirmed working task ID and input format
+      const results = await apifyClient.scrapeLinkedInProfile(profileUrl);
+      return results;
+      
+    } catch (apiError) {
+      console.error('[ProfileScraper] Direct API LinkedIn scraper failed:', apiError);
+      throw new Error(`LinkedIn scraping via Direct API failed: ${apiError}`);
     }
   }
   
@@ -259,5 +299,5 @@ export class ProfileScraper {
   }
 }
 
-// Export singleton instance (uses Direct API + Apify actors)
+// Export singleton instance (uses MCP or Direct API based on USE_APIFY_MCP env var)
 export const profileScraper = new ProfileScraper();

@@ -1,6 +1,6 @@
 /**
  * MCP-based Apify Client for Quest Core
- * Uses Model Context Protocol to connect to Apify's official MCP server
+ * Uses official Model Context Protocol SDK to connect to Apify's MCP server
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -16,6 +16,7 @@ export interface MCPApifyRunOutput {
 
 export class MCPApifyClient {
   private client: Client | null = null;
+  private transport: StdioClientTransport | null = null;
   private apiKey: string;
   private isConnected: boolean = false;
 
@@ -28,7 +29,7 @@ export class MCPApifyClient {
   }
 
   /**
-   * Initialize connection to Apify MCP server
+   * Initialize connection to Apify MCP server using proper SDK
    */
   async connect(): Promise<void> {
     if (this.isConnected && this.client) {
@@ -36,15 +37,31 @@ export class MCPApifyClient {
     }
 
     try {
-      // For server-side usage, we'll use HTTP transport to mcp.apify.com
-      // Note: In production, this might need to be handled differently
-      // since MCP is typically designed for AI assistant integration
-      console.log('[MCPApifyClient] Connecting to Apify MCP server...');
+      console.log('[MCPApifyClient] Connecting to Apify MCP server via stdio...');
       
-      // For now, we'll create a lightweight wrapper that mimics MCP
-      // but uses direct HTTP calls to the Apify MCP endpoint
+      // Create MCP client
+      this.client = new Client({
+        name: "quest-core-client",
+        version: "1.0.0"
+      }, {
+        capabilities: {}
+      });
+
+      // Create stdio transport to run the Apify MCP server locally
+      this.transport = new StdioClientTransport({
+        command: "npx",
+        args: ["@apify/actors-mcp-server"],
+        env: {
+          ...process.env,
+          APIFY_TOKEN: this.apiKey
+        }
+      });
+
+      // Connect to the MCP server
+      await this.client.connect(this.transport);
       this.isConnected = true;
-      console.log('[MCPApifyClient] Connected to Apify MCP server');
+      
+      console.log('[MCPApifyClient] Successfully connected to Apify MCP server');
     } catch (error) {
       console.error('[MCPApifyClient] Failed to connect:', error);
       throw new Error(`Failed to connect to Apify MCP server: ${error}`);
@@ -59,36 +76,55 @@ export class MCPApifyClient {
       await this.client.close();
       this.client = null;
     }
+    if (this.transport) {
+      this.transport = null;
+    }
     this.isConnected = false;
   }
 
   /**
-   * Search for actors using MCP
+   * List available tools (actors) through MCP
    */
-  async searchActors(query: string): Promise<any[]> {
+  async listTools(): Promise<any[]> {
     await this.connect();
 
     try {
-      const response = await this.callMCPTool('search-actors', { query });
-      return response.actors || [];
+      if (!this.client) {
+        throw new Error('MCP client not connected');
+      }
+
+      const response = await this.client.listTools();
+      console.log('[MCPApifyClient] Available tools:', response.tools?.length || 0);
+      return response.tools || [];
     } catch (error) {
-      console.error('[MCPApifyClient] Failed to search actors:', error);
+      console.error('[MCPApifyClient] Failed to list tools:', error);
       throw error;
     }
   }
 
   /**
-   * Add an actor as a tool using MCP
+   * Call a tool (actor) through MCP
    */
-  async addActor(actorName: string): Promise<any> {
+  async callTool(toolName: string, arguments_: any): Promise<any> {
     await this.connect();
 
     try {
-      const response = await this.callMCPTool('add-actor', { actorName });
-      console.log('[MCPApifyClient] Actor added as tool:', actorName);
-      return response;
+      if (!this.client) {
+        throw new Error('MCP client not connected');
+      }
+
+      console.log('[MCPApifyClient] Calling tool:', toolName);
+      console.log('[MCPApifyClient] Arguments:', JSON.stringify(arguments_, null, 2));
+
+      const response = await this.client.callTool({
+        name: toolName,
+        arguments: arguments_
+      });
+
+      console.log('[MCPApifyClient] Tool response received');
+      return response.content;
     } catch (error) {
-      console.error('[MCPApifyClient] Failed to add actor:', error);
+      console.error('[MCPApifyClient] Tool call failed:', error);
       throw error;
     }
   }
@@ -106,11 +142,24 @@ export class MCPApifyClient {
     try {
       console.log('[MCPApifyClient] Running LinkedIn profile scraper via MCP for:', linkedInUrl);
       
-      // First, add the specific actor as a tool
-      console.log('[MCPApifyClient] Adding harvestapi/linkedin-profile-scraper as tool...');
-      await this.addActor('harvestapi/linkedin-profile-scraper');
+      // List available tools to find the LinkedIn scraper
+      const tools = await this.listTools();
+      console.log('[MCPApifyClient] Available tools:', tools.map(t => t.name));
       
-      // Run the actor with the correct input format
+      // Look for LinkedIn profile scraper tool (MCP auto-generates tool names)
+      const linkedInTool = tools.find(tool => 
+        tool.name.includes('linkedin') && 
+        tool.name.includes('profile') ||
+        tool.name.includes('harvestapi')
+      );
+      
+      if (!linkedInTool) {
+        throw new Error('LinkedIn profile scraper tool not found in MCP server');
+      }
+      
+      console.log('[MCPApifyClient] Using tool:', linkedInTool.name);
+      
+      // Run the LinkedIn scraper with correct input format
       const input = {
         queries: [linkedInUrl],
         urls: [linkedInUrl]
@@ -118,9 +167,7 @@ export class MCPApifyClient {
       
       console.log('[MCPApifyClient] Running with input:', JSON.stringify(input, null, 2));
       
-      // The tool name will be the actor name with special characters replaced
-      const toolName = 'harvestapi_linkedin_profile_scraper';
-      const response = await this.callMCPTool(toolName, input);
+      const response = await this.callTool(linkedInTool.name, input);
       
       console.log('[MCPApifyClient] LinkedIn scraper completed successfully via MCP');
       return Array.isArray(response) ? response : [response];
@@ -132,104 +179,27 @@ export class MCPApifyClient {
   }
 
   /**
-   * Helper method to call MCP tools
-   */
-  private async callMCPTool(toolName: string, arguments_: any): Promise<any> {
-    const mcpPayload = {
-      jsonrpc: '2.0',
-      method: 'tools/call',
-      params: {
-        name: toolName,
-        arguments: arguments_
-      },
-      id: Date.now() // Use timestamp for unique ID
-    };
-
-    console.log('[MCPApifyClient] Calling MCP tool:', toolName);
-    console.log('[MCPApifyClient] MCP payload:', JSON.stringify(mcpPayload, null, 2));
-
-    const response = await fetch('https://mcp.apify.com', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json, text/event-stream',
-      },
-      body: JSON.stringify(mcpPayload)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[MCPApifyClient] MCP request failed:', response.status, errorText);
-      throw new Error(`MCP request failed: ${response.status} ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log('[MCPApifyClient] MCP response:', JSON.stringify(result, null, 2));
-    
-    if (result.error) {
-      throw new Error(`MCP tool call failed: ${result.error.message}`);
-    }
-
-    return result.result;
-  }
-
-  /**
-   * List available tools (actors) through MCP
-   */
-  async listTools(): Promise<any[]> {
-    await this.connect();
-
-    try {
-      const mcpPayload = {
-        jsonrpc: '2.0',
-        method: 'tools/list',
-        id: Math.random().toString(36).substring(7)
-      };
-
-      const response = await fetch('https://mcp.apify.com', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json, text/event-stream',
-        },
-        body: JSON.stringify(mcpPayload)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to list tools: ${response.status}`);
-      }
-
-      const result = await response.json();
-      return result.result?.tools || [];
-    } catch (error) {
-      console.error('[MCPApifyClient] Failed to list tools:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Test the MCP connection by listing available tools
    */
   async testConnection(): Promise<any> {
     try {
       await this.connect();
       
-      // Test by listing tools instead of initializing
+      // Test by listing tools
       const tools = await this.listTools();
       
       console.log('[MCPApifyClient] Connection test successful, found', tools.length, 'tools');
       return {
         status: 'connected',
         toolsCount: tools.length,
-        tools: tools.slice(0, 5) // Return first 5 tools as sample
+        tools: tools.slice(0, 5).map(t => ({ name: t.name, description: t.description }))
       };
     } catch (error) {
       console.error('[MCPApifyClient] Connection test failed:', error);
       throw error;
     }
   }
+
 }
 
 // Export singleton instance
