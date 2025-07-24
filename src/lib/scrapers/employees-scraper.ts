@@ -121,10 +121,20 @@ export class EmployeesScraper {
     
     // Process each result (could be multiple pages)
     for (const result of results) {
-      if (result.profiles || result.employees || Array.isArray(result)) {
-        const profilesList = result.profiles || result.employees || result;
-        
-        for (const profile of profilesList) {
+      // Type guard to handle array vs object results
+      let profilesList: any[] = [];
+      
+      if (Array.isArray(result)) {
+        // If result is already an array of profiles
+        profilesList = result;
+      } else if (result && typeof result === 'object') {
+        // If result is an object with profiles or employees property
+        const resultObj = result as any;
+        profilesList = resultObj.profiles || resultObj.employees || [];
+      }
+      
+      for (const profile of profilesList) {
+        if (profile) {
           employees.push({
             name: `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.name || 'Unknown',
             headline: profile.headline || profile.title,
