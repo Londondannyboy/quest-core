@@ -267,9 +267,9 @@ export const apifyClient = new ApifyClient();
 
 // Popular Apify actors for scraping
 export const APIFY_ACTORS = {
-  // Correct Harvest API task IDs
-  HARVEST_LINKEDIN_PROFILE: 'LpVuK3Zozwuipa5bp', // Harvest API LinkedIn profile scraper task
-  HARVEST_LINKEDIN_EMPLOYEES: 'Z4hQMjDxMd5Gk4Cmj', // Company employees scraper task
+  // Use working actor names instead of task IDs
+  HARVEST_LINKEDIN_PROFILE: 'harvestapi/linkedin-profile-scraper', // Harvest API LinkedIn profile scraper
+  HARVEST_LINKEDIN_EMPLOYEES: 'harvestapi/linkedin-company-employees', // Company employees scraper
   
   // Actor names if creating new tasks
   QUEST_PROFILE_ACTOR: 'infrastructure_quest/quest-profile-scraper',
