@@ -104,8 +104,8 @@ export default function LinkedInRegistrationPage() {
     setStep('scraping');
 
     try {
-      // Start LinkedIn scraping using the enhanced registration endpoint
-      const scrapeResponse = await fetch('/api/register/enhanced-scraping', {
+      // Start LinkedIn scraping using the working test endpoint temporarily
+      const scrapeResponse = await fetch('/api/test-profile-simple', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
