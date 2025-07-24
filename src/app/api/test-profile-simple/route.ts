@@ -35,8 +35,6 @@ export async function POST(request: Request) {
       const run = await client.actor('harvestapi/linkedin-profile-scraper').call({
         profileScraperMode: "Profile details no email ($4 per 1k)",
         queries: [linkedinUrl]
-      }, {
-        waitForFinish: 120 // Wait up to 120 seconds
       });
 
       console.log('Apify run completed:', {
