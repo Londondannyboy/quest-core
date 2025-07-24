@@ -67,8 +67,9 @@ export class ApifyClient {
     // Start the actor run  
     console.log('[ApifyClient] Starting actor run:', actorId);
     
-    // Check if this is a task ID (typically shorter alphanumeric) vs actor name
-    const isTaskId = actorId.match(/^[A-Za-z0-9]{15,20}$/);
+    // Check if this is a task ID vs actor ID/name
+    // Task IDs are typically longer and different format from actor IDs
+    const isTaskId = actorId.match(/^[A-Za-z0-9]{20,}$/) && !actorId.match(/^[A-Za-z0-9]{15,17}$/);
     const endpoint = isTaskId 
       ? `${this.baseURL}/actor-tasks/${actorId}/runs`
       : `${this.baseURL}/actors/${actorId}/runs`;
@@ -228,22 +229,22 @@ export class ApifyClient {
    * @returns Scraped profile data
    */
   async scrapeLinkedInProfile(linkedinUrl: string): Promise<ApifyRunOutput[]> {
-    // Try actor name instead of task ID since task was not found
-    const actorName = APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE_ACTOR; // 'harvestapi/linkedin-profile-scraper'
+    // Use the correct actor ID from the Apify console URL
+    const actorId = 'LpVuK3Zozwuipa5bp'; // This is actually an actor ID, not a task ID
     const input = {
       queries: [linkedinUrl], 
       urls: [linkedinUrl]
     };
 
-    console.log('[ApifyClient] === DEBUGGING LINKEDIN SCRAPE (USING ACTOR NAME) ===');
-    console.log('[ApifyClient] Actor Name:', actorName);
+    console.log('[ApifyClient] === DEBUGGING LINKEDIN SCRAPE (USING ACTOR ID) ===');
+    console.log('[ApifyClient] Actor ID:', actorId);
     console.log('[ApifyClient] LinkedIn URL:', linkedinUrl);
     console.log('[ApifyClient] Input payload:', JSON.stringify(input, null, 2));
     console.log('[ApifyClient] API Key present:', this.apiKey ? 'YES' : 'NO');
     console.log('[ApifyClient] API Key length:', this.apiKey?.length || 0);
 
     try {
-      const result = await this.scrape(actorName, input, {
+      const result = await this.scrape(actorId, input, {
         timeout: 300, // 5 minutes
         memory: 1024  // 1GB
       });
