@@ -67,9 +67,9 @@ export class ProfileScraper {
   private useMCP: boolean;
   
   constructor() {
-    // Switch back to Direct API for debugging
-    this.useMCP = false;
-    console.log('[ProfileScraper] DEBUGGING: Forced Direct API mode');
+    // Try MCP first, fallback to Direct API if fails
+    this.useMCP = true;
+    console.log('[ProfileScraper] Using MCP with Direct API fallback');
   }
   
   /**
