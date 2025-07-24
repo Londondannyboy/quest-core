@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     
     if (items && items.length > 0) {
       // Format response to match what the admin page expects
-      const profile = items[0];
+      const profile = items[0] as any; // Add 'any' type for now to fix TypeScript
       return NextResponse.json({
         success: true,
         testMode: true,
