@@ -78,7 +78,7 @@ export async function POST(request: Request) {
           company: results.company,
           insights: {
             totalExperience: profile.experience?.length || 0,
-            companiesWorked: new Set(profile.experience?.map(exp => exp.company)).size,
+            companiesWorked: new Set(profile.experience?.map((exp: any) => exp.company)).size,
             topSkills: profile.skills?.slice(0, 5).map((s: any) => typeof s === 'string' ? s : s.name) || [],
             hasCompanyInfo: !!companyUrl
           }
