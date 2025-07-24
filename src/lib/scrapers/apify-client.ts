@@ -35,8 +35,9 @@ export class ApifyClient {
     this.apiKey = apiKey || process.env.APIFY_API_KEY || '';
     this.userId = userId || process.env.APIFY_USER_ID;
     
+    // Don't throw error here - defer to when API is actually called
     if (!this.apiKey) {
-      throw new Error('Apify API key not found. Set APIFY_API_KEY environment variable.');
+      console.warn('[ApifyClient] API key not found. Scraping operations will fail.');
     }
   }
 
@@ -57,6 +58,10 @@ export class ApifyClient {
       waitForFinish?: boolean;
     } = {}
   ): Promise<ApifyRunResult> {
+    if (!this.apiKey || this.apiKey === 'your_apify_api_key_here') {
+      throw new Error('APIFY_API_KEY is missing or set to placeholder value. Please configure with a real Apify API key.');
+    }
+    
     const { waitForFinish = true, ...runOptions } = options;
 
     // Start the actor run  
