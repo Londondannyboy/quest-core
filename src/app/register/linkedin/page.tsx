@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useSignUp, useUser } from '@clerk/nextjs';
 import { 
   Linkedin, 
@@ -232,9 +233,9 @@ export default function LinkedInRegistrationPage() {
 
             <div className="mt-8 text-center text-sm text-gray-500">
               <p>Already have an account?</p>
-              <a href="/sign-in" className="text-blue-400 hover:text-blue-300">
+              <Link href="/sign-in" className="text-blue-400 hover:text-blue-300">
                 Sign in here
-              </a>
+              </Link>
             </div>
           </div>
         )}

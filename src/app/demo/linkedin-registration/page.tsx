@@ -11,7 +11,7 @@ export default function LinkedInRegistrationDemo() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-            LinkedIn "Shock & Awe" Registration
+            LinkedIn &quot;Shock &amp; Awe&quot; Registration
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             Transform your LinkedIn profile into a multi-dimensional professional journey with AI-powered insights and stunning visualizations
@@ -39,7 +39,7 @@ export default function LinkedInRegistrationDemo() {
           <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-2xl p-1">
             <div className="bg-gray-900 rounded-2xl p-8">
               <h2 className="text-3xl font-bold mb-6 text-center">
-                The "Shock & Awe" Journey
+                The &quot;Shock &amp; Awe&quot; Journey
               </h2>
               
               {/* Flow Steps */}
@@ -89,12 +89,12 @@ export default function LinkedInRegistrationDemo() {
                 </div>
 
                 <div className="bg-gray-800 rounded-lg p-6">
-                  <h3 className="text-xl font-semibold mb-4">3. The "Shock" Moment</h3>
+                  <h3 className="text-xl font-semibold mb-4">3. The &quot;Shock&quot; Moment</h3>
                   <p className="text-gray-400">
                     Watch as their professional network explodes into a 3D visualization, 
                     showing connections, companies, skills, and opportunities in an 
                     interactive force-directed graph. This is where users realize 
-                    Quest is unlike anything they've seen before.
+                    Quest is unlike anything they&apos;ve seen before.
                   </p>
                 </div>
 
@@ -136,15 +136,15 @@ export default function LinkedInRegistrationDemo() {
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-lg p-6">
                 <h3 className="text-xl font-semibold mb-3">Quest</h3>
-                <p className="text-blue-100">"Building products and teams that democratize access to technology and empower creators worldwide"</p>
+                <p className="text-blue-100">&quot;Building products and teams that democratize access to technology and empower creators worldwide&quot;</p>
               </div>
               <div className="bg-gradient-to-br from-purple-900 to-purple-700 rounded-lg p-6">
                 <h3 className="text-xl font-semibold mb-3">Service</h3>
-                <p className="text-purple-100">"Bridging technical excellence with strategic vision to transform ideas into impactful solutions"</p>
+                <p className="text-purple-100">&quot;Bridging technical excellence with strategic vision to transform ideas into impactful solutions&quot;</p>
               </div>
               <div className="bg-gradient-to-br from-green-900 to-green-700 rounded-lg p-6">
                 <h3 className="text-xl font-semibold mb-3">Pledge</h3>
-                <p className="text-green-100">"To build with integrity, mentor the next generation, and leave every codebase and team better than I found it"</p>
+                <p className="text-green-100">&quot;To build with integrity, mentor the next generation, and leave every codebase and team better than I found it&quot;</p>
               </div>
             </div>
           </div>
