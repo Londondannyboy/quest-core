@@ -40,12 +40,51 @@ interface ScrapedProfile {
   profilePicture?: string;
 }
 
+function generateTrinityInsights(profile: ScrapedProfile, enrichedData: any) {
+  const hasLeadershipExp = profile.experience?.some(exp => 
+    exp.title.toLowerCase().includes('lead') || 
+    exp.title.toLowerCase().includes('manager') ||
+    exp.title.toLowerCase().includes('director') ||
+    exp.title.toLowerCase().includes('senior')
+  );
+
+  const techSkills = profile.skills?.filter(skill => 
+    ['javascript', 'python', 'react', 'node', 'aws', 'docker', 'typescript'].some(tech => 
+      skill.toLowerCase().includes(tech)
+    )
+  );
+
+  const yearsExperience = profile.experience?.length || 0;
+  const hasCompany = enrichedData.company != null;
+
+  let quest = "Building and creating meaningful impact through technology";
+  let service = "Delivering innovative solutions and continuous learning";
+  let pledge = "To pursue excellence while maintaining integrity and helping others grow";
+
+  // Customize based on experience level and skills
+  if (hasLeadershipExp && yearsExperience > 3) {
+    quest = hasCompany 
+      ? `Leading teams at ${enrichedData.company.name} to build products that transform industries`
+      : "Building and empowering teams to create products that transform industries and improve lives";
+    service = "Technical leadership, strategic thinking, and mentoring the next generation of innovators";
+  } else if (techSkills && techSkills.length > 3) {
+    quest = "Mastering cutting-edge technologies to solve complex problems and push boundaries";
+    service = `Deep expertise in ${techSkills.slice(0, 3).join(', ')} with focus on collaborative innovation`;
+  } else if (yearsExperience > 5) {
+    quest = "Leveraging diverse experience to drive meaningful change and business impact";
+    service = "Cross-functional expertise and strategic problem-solving";
+  }
+
+  return { quest, service, pledge };
+}
+
 export default function LinkedInRegistrationPage() {
   const router = useRouter();
   const { signUp, isLoaded: signUpLoaded, setActive } = useSignUp();
   const { user } = useUser();
   const [step, setStep] = useState<'linkedin' | 'scraping' | 'preview' | 'complete'>('linkedin');
   const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [companyUrl, setCompanyUrl] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [scrapedData, setScrapedData] = useState<ScrapedProfile | null>(null);
@@ -65,11 +104,14 @@ export default function LinkedInRegistrationPage() {
     setStep('scraping');
 
     try {
-      // Start LinkedIn scraping using the simple test endpoint
-      const scrapeResponse = await fetch('/api/test-profile-simple', {
+      // Start LinkedIn scraping using the enhanced registration endpoint
+      const scrapeResponse = await fetch('/api/register/enhanced-scraping', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ linkedinUrl })
+        body: JSON.stringify({ 
+          linkedinUrl,
+          companyUrl: companyUrl || undefined
+        })
       });
 
       if (!scrapeResponse.ok) {
@@ -78,24 +120,23 @@ export default function LinkedInRegistrationPage() {
 
       const { enrichedData } = await scrapeResponse.json();
       
-      // Transform the response to match our interface
+      // Transform the enhanced response to match our interface
       const profile: ScrapedProfile = {
         name: enrichedData.profile.name,
         headline: enrichedData.profile.headline,
         location: enrichedData.profile.location,
-        skills: enrichedData.insights.topSkills,
-        experience: [], // Will be populated if scraping is enhanced
-        education: []
+        about: enrichedData.profile.about,
+        profilePicture: enrichedData.profile.profilePicture,
+        skills: enrichedData.profile.skills || enrichedData.insights.topSkills,
+        experience: enrichedData.profile.experience || [],
+        education: enrichedData.profile.education || []
       };
       
       setScrapedData(profile);
       
-      // Generate simple Trinity insights
-      setTrinityInsights({
-        quest: "Building and creating meaningful impact through technology",
-        service: "Delivering innovative solutions and mentoring others",
-        pledge: "To pursue excellence while maintaining integrity and helping others grow"
-      });
+      // Generate Trinity insights based on profile data
+      const insights = generateTrinityInsights(profile, enrichedData);
+      setTrinityInsights(insights);
       
       // Create Clerk account
       if (signUpLoaded && signUp) {
@@ -173,6 +214,22 @@ export default function LinkedInRegistrationPage() {
                       className="w-full px-4 py-2 bg-gray-700 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Company Website or LinkedIn URL (Optional)
+                    </label>
+                    <input
+                      type="url"
+                      value={companyUrl}
+                      onChange={(e) => setCompanyUrl(e.target.value)}
+                      placeholder="https://yourcompany.com or https://linkedin.com/company/yourcompany"
+                      className="w-full px-4 py-2 bg-gray-700 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      We&apos;ll enrich your company data or create a new company profile
+                    </p>
                   </div>
 
                   <div>
@@ -311,6 +368,22 @@ export default function LinkedInRegistrationPage() {
                       <h4 className="font-medium mb-2">Pledge</h4>
                       <p className="text-sm">{trinityInsights.pledge}</p>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Company Information */}
+              {companyUrl && (
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Network className="w-5 h-5 text-orange-500" />
+                    Company Information
+                  </h3>
+                  <div className="bg-gray-700 rounded p-4">
+                    <p><strong>Company URL:</strong> {companyUrl}</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      We&apos;ll enrich this company data and connect it to your professional network
+                    </p>
                   </div>
                 </div>
               )}

@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 
 export default function TestScrapingPage() {
   const [linkedinUrl, setLinkedinUrl] = useState('https://www.linkedin.com/in/dankeegan/');
-  const [email, setEmail] = useState('admin@questcore.com');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -82,18 +81,6 @@ export default function TestScrapingPage() {
                 placeholder="https://www.linkedin.com/in/username/"
                 value={linkedinUrl}
                 onChange={(e) => setLinkedinUrl(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email (for enrichment context)</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="user@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 className="w-full"
               />
             </div>
