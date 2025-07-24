@@ -229,22 +229,22 @@ export class ApifyClient {
    * @returns Scraped profile data
    */
   async scrapeLinkedInProfile(linkedinUrl: string): Promise<ApifyRunOutput[]> {
-    // Use the correct actor ID from the Apify console URL
-    const actorId = 'LpVuK3Zozwuipa5bp'; // This is actually an actor ID, not a task ID
+    // Try the public harvestapi actor since the private actor ID doesn't work
+    const actorName = 'harvestapi/linkedin-profile-scraper';
     const input = {
       queries: [linkedinUrl], 
       urls: [linkedinUrl]
     };
 
-    console.log('[ApifyClient] === DEBUGGING LINKEDIN SCRAPE (USING ACTOR ID) ===');
-    console.log('[ApifyClient] Actor ID:', actorId);
+    console.log('[ApifyClient] === DEBUGGING LINKEDIN SCRAPE (USING PUBLIC ACTOR) ===');
+    console.log('[ApifyClient] Actor Name:', actorName);
     console.log('[ApifyClient] LinkedIn URL:', linkedinUrl);
     console.log('[ApifyClient] Input payload:', JSON.stringify(input, null, 2));
     console.log('[ApifyClient] API Key present:', this.apiKey ? 'YES' : 'NO');
     console.log('[ApifyClient] API Key length:', this.apiKey?.length || 0);
 
     try {
-      const result = await this.scrape(actorId, input, {
+      const result = await this.scrape(actorName, input, {
         timeout: 300, // 5 minutes
         memory: 1024  // 1GB
       });
@@ -252,7 +252,21 @@ export class ApifyClient {
       return result;
     } catch (error) {
       console.error('[ApifyClient] Scrape failed with error:', error);
-      throw error;
+      
+      // If public actor fails, try with infrastructure_quest prefix
+      console.log('[ApifyClient] Trying with infrastructure_quest prefix...');
+      try {
+        const privateActorName = 'infrastructure_quest/LpVuK3Zozwuipa5bp';
+        const result = await this.scrape(privateActorName, input, {
+          timeout: 300,
+          memory: 1024
+        });
+        console.log('[ApifyClient] Private actor worked, results count:', result?.length || 0);
+        return result;
+      } catch (privateError) {
+        console.error('[ApifyClient] Both public and private actor failed:', privateError);
+        throw error; // Throw original error
+      }
     }
   }
 
