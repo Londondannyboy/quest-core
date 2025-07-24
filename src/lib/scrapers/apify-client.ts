@@ -235,13 +235,24 @@ export class ApifyClient {
       urls: [linkedinUrl]
     };
 
-    console.log('[ApifyClient] Scraping LinkedIn profile with confirmed task:', taskId);
+    console.log('[ApifyClient] === DEBUGGING LINKEDIN SCRAPE ===');
+    console.log('[ApifyClient] Task ID:', taskId);
     console.log('[ApifyClient] LinkedIn URL:', linkedinUrl);
+    console.log('[ApifyClient] Input payload:', JSON.stringify(input, null, 2));
+    console.log('[ApifyClient] API Key present:', this.apiKey ? 'YES' : 'NO');
+    console.log('[ApifyClient] API Key length:', this.apiKey?.length || 0);
 
-    return this.scrape(taskId, input, {
-      timeout: 300, // 5 minutes
-      memory: 1024  // 1GB
-    });
+    try {
+      const result = await this.scrape(taskId, input, {
+        timeout: 300, // 5 minutes
+        memory: 1024  // 1GB
+      });
+      console.log('[ApifyClient] Scrape completed successfully, results count:', result?.length || 0);
+      return result;
+    } catch (error) {
+      console.error('[ApifyClient] Scrape failed with error:', error);
+      throw error;
+    }
   }
 
   /**

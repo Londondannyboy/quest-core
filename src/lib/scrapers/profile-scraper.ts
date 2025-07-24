@@ -67,9 +67,9 @@ export class ProfileScraper {
   private useMCP: boolean;
   
   constructor() {
-    // Go all-in on MCP as requested, allow override only with explicit env var
-    this.useMCP = process.env.USE_APIFY_MCP !== 'false';
-    console.log('[ProfileScraper] Using', this.useMCP ? 'MCP' : 'Direct API', 'integration');
+    // Switch back to Direct API for debugging
+    this.useMCP = false;
+    console.log('[ProfileScraper] DEBUGGING: Forced Direct API mode');
   }
   
   /**
