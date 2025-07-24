@@ -107,6 +107,7 @@ export class MCPApifyClient {
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json, text/event-stream',
         },
         body: JSON.stringify(mcpPayload)
       });
@@ -146,6 +147,7 @@ export class MCPApifyClient {
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json, text/event-stream',
         },
         body: JSON.stringify({
           method: 'tools/list'
@@ -176,6 +178,7 @@ export class MCPApifyClient {
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json, text/event-stream',
         },
         body: JSON.stringify({
           method: 'initialize',
