@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
-import { profileScraper } from '@/lib/scrapers/profile-scraper';
+import { ApifyClient } from 'apify-client';
+
+// Initialize Apify client EXACTLY like the working example
+const client = new ApifyClient({
+    token: process.env.APIFY_TOKEN || process.env.APIFY_API_KEY,
+});
 
 export async function POST(request: Request) {
   try {
@@ -7,61 +12,58 @@ export async function POST(request: Request) {
     
     if (!linkedinUrl) {
       return NextResponse.json({ 
-        error: 'LinkedIn URL is required',
-        success: false 
+        error: 'LinkedIn URL is required' 
       }, { status: 400 });
     }
-    
-    console.log('[Test Profile Simple] Starting profile scrape for:', linkedinUrl);
-    
-    // Direct profile scraping without auth or enrichment
-    const startTime = Date.now();
-    const profile = await profileScraper.scrapeProfile(linkedinUrl);
-    const duration = Date.now() - startTime;
-    
-    if (!profile.isComplete) {
-      return NextResponse.json({
-        success: false,
-        error: 'Profile scraping failed',
-        profile: {
-          name: profile.name,
-          error: profile.name.startsWith('Error:') ? profile.name : 'Unknown error'
-        },
-        duration
-      }, { status: 500 });
-    }
-    
-    return NextResponse.json({
-      success: true,
-      testMode: true,
-      enrichedData: {
-        profile: {
-          name: profile.name,
-          headline: profile.headline,
-          location: profile.location,
-          skillsCount: profile.skills?.length || 0,
-          experienceCount: profile.experience?.length || 0,
-          educationCount: profile.education?.length || 0,
-          isComplete: profile.isComplete
-        },
-        companies: [], // Empty for now
-        insights: {
-          totalExperience: profile.experience?.length || 0,
-          companiesWorked: profile.experience?.length || 0,
-          topSkills: profile.skills?.slice(0, 5).map(s => s.name) || []
-        }
-      },
-      totalTime: duration,
-      timestamp: new Date().toISOString()
+
+    console.log('Scraping LinkedIn URL:', linkedinUrl);
+
+    // Run the actor - EXACT SAME CODE as working example
+    const run = await client.actor('harvestapi/linkedin-profile-scraper').call({
+      profileScraperMode: "Profile details no email ($4 per 1k)",
+      queries: [linkedinUrl]
     });
+
+    // Get results from the run - EXACT SAME CODE as working example
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
     
+    if (items && items.length > 0) {
+      // Format response to match what the admin page expects
+      const profile = items[0];
+      return NextResponse.json({
+        success: true,
+        testMode: true,
+        enrichedData: {
+          profile: {
+            name: profile.name || '',
+            headline: profile.headline || '',
+            location: profile.location || '',
+            skillsCount: profile.skills?.length || 0,
+            experienceCount: profile.experience?.length || 0,
+            educationCount: profile.education?.length || 0,
+            isComplete: true
+          },
+          companies: [],
+          insights: {
+            totalExperience: profile.experience?.length || 0,
+            companiesWorked: profile.experience?.length || 0,
+            topSkills: profile.skills?.slice(0, 5).map((s: any) => s.name) || []
+          }
+        },
+        totalTime: 0,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'No data found' 
+      });
+    }
   } catch (error) {
-    console.error('[Test Profile Simple] Error:', error);
-    
+    console.error('Scraping error:', error);
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Profile scraping failed',
-      details: String(error)
+      error: error instanceof Error ? error.message : 'Failed to scrape LinkedIn profile'
     }, { status: 500 });
   }
 }
