@@ -71,7 +71,7 @@ export async function POST(request: Request) {
             educationCount: profile.education?.length || 0,
             isComplete: profile.isComplete,
             // Include full data for registration
-            skills: profile.skills?.map(s => typeof s === 'string' ? s : s.name) || [],
+            skills: profile.skills?.map((s: any) => typeof s === 'string' ? s : s.name) || [],
             experience: profile.experience || [],
             education: profile.education || []
           },
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
           insights: {
             totalExperience: profile.experience?.length || 0,
             companiesWorked: new Set(profile.experience?.map(exp => exp.company)).size,
-            topSkills: profile.skills?.slice(0, 5).map(s => typeof s === 'string' ? s : s.name) || [],
+            topSkills: profile.skills?.slice(0, 5).map((s: any) => typeof s === 'string' ? s : s.name) || [],
             hasCompanyInfo: !!companyUrl
           }
         },
