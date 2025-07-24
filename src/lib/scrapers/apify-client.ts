@@ -71,7 +71,7 @@ export class ApifyClient {
     const isTaskId = actorId.match(/^[A-Za-z0-9]{15,20}$/);
     const endpoint = isTaskId 
       ? `${this.baseURL}/actor-tasks/${actorId}/runs`
-      : `${this.baseURL}/acts/${actorId}/runs`;
+      : `${this.baseURL}/actors/${actorId}/runs`;
     
     console.log('[ApifyClient] Using endpoint:', endpoint);
     const runResponse = await fetch(endpoint, {
