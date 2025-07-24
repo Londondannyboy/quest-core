@@ -94,48 +94,17 @@ export class ProfileScraper {
         throw new Error(`MCP connection failed: ${connectionError}`);
       }
       
-      // Use MCP workflow: search for LinkedIn actors, add one, then run it
+      // Use direct MCP approach with the specific working actor
       let results: MCPApifyRunOutput[];
       try {
-        console.log('[ProfileScraper] Searching for LinkedIn actors via MCP...');
+        console.log('[ProfileScraper] Running harvestapi/linkedin-profile-scraper via MCP...');
         
-        // Search for LinkedIn profile scrapers
-        const actors = await mcpApifyClient.searchActors('linkedin profile scraper');
-        console.log('[ProfileScraper] Found', actors.length, 'LinkedIn actors');
-        
-        if (actors.length === 0) {
-          throw new Error('No LinkedIn profile scraper actors found');
-        }
-        
-        // Use the first suitable actor (you can specify exact names here)
-        const selectedActor = actors.find(actor => 
-          actor.name?.includes('linkedin') && 
-          actor.name?.includes('profile')
-        ) || actors[0];
-        
-        console.log('[ProfileScraper] Selected actor:', selectedActor.name);
-        
-        // Add the actor as a tool
-        await mcpApifyClient.addActor(selectedActor.name);
-        
-        // Run the actor tool
-        const toolName = selectedActor.name.replace(/[^a-zA-Z0-9_-]/g, '_');
-        results = await mcpApifyClient.runActorTool(toolName, {
-          startUrls: [{ url: profileUrl }]
-        });
+        // Use the specific actor you provided with correct input format
+        results = await mcpApifyClient.runLinkedInProfileScraper(profileUrl);
         
       } catch (mcpError) {
-        console.warn('[ProfileScraper] MCP workflow failed, trying direct approach:', mcpError);
-        
-        // Fallback: try to run a known working actor directly
-        try {
-          await mcpApifyClient.addActor('trudax/linkedin-profile-scraper');
-          results = await mcpApifyClient.runActorTool('trudax_linkedin_profile_scraper', {
-            startUrls: [{ url: profileUrl }]
-          });
-        } catch (fallbackError) {
-          throw new Error(`Both MCP workflow and fallback failed: ${fallbackError}`);
-        }
+        console.error('[ProfileScraper] MCP LinkedIn scraper failed:', mcpError);
+        throw new Error(`LinkedIn scraping via MCP failed: ${mcpError}`);
       }
       
       if (!results || results.length === 0) {
