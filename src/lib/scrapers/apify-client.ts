@@ -91,6 +91,14 @@ export class ApifyClient {
 
     if (!runResponse.ok) {
       const error = await runResponse.text();
+      console.error('[ApifyClient] Run failed:', {
+        status: runResponse.status,
+        statusText: runResponse.statusText,
+        endpoint,
+        taskId: actorId,
+        requestBody: JSON.stringify(requestBody, null, 2),
+        error
+      });
       throw new Error(`Failed to start Apify actor: ${runResponse.status} ${error}`);
     }
 

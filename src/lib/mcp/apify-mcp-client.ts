@@ -207,6 +207,62 @@ export class MCPApifyClient {
   }
 
   /**
+   * Add an actor as a tool using MCP
+   */
+  async addActor(actorName: string): Promise<any> {
+    await this.connect();
+
+    try {
+      console.log('[MCPApifyClient] Adding actor as tool:', actorName);
+
+      if (this.useHttps) {
+        // Direct HTTP call to add actor
+        const response = await fetch('https://mcp.apify.com', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'addActor',
+            params: {
+              actorName: actorName
+            },
+            id: Math.random().toString(36).substring(7)
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+        }
+
+        const result = await response.json();
+        if (result.error) {
+          throw new Error(`Add actor failed: ${result.error.message}`);
+        }
+
+        console.log('[MCPApifyClient] Actor added as tool via HTTPS:', actorName);
+        return result.result;
+      } else {
+        // Use MCP SDK for local development
+        if (!this.client) {
+          throw new Error('MCP client not connected');
+        }
+
+        // Note: addActor might not be a standard MCP method
+        // This is Apify-specific functionality
+        console.log('[MCPApifyClient] Actor addition via stdio not implemented');
+        return {};
+      }
+    } catch (error) {
+      console.error('[MCPApifyClient] Failed to add actor:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Run LinkedIn profile scraper directly using MCP
    */
   async runLinkedInProfileScraper(linkedInUrl: string): Promise<MCPApifyRunOutput[]> {
@@ -218,6 +274,15 @@ export class MCPApifyClient {
 
     try {
       console.log('[MCPApifyClient] Running LinkedIn profile scraper via MCP for:', linkedInUrl);
+      
+      // First, try to add the specific LinkedIn actor as a tool
+      console.log('[MCPApifyClient] Adding harvestapi/linkedin-profile-scraper as tool...');
+      try {
+        await this.addActor('harvestapi/linkedin-profile-scraper');
+      } catch (addError) {
+        console.warn('[MCPApifyClient] Could not add actor as tool:', addError);
+        // Continue anyway - tool might already exist
+      }
       
       // List available tools to find the LinkedIn scraper
       const tools = await this.listTools();
