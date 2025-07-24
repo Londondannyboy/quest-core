@@ -68,8 +68,8 @@ export class ApifyClient {
     console.log('[ApifyClient] Starting actor run:', actorId);
     
     // Check if this is a task ID vs actor ID/name
-    // Task IDs are typically longer and different format from actor IDs
-    const isTaskId = actorId.match(/^[A-Za-z0-9]{20,}$/) && !actorId.match(/^[A-Za-z0-9]{15,17}$/);
+    // For task IDs, just use the ID directly
+    const isTaskId = actorId.length === 17 && /^[A-Za-z0-9]+$/.test(actorId);
     const endpoint = isTaskId 
       ? `${this.baseURL}/actor-tasks/${actorId}/runs`
       : `${this.baseURL}/actors/${actorId}/runs`;
@@ -241,9 +241,10 @@ export class ApifyClient {
     console.log('[ApifyClient] LinkedIn URL:', linkedinUrl);
     console.log('[ApifyClient] Input payload:', JSON.stringify(input, null, 2));
     console.log('[ApifyClient] API Key present:', this.apiKey ? 'YES' : 'NO');
-    console.log('[ApifyClient] API Key length:', this.apiKey?.length || 0);
+    console.log('[ApifyClient] User ID:', this.userId || 'Not set - will use default');
 
     try {
+      // Use the standard scrape method which handles task endpoint correctly
       const result = await this.scrape(taskId, input, {
         timeout: 300, // 5 minutes
         memory: 1024  // 1GB
@@ -312,6 +313,9 @@ export const apifyClient = new ApifyClient();
 
 // Popular Apify actors and tasks for scraping
 export const APIFY_ACTORS = {
+  // User-specific information from infrastructure_quest account
+  USER_ID: 'oagG2IEtw87XfSn3x', // Your specific Apify user ID
+  
   // Use confirmed working task IDs from user
   HARVEST_LINKEDIN_PROFILE_TASK: 'LpVuK3Zozwuipa5bp', // Confirmed working task ID for harvestapi/linkedin-profile-scraper
   HARVEST_LINKEDIN_EMPLOYEES: 'harvestapi/linkedin-company-employees', // Company employees scraper
