@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple Apify Integration (Official SDK)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0077b5;
+        }
+        .info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        button {
+            background-color: #0077b5;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #005885;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left: 4px solid #f44336;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Simple Apify Integration</h1>
+        <div class="info">
+            <p><strong>This test uses the official Apify SDK</strong> - the same implementation that works in the apify-mp-mcp-server project.</p>
+        </div>
+
+        <!-- Local Test -->
+        <div class="test-section">
+            <h2>1. Test Local Development</h2>
+            <button onclick="testLocal()" id="localBtn">Test Local (http://localhost:3000)</button>
+            <div id="localResult" class="result"></div>
+        </div>
+
+        <!-- Production Test -->
+        <div class="test-section">
+            <h2>2. Test Production</h2>
+            <input type="text" id="prodUrl" placeholder="https://your-app.vercel.app" value="">
+            <button onclick="testProduction()" id="prodBtn">Test Production</button>
+            <div id="prodResult" class="result"></div>
+        </div>
+
+        <!-- Test URL -->
+        <div style="margin-top: 30px;">
+            <label>LinkedIn URL to test:</label>
+            <input type="text" id="linkedinUrl" value="https://www.linkedin.com/in/williamhgates/">
+        </div>
+    </div>
+
+    <script>
+        // Auto-detect production URL
+        document.getElementById('prodUrl').value = 'https://quest-core.vercel.app';
+
+        async function testEndpoint(baseUrl, resultId, buttonId) {
+            const linkedinUrl = document.getElementById('linkedinUrl').value.trim();
+            const resultDiv = document.getElementById(resultId);
+            const button = document.getElementById(buttonId);
+            
+            button.disabled = true;
+            button.textContent = 'Testing... (10-30 seconds)';
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = '<p>⏳ Calling Apify with official SDK...</p>';
+            
+            try {
+                const endpoint = `${baseUrl}/api/test-simple-apify`;
+                console.log('Testing:', endpoint);
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ linkedinUrl })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Success!</h3>
+                        <p><strong>Profile scraped using official Apify SDK:</strong></p>
+                        <ul>
+                            <li><strong>Name:</strong> ${data.profile.name}</li>
+                            <li><strong>Headline:</strong> ${data.profile.headline || 'N/A'}</li>
+                            <li><strong>Location:</strong> ${data.profile.location || 'N/A'}</li>
+                            <li><strong>Skills:</strong> ${data.profile.skillsCount}</li>
+                            <li><strong>Experience:</strong> ${data.profile.experienceCount}</li>
+                        </ul>
+                        <p><strong>Time:</strong> ${data.duration}ms</p>
+                        <details>
+                            <summary>View Full Data</summary>
+                            <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    throw new Error(data.error || 'Failed');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <p>${error.message}</p>
+                    <details>
+                        <summary>Debug Info</summary>
+                        <pre>${error.stack || error}</pre>
+                    </details>
+                `;
+            } finally {
+                button.disabled = false;
+                button.textContent = button.textContent.replace('Testing...', 'Test');
+            }
+        }
+
+        function testLocal() {
+            testEndpoint('http://localhost:3000', 'localResult', 'localBtn');
+        }
+
+        function testProduction() {
+            const prodUrl = document.getElementById('prodUrl').value.trim().replace(/\/$/, '');
+            testEndpoint(prodUrl, 'prodResult', 'prodBtn');
+        }
+    </script>
+</body>
+</html>
