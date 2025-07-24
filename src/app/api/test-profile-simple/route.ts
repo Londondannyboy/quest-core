@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 import { ApifyClient } from 'apify-client';
 
-// Initialize Apify client EXACTLY like the working example
-const client = new ApifyClient({
-    token: process.env.APIFY_TOKEN || process.env.APIFY_API_KEY,
-});
-
 export async function POST(request: Request) {
   try {
     const { linkedinUrl } = await request.json();
@@ -16,7 +11,23 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
+    // Check if token exists
+    const token = process.env.APIFY_TOKEN || process.env.APIFY_API_KEY;
+    if (!token) {
+      console.error('No Apify token found in environment variables');
+      return NextResponse.json({
+        success: false,
+        error: 'Apify token not configured'
+      }, { status: 500 });
+    }
+
     console.log('Scraping LinkedIn URL:', linkedinUrl);
+    console.log('Using Apify token:', token.substring(0, 10) + '...');
+
+    // Initialize client in the function to ensure fresh environment variables
+    const client = new ApifyClient({
+      token: token,
+    });
 
     // Run the actor - EXACT SAME CODE as working example
     const run = await client.actor('harvestapi/linkedin-profile-scraper').call({
@@ -24,12 +35,18 @@ export async function POST(request: Request) {
       queries: [linkedinUrl]
     });
 
+    console.log('Apify run started:', run.id);
+
     // Get results from the run - EXACT SAME CODE as working example
     const { items } = await client.dataset(run.defaultDatasetId).listItems();
+    
+    console.log('Retrieved items:', items.length);
     
     if (items && items.length > 0) {
       // Format response to match what the admin page expects
       const profile = items[0] as any; // Add 'any' type for now to fix TypeScript
+      console.log('Profile data keys:', Object.keys(profile));
+      
       return NextResponse.json({
         success: true,
         testMode: true,
@@ -51,19 +68,29 @@ export async function POST(request: Request) {
           }
         },
         totalTime: 0,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        debug: {
+          runId: run.id,
+          itemCount: items.length,
+          profileKeys: Object.keys(profile).slice(0, 10) // First 10 keys for debugging
+        }
       });
     } else {
       return NextResponse.json({ 
         success: false, 
-        error: 'No data found' 
+        error: 'No data found',
+        debug: {
+          runId: run.id,
+          itemsLength: items?.length || 0
+        }
       });
     }
   } catch (error) {
     console.error('Scraping error:', error);
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to scrape LinkedIn profile'
+      error: error instanceof Error ? error.message : 'Failed to scrape LinkedIn profile',
+      details: String(error)
     }, { status: 500 });
   }
 }
