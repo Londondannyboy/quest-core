@@ -74,16 +74,19 @@ export class ApifyClient {
       : `${this.baseURL}/actors/${actorId}/runs`;
     
     console.log('[ApifyClient] Using endpoint:', endpoint);
+    
+    // For tasks, send input directly. For actors, merge with run options.
+    const requestBody = isTaskId ? input : { ...runOptions, ...input };
+    
+    console.log('[ApifyClient] Request body:', JSON.stringify(requestBody, null, 2));
+    
     const runResponse = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        ...runOptions,
-        ...input,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!runResponse.ok) {
