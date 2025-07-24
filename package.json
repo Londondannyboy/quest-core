@@ -19,6 +19,7 @@
     "@clerk/nextjs": "^6.0.0",
     "@getzep/zep-js": "^2.0.2",
     "@humeai/voice-react": "^0.1.22",
+    "@modelcontextprotocol/sdk": "^1.16.0",
     "@prisma/client": "^6.11.1",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-popover": "^1.1.14",

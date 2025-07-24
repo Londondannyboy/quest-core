@@ -1,4 +1,4 @@
-import { apifyClient, APIFY_ACTORS, ApifyRunOutput } from './apify-client';
+import { mcpApifyClient, MCP_APIFY_ACTORS, MCPApifyRunOutput } from '../mcp/apify-mcp-client';
 
 export interface LinkedInProfile {
   // Basic Information
@@ -65,11 +65,11 @@ export class ProfileScraper {
   private lastRequestTime: number = 0;
   
   constructor() {
-    // Apify client is initialized as singleton with APIFY_API_KEY
+    // MCP Apify client is initialized as singleton with APIFY_API_KEY
   }
   
   /**
-   * Scrape a LinkedIn profile by URL using Apify + Harvest actors
+   * Scrape a LinkedIn profile by URL using MCP + Apify actors
    * @param profileUrl LinkedIn profile URL (e.g., https://www.linkedin.com/in/username)
    * @returns Parsed LinkedIn profile data
    */
@@ -83,29 +83,29 @@ export class ProfileScraper {
         throw new Error('Invalid LinkedIn profile URL');
       }
       
-      console.log('[ProfileScraper] Starting Apify Harvest LinkedIn scrape:', profileUrl);
+      console.log('[ProfileScraper] Starting MCP LinkedIn scrape:', profileUrl);
       
-      // Test connection first
+      // Test MCP connection first
       try {
-        await apifyClient.testConnection();
-        console.log('[ProfileScraper] Apify connection verified');
+        await mcpApifyClient.testConnection();
+        console.log('[ProfileScraper] MCP connection verified');
       } catch (connectionError) {
-        console.error('[ProfileScraper] Apify connection failed:', connectionError);
-        throw new Error(`Apify connection failed: ${connectionError}`);
+        console.error('[ProfileScraper] MCP connection failed:', connectionError);
+        throw new Error(`MCP connection failed: ${connectionError}`);
       }
       
-      // Try Harvest LinkedIn actor first (using correct Harvest API format)
-      let results: ApifyRunOutput[];
+      // Try Harvest LinkedIn actor first through MCP
+      let results: MCPApifyRunOutput[];
       try {
-        console.log('[ProfileScraper] Using Harvest LinkedIn actor:', APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE);
-        results = await apifyClient.scrape(APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE, {
+        console.log('[ProfileScraper] Using Harvest LinkedIn actor via MCP:', MCP_APIFY_ACTORS.LINKEDIN_PROFILE_SCRAPER);
+        results = await mcpApifyClient.runActor(MCP_APIFY_ACTORS.LINKEDIN_PROFILE_SCRAPER, {
           queries: [profileUrl],
           urls: [profileUrl]
         });
       } catch (harvestError) {
         console.warn('[ProfileScraper] Harvest actor failed, trying fallback:', harvestError);
         // Fallback to alternative LinkedIn scraper
-        results = await apifyClient.scrape(APIFY_ACTORS.LINKEDIN_PROFILE_FALLBACK, {
+        results = await mcpApifyClient.runActor(MCP_APIFY_ACTORS.TRUDAX_LINKEDIN_SCRAPER, {
           startUrls: [{ url: profileUrl }]
         });
       }
@@ -174,11 +174,11 @@ export class ProfileScraper {
         isComplete: !!(rawProfile.firstName || rawProfile.name),
       };
       
-      console.log('[ProfileScraper] Successfully scraped profile via Apify Harvest:', profile.name);
+      console.log('[ProfileScraper] Successfully scraped profile via MCP:', profile.name);
       return profile;
       
     } catch (error) {
-      console.error('[ProfileScraper] Error scraping profile via Apify Harvest:', error);
+      console.error('[ProfileScraper] Error scraping profile via MCP:', error);
       
       // Return partial profile with error details
       return {
@@ -262,5 +262,5 @@ export class ProfileScraper {
   }
 }
 
-// Export singleton instance (uses Apify + Harvest actors)
+// Export singleton instance (uses MCP + Apify actors)
 export const profileScraper = new ProfileScraper();
