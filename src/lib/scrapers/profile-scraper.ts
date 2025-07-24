@@ -94,16 +94,15 @@ export class ProfileScraper {
         throw new Error(`Apify connection failed: ${connectionError}`);
       }
       
-      // Try Harvest LinkedIn actor first (proven working)
+      // Try Harvest LinkedIn actor first (using public actor)
       let results: ApifyRunOutput[];
       try {
-        console.log('[ProfileScraper] Using Harvest LinkedIn actor:', APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE);
+        console.log('[ProfileScraper] Using LinkedIn actor:', APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE);
         results = await apifyClient.scrape(APIFY_ACTORS.HARVEST_LINKEDIN_PROFILE, {
-          urls: [profileUrl],
-          queries: [profileUrl]
+          startUrls: [{ url: profileUrl }]
         });
       } catch (harvestError) {
-        console.warn('[ProfileScraper] Harvest actor failed, trying fallback:', harvestError);
+        console.warn('[ProfileScraper] Primary actor failed, trying fallback:', harvestError);
         // Fallback to alternative LinkedIn scraper
         results = await apifyClient.scrape(APIFY_ACTORS.LINKEDIN_PROFILE_FALLBACK, {
           startUrls: [{ url: profileUrl }]

@@ -267,8 +267,8 @@ export const apifyClient = new ApifyClient();
 
 // Popular Apify actors for scraping
 export const APIFY_ACTORS = {
-  // Quest Core custom scrapers (proven working task IDs)
-  HARVEST_LINKEDIN_PROFILE: 'l4Rzg56H5cbFETmgx', // quest-profile-scraper task
+  // Use working public actors instead of broken task IDs
+  HARVEST_LINKEDIN_PROFILE: 'trudax/linkedin-profile-scraper', // Working public actor
   HARVEST_LINKEDIN_EMPLOYEES: 'Z4hQMjDxMd5Gk4Cmj', // Company employees scraper task
   
   // Actor names if creating new tasks
