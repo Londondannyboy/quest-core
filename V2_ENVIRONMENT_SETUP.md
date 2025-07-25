@@ -73,6 +73,20 @@ HUME_API_KEY="your_hume_key"
 - Only needed for voice coaching features
 - Can be added later
 
+### Monitoring & Observability (Required - Phase 1)
+```env
+# Checkly - Primary monitoring (Vercel marketplace)
+CHECKLY_API_KEY="your_checkly_key"
+CHECKLY_ACCOUNT_ID="your_account_id"
+
+# HyperDX - Backup monitoring
+HYPERDX_API_KEY="your_hyperdx_key"
+
+# Testing configuration
+NODE_ENV="test"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
 ### Enhanced Registration (Phase 2) - Optional
 ```env
 # For Zen MCP multi-model collaboration
@@ -112,6 +126,19 @@ N8N_API_KEY="your_n8n_key"
 3. Generate API key
 4. Test with Claude or GPT models
 
+### 3.5 Checkly Setup (Critical - Phase 1)
+1. Go to [checklyhq.com](https://checklyhq.com)
+2. Create account
+3. Install Vercel marketplace integration
+4. Copy API key and Account ID
+5. Configure synthetic monitoring checks
+
+### 3.6 HyperDX Setup (Backup Monitoring)
+1. Go to [hyperdx.io](https://hyperdx.io)
+2. Create account
+3. Generate API key
+4. Set up log ingestion
+
 ## 4. Database Initialization
 
 ```bash
@@ -135,7 +162,26 @@ npm run dev
 # http://localhost:3000
 ```
 
-## 6. Validation
+## 6. Testing & Quality Setup
+
+Install testing dependencies:
+
+```bash
+# Core testing stack (Vitest - 4x faster than Jest)
+npm install -D vitest @vitejs/plugin-react jsdom
+npm install -D @testing-library/react @testing-library/dom @testing-library/jest-dom
+npm install -D vite-tsconfig-paths
+
+# E2E testing for async Server Components
+npm install -D playwright @playwright/test
+
+# Code quality tools
+npm install -D husky lint-staged
+npm install -D @typescript-eslint/parser @typescript-eslint/eslint-plugin
+npm install -D eslint-config-next eslint-plugin-react-hooks
+```
+
+## 7. Validation
 
 Test your setup:
 
@@ -149,11 +195,17 @@ npm run typecheck
 # Run linting
 npm run lint
 
-# Run tests (if any)
-npm test
+# Run unit tests (Vitest)
+npm run test
+
+# Run E2E tests (Playwright)
+npm run test:e2e
+
+# Check monitoring integration
+npm run check:monitoring
 ```
 
-## 7. Vercel Deployment Setup
+## 8. Vercel Deployment Setup
 
 ```bash
 # Install Vercel CLI
@@ -168,7 +220,48 @@ vercel --prod
 
 **Important:** Add all environment variables in Vercel dashboard under Settings → Environment Variables.
 
-## 8. MCP Servers Setup (Phase 2+)
+## 9. GitHub Actions CI/CD Setup
+
+Create `.github/workflows/ci.yml`:
+
+```yaml
+name: CI Pipeline
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: ESLint check
+        run: npm run lint
+        
+      - name: TypeScript check
+        run: npm run typecheck
+        
+      - name: Unit tests
+        run: npm run test
+        
+      - name: E2E tests
+        run: npm run test:e2e
+        
+      - name: Build validation
+        run: npm run build
+```
+
+## 10. MCP Servers Setup (Phase 2+)
 
 ### Claude Desktop Configuration
 Add to `~/.claude/claude_desktop_config.json`:
@@ -195,7 +288,7 @@ Add to `~/.claude/claude_desktop_config.json`:
 }
 ```
 
-## 9. Troubleshooting
+## 11. Troubleshooting
 
 ### Common Issues
 
@@ -227,7 +320,17 @@ npm run typecheck
 3. Use GitHub Issues for bugs
 4. Follow the PRP framework for new features
 
-## 10. Production Checklist
+**Monitoring not working:**
+- Check Checkly integration in Vercel marketplace
+- Verify API keys and account ID
+- Test monitoring endpoints manually
+
+**Tests failing in CI:**
+- Ensure all test dependencies installed
+- Check environment variables in GitHub Actions
+- Verify Playwright browser installation
+
+## 12. Production Checklist
 
 Before deploying to production:
 
@@ -235,7 +338,10 @@ Before deploying to production:
 - [ ] Database migrations run
 - [ ] Clerk webhooks configured
 - [ ] API rate limits considered
-- [ ] Error monitoring setup
+- [ ] **Checkly monitoring operational**
+- [ ] **GitHub Actions CI/CD passing**
+- [ ] **Unit and E2E tests passing**
+- [ ] **Code quality gates configured**
 - [ ] Backup strategy in place
 
 ---

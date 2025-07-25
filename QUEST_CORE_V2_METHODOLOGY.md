@@ -518,47 +518,159 @@ gh api repos/owner/repo/pulls
 ### Valuable for V2 Phase 3 (Decision Support):
 - ✅ **Zen MCP** - Multi-model collaboration for complex decisions
 
-**Phase 1: Simplicity | Phase 2: Enhancement | Phase 3: Intelligence**
+**Phase 1: Foundation + Monitoring | Phase 2: Enhancement + Testing | Phase 3: Intelligence + Hardening**
 
-## 🎯 V2 Implementation Checklist
+## 📊 Monitoring & Testing Strategy
 
-### Week 1: Core Platform
-- [ ] Project setup with all methodology files
-- [ ] Clerk authentication
-- [ ] Database schema
-- [ ] LinkedIn import
-- [ ] Basic profile management
-- [ ] Deploy to production
+### Critical Infrastructure First Approach
+Based on V1 failures and 2024 best practices, all challenging integrations must be implemented with comprehensive monitoring from day one.
 
-### Week 2: Value Delivery
-- [ ] Working Repository
-- [ ] Access control
-- [ ] Basic AI coach
-- [ ] Trinity questions
-- [ ] User testing
-- [ ] Enhanced Registration Planning (Apify + n8n)
+### Monitoring Stack (Checkly + HyperDX)
+```bash
+# Checkly - Primary monitoring (Vercel marketplace)
+# ✅ Synthetic monitoring + backend traces
+# ✅ Works out-of-the-box with Next.js 15
+# ✅ Monitors Preview and Production deployments
+# ✅ Native Vercel integration
 
-### Week 3: Enhancement
-- [ ] Multi-coach system
+# HyperDX - Backup monitoring
+# ✅ Logs, APM & Session Replay in one platform
+# ✅ Modern stack compatibility
+```
+
+### Testing Framework (Vitest > Jest)
+```bash
+# Core testing stack (4x faster than Jest)
+npm install -D vitest @vitejs/plugin-react jsdom
+npm install -D @testing-library/react @testing-library/dom @testing-library/jest-dom
+npm install -D vite-tsconfig-paths
+
+# E2E testing for async Server Components
+npm install -D playwright @playwright/test
+```
+
+### Code Quality Pipeline
+```yaml
+# .github/workflows/ci.yml
+name: CI Pipeline
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+      - name: Setup Node.js
+      - name: Install dependencies
+      - name: ESLint + TypeScript check
+      - name: Vitest unit tests
+      - name: Playwright E2E tests
+      - name: Security scan (Dependabot)
+      - name: Build validation
+```
+
+### Pre-commit Quality Gates
+```bash
+# Husky + lint-staged setup
+npm install -D husky lint-staged
+npm install -D @typescript-eslint/parser @typescript-eslint/eslint-plugin
+npm install -D eslint-config-next eslint-plugin-react-hooks
+
+# Pre-commit hook runs:
+# 1. ESLint with auto-fix
+# 2. TypeScript compilation check
+# 3. Affected unit tests
+# 4. Security vulnerability scan
+```
+
+### Why This Approach Works
+1. **Sentry Issues**: Next.js 15 + Turbopack compatibility problems make it risky for early implementation
+2. **Checkly Benefits**: Native Vercel integration with proven Next.js 15 compatibility
+3. **Vitest Performance**: 4x faster than Jest with Jest-compatible API for easy migration
+4. **Early Integration**: Challenging integrations (scraping, monitoring) tackled first when team energy is highest
+
+### Integration Monitoring Patterns
+```typescript
+// Monitor Apify scraping operations
+const scrapeWithMonitoring = async (url: string) => {
+  const startTime = Date.now();
+  try {
+    const result = await apifyClient.call('linkedin-scraper', { url });
+    // Log success metrics to Checkly
+    await logMetric('scraping_success', Date.now() - startTime);
+    return result;
+  } catch (error) {
+    // Alert on failure via Checkly
+    await logError('scraping_failure', error, { url });
+    throw error;
+  }
+};
+
+// Monitor AI operations
+const aiCallWithTracking = async (prompt: string, model: string) => {
+  const requestId = generateId();
+  try {
+    const response = await openRouter.chat({ prompt, model });
+    await trackAIUsage(requestId, model, prompt.length, response.length);
+    return response;
+  } catch (error) {
+    await alertAIFailure(requestId, model, error);
+    throw error;
+  }
+};
+```
+
+## 🎯 V2 Implementation Checklist (Revised: Challenging Integrations First)
+
+### Week 1-2: Foundation + Critical Integrations
+**Priority: Get the hard stuff working first**
+
+#### Day 1-2: Monitoring & Observability Foundation
+- [ ] **Checkly Integration** (Vercel marketplace setup)
+- [ ] **Testing Framework Setup** (Vitest + React Testing Library + Playwright)
+- [ ] **GitHub Actions CI/CD** (ESLint + TypeScript + Husky + lint-staged)
+- [ ] **Code Review Automation** (CodeRabbit + Dependabot)
+
+#### Day 3-5: LinkedIn Scraping Integration (Critical Path)
+- [ ] **Apify Setup** with comprehensive error handling
+- [ ] **LinkedIn Profile Scraper** with data.element pattern
+- [ ] **Rate limiting and retry logic**
+- [ ] **Monitoring integration** for scraping operations
+- [ ] **Unit tests** for scraping pipeline
+
+#### Day 6-10: Core Platform with Monitoring
+- [ ] **Next.js 15 Setup** with full observability
+- [ ] **Clerk authentication** with user sync monitoring
+- [ ] **Database schema** with query performance tracking
+- [ ] **Basic profile management** with error tracking
+- [ ] **Deploy to production** with comprehensive monitoring
+
+#### Success Criteria Week 1-2
+- All difficult integrations working and monitored
+- Comprehensive error tracking and alerting operational
+- LinkedIn scraping reliable with 95%+ success rate
+- Full CI/CD pipeline preventing broken deployments
+
+### Week 3-4: Enhanced Registration with Robust Monitoring
 - [ ] **Enhanced "Shock & Awe" Registration**
-  - [ ] Apify MCP integration
-  - [ ] X/Twitter, GitHub, Reddit scrapers
-  - [ ] n8n workflow orchestration
-- [ ] Company enrichment
-- [ ] Voice coaching
-- [ ] Analytics
-- [ ] Performance optimization
+  - [ ] Apify MCP integration with full monitoring
+  - [ ] X/Twitter, GitHub, Reddit scrapers with error handling
+  - [ ] n8n workflow orchestration with observability
+  - [ ] E2E testing of entire registration flow
+- [ ] **Working Repository** with access control monitoring
+- [ ] **Basic AI coach** with performance tracking
+- [ ] **Trinity questions** with user interaction analytics
 
-### Month 2: Scale & Intelligence
-- [ ] **Zen MCP Integration**
-  - [ ] Multi-model architecture reviews
-  - [ ] Complex problem solving with Gemini
-  - [ ] Code reviews from multiple perspectives
-- [ ] All 4 repository layers
-- [ ] Neo4j relationships
-- [ ] Zep memory
-- [ ] Advanced AI features
-- [ ] Premium features
+### Month 2: Advanced Features with Production Hardening
+- [ ] **Zen MCP Integration** with multi-model monitoring
+  - [ ] Multi-model architecture reviews with performance metrics
+  - [ ] Complex problem solving with Gemini and cost tracking
+  - [ ] Code reviews from multiple perspectives with quality metrics
+- [ ] **Production Hardening**
+  - [ ] All 4 repository layers with comprehensive monitoring
+  - [ ] Neo4j relationships with query performance tracking
+  - [ ] Zep memory with context retrieval monitoring
+  - [ ] Advanced AI features with usage analytics
+  - [ ] Premium features with business metrics
 
 ## 🚀 Enhanced "Shock & Awe" Registration (Phase 2)
 
