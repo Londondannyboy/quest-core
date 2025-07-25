@@ -237,13 +237,25 @@ Quest Core uses premium dark theme:
 - **Cards**: Charcoal (#1A1D29)
 - **Typography**: GT Walsheim
 
+## MANIFESTO-DRIVEN DEVELOPMENT
+
+1. **Read QUEST_CORE_MANIFESTO.md first** - Our philosophical foundation
+2. **Consult QUEST_CORE_TRINITY.md** - Our organizational purpose
+3. **Apply Trinity Filter** to all decisions:
+   - Quest Check: Does this advance professional awakening?
+   - Service Check: Does this honor human dignity?
+   - Pledge Check: Does this maintain our sacred commitments?
+4. **Never compromise the sacred for the scalable**
+5. **Story before strategy, always**
+
 ## CONTEXT ENGINEERING RULES
 
 1. **Read CLAUDE.md first** for every session
-2. **Use PRP framework** for complex features
-3. **Validate before executing** all AI-generated code
-4. **Update patterns** as you discover them
-5. **Keep documentation current** with implementation
+2. **Apply manifesto principles** to all development decisions
+3. **Use PRP framework** for complex features
+4. **Validate before executing** all AI-generated code
+5. **Update patterns** as you discover them
+6. **Keep documentation current** with implementation
 
 ---
 

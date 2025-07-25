@@ -2,17 +2,25 @@
 
 *Cole Meddin's Context Engineering + Our Learnings = The Ultimate Implementation Playbook*
 
-## 🎯 V2 Philosophy: Radical Simplicity + Sacred Purpose
+## 🎯 V2 Philosophy: Manifesto-Driven Development
 
 Build a revolutionary professional awakening platform in 10% of the code by:
-1. Making users earn their Quest through story
-2. Following proven patterns from V1
-3. Applying Cole Meddin's context engineering
-4. Creating genuine "shock and awe" experiences
-5. Never calling it "registration"
+1. **Living our Trinity** - Every decision filtered through Quest/Service/Pledge alignment
+2. **Making users earn their Quest** through story reflection (never "registration")
+3. **Following proven patterns** from V1 combined with manifesto principles
+4. **Applying Cole Meddin's context engineering** with sacred purpose
+5. **Creating genuine "shock and awe" experiences** that honor human dignity
 
 ### Core Innovation: Story → Trinity → Quest
 Users don't "sign up" - they discover their professional Trinity (Quest/Service/Pledge) through guided reflection on their career story. Not everyone is ready for their Quest immediately, and that's by design.
+
+### Manifesto-Driven Development Process
+1. Read **QUEST_CORE_MANIFESTO.md** for philosophical foundation
+2. Consult **QUEST_CORE_TRINITY.md** for organizational purpose
+3. Apply **Trinity Filter** to every technical decision:
+   - Quest Check: Does this advance professional awakening?
+   - Service Check: Does this honor human dignity?  
+   - Pledge Check: Does this maintain our sacred commitments?
 
 ## 📂 V2 Repository Structure
 
