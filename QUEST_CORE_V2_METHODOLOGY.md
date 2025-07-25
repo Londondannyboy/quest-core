@@ -106,17 +106,36 @@ interface IntelligenceTypes {
 
 You are Claude, an AI assistant helping to build Quest Core...
 
-## Architecture Overview
-[Include full system architecture]
+## CONSTANT RULES (Rarely Change)
+- Project name and vision
+- Core architecture decisions
+- Naming conventions
+- Security principles
+- Code style guidelines
 
-## Current State
-[Track implementation progress]
+## PROJECT STATE (Update Regularly)
+- Current phase of development
+- Recently completed features
+- Known issues/blockers
+- Next priorities
 
-## Key Patterns
-[Document proven patterns]
+## PROVEN PATTERNS (Add As Discovered)
+- Successful API patterns
+- UI component patterns
+- Integration patterns
+- Error handling patterns
 
-## Common Issues & Solutions
-[Include all learnings from V1]
+## COMMON GOTCHAS (Learn From Mistakes)
+- Apify data in items[0].element
+- Clerk user sync required
+- Environment variable formats
+- TypeScript strict mode issues
+
+## DO NOT INCLUDE HERE
+- Feature-specific logic (use PRPs)
+- Temporary workarounds
+- One-off solutions
+- External API keys
 ```
 
 ### 2. PRODUCT_REQUIREMENTS.md
@@ -393,7 +412,9 @@ console.log('[Feature] Action', { userId, data });
     "db:studio": "prisma studio",
     "lint": "next lint",
     "test": "jest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "fix": "next lint --fix && tsc --noEmit"
   }
 }
 ```
@@ -402,7 +423,102 @@ console.log('[Feature] Action', { userId, data });
 - **VSCode** with TypeScript/Tailwind extensions
 - **Prisma Studio** for database management
 - **Vercel CLI** for deployments
-- **Postman/Insomnia** for API testing
+- **Playwright** for E2E testing (NOT Puppeteer)
+- **gh CLI** for GitHub operations
+
+## 🤖 Auto-Fix System (From V1)
+
+### Zero-Approval TypeScript Error Correction
+Quest Core V1's auto-fix system automatically detects and fixes deployment failures:
+
+```bash
+# Workflow: Push → Build Fails → Auto-Fix → Commit → Push → Success
+```
+
+### Components to Port:
+1. **MCP-Vercel Server** - Real-time deployment monitoring
+2. **GitHub Actions Workflow** - `.github/workflows/auto-fix-deployment.yml`
+3. **Local Auto-Fix Script** - `scripts/claude-auto-fix.js`
+4. **5-Attempt Tracking** - Smart retry logic
+
+### Why This Matters:
+- ✅ Catches TypeScript errors immediately
+- ✅ Fixes common import/syntax issues
+- ✅ No manual intervention needed
+- ✅ Proven in V1 production
+
+## 🎨 Frontend Design Strategy
+
+### Hybrid Approach: thesys.dev + shadcn/ui
+
+#### Primary Tool: thesys.dev Generative UI
+- **Purpose**: Adaptive, context-aware interfaces
+- **Use Case**: Trinity discovery, coaching dashboards
+- **Benefit**: Cutting-edge user experiences
+
+#### Foundation: shadcn/ui Components
+- **Purpose**: Consistent base components
+- **Use Case**: Buttons, forms, modals, cards
+- **Benefit**: Faster development, accessibility
+
+#### Implementation:
+```bash
+# 1. Install shadcn/ui
+npx shadcn-ui@latest init
+npx shadcn-ui@latest add button card form dialog
+
+# 2. Customize with Quest theme
+# 3. Configure thesys.dev to use shadcn components
+```
+
+#### Quest Theme Override:
+```typescript
+// tailwind.config.ts
+theme: {
+  extend: {
+    colors: {
+      primary: '#00D4B8',    // Aurora Fade
+      secondary: '#4F46E5',  // Electric Violet
+      accent: '#8B5CF6',     // Purple
+      background: '#0A0E1A', // Deep Charcoal
+      surface: '#1A1D29'     // Card Background
+    }
+  }
+}
+```
+
+## 🔧 GitHub Integration
+
+### Using gh CLI (Already Integrated)
+```bash
+# Examples of current capabilities:
+gh pr create --title "Feature" --body "Description"
+gh issue list --label "bug"
+gh api repos/owner/repo/pulls
+```
+
+### No Need for GitHub MCP Server
+- ✅ gh CLI provides all needed functionality
+- ✅ Auto-fix system handles error correction
+- ✅ Simpler than MCP server setup
+
+## 📋 MCP Servers - Strategic Use Only
+
+### Not Needed for V2 Phase 1:
+- ❌ **GitHub MCP** - gh CLI is sufficient
+- ❌ **Apidog MCP** - TypeScript provides API safety
+- ❌ **PostgreSQL MCP** - Prisma is superior
+- ❌ **Figma MCP** - No Figma designs exist
+- ❌ **File System MCP** - Native access already available
+
+### Valuable for V2 Phase 2 (Enhanced Registration):
+- ✅ **Apify MCP** - Access to 5,000+ scrapers for shock & awe
+- ✅ **n8n MCP** - Workflow automation for sequential scraping
+
+### Valuable for V2 Phase 3 (Decision Support):
+- ✅ **Zen MCP** - Multi-model collaboration for complex decisions
+
+**Phase 1: Simplicity | Phase 2: Enhancement | Phase 3: Intelligence**
 
 ## 🎯 V2 Implementation Checklist
 
@@ -420,20 +536,166 @@ console.log('[Feature] Action', { userId, data });
 - [ ] Basic AI coach
 - [ ] Trinity questions
 - [ ] User testing
+- [ ] Enhanced Registration Planning (Apify + n8n)
 
 ### Week 3: Enhancement
 - [ ] Multi-coach system
+- [ ] **Enhanced "Shock & Awe" Registration**
+  - [ ] Apify MCP integration
+  - [ ] X/Twitter, GitHub, Reddit scrapers
+  - [ ] n8n workflow orchestration
 - [ ] Company enrichment
 - [ ] Voice coaching
 - [ ] Analytics
 - [ ] Performance optimization
 
-### Month 2: Scale
+### Month 2: Scale & Intelligence
+- [ ] **Zen MCP Integration**
+  - [ ] Multi-model architecture reviews
+  - [ ] Complex problem solving with Gemini
+  - [ ] Code reviews from multiple perspectives
 - [ ] All 4 repository layers
 - [ ] Neo4j relationships
 - [ ] Zep memory
 - [ ] Advanced AI features
 - [ ] Premium features
+
+## 🚀 Enhanced "Shock & Awe" Registration (Phase 2)
+
+### Vision
+Transform registration from "We found your LinkedIn" to "We discovered your entire professional digital footprint"
+
+### Implementation with Apify MCP + n8n
+
+#### Apify MCP Integration
+```json
+// claude_desktop_config.json
+{
+  "mcpServers": {
+    "apify": {
+      "command": "npx",
+      "args": ["@apify/mcp-server"],
+      "env": {
+        "APIFY_API_TOKEN": "YOUR_TOKEN"
+      }
+    }
+  }
+}
+```
+
+#### Available Scrapers for Enhancement:
+- **LinkedIn** - Profile, company, employees (existing)
+- **X/Twitter** - Profile, recent tweets, engagement
+- **GitHub** - Repos, contributions, stars
+- **Reddit** - Technical discussions, expertise
+- **Google** - Blog posts, conference talks
+- **Company websites** - About pages, team info
+
+#### Workflow Example:
+```typescript
+// Enhanced registration flow
+async function shockAndAweRegistration(name: string, email: string) {
+  // Phase 1: Basic LinkedIn
+  const linkedin = await scrapeLinkedIn(linkedinUrl);
+  
+  // Phase 2: Enhanced discovery (via Apify MCP)
+  const enhanced = await Promise.all([
+    findTwitterProfile(name, linkedin.company),
+    findGitHubProfile(email, name),
+    searchGoogleForUser(name, linkedin.headline),
+    scrapeCompanyData(linkedin.company)
+  ]);
+  
+  // Create comprehensive profile
+  return aggregateUserInsights(linkedin, ...enhanced);
+}
+```
+
+#### n8n Orchestration Benefits:
+- Sequential scraping with dependencies
+- Error handling and retries
+- Rate limit management
+- Conditional logic (if GitHub found, scrape repos)
+- Data transformation and cleaning
+
+#### Expected User Experience:
+```
+"Welcome Sarah! Here's what we discovered:
+✨ Senior Engineer at Meta with 8 years experience
+🐦 Your viral TypeScript thread reached 50K developers
+⭐ Your React hooks library has 3.2K GitHub stars
+🏢 Connected to 127 Meta colleagues in our network
+📚 Speaker at ReactConf 2024 on performance optimization
+🎯 Top skills: React, TypeScript, System Design"
+```
+
+#### Privacy & Cost Considerations:
+- Only public data scraped
+- ~$0.10 per enhanced registration
+- Clear opt-in/opt-out
+- GDPR compliant data handling
+
+## 🧠 Multi-Model Collaboration with Zen MCP (Phase 3)
+
+### Vision
+Transform from single-model decisions to multi-perspective intelligence for complex architectural choices and problem solving.
+
+### What is Zen MCP?
+Orchestrates multiple AI models (Claude + Gemini + GPT + Ollama) as your development team, with each model building upon others' insights while maintaining conversation context.
+
+### Implementation
+```json
+// claude_desktop_config.json
+{
+  "mcpServers": {
+    "zen": {
+      "command": "npx",
+      "args": ["@199biotechnologies/zen-mcp"],
+      "env": {
+        "GEMINI_API_KEY": "YOUR_KEY",
+        "OPENAI_API_KEY": "YOUR_KEY",
+        "OPENROUTER_API_KEY": "YOUR_KEY" // Optional
+      }
+    }
+  }
+}
+```
+
+### Use Cases for Quest Core V2
+```typescript
+// 1. Architecture Decisions
+"Use zen consensus to evaluate our 4-layer repository design"
+
+// 2. Complex Problem Solving  
+"Use gemini thinkdeep to analyze Trinity coherence scoring algorithm"
+
+// 3. Code Reviews
+"Use zen codereview on the enhanced registration workflow"
+
+// 4. Extended Reasoning (1M tokens)
+"Use gemini to analyze all our API endpoints for optimization opportunities"
+```
+
+### Zen Tools Available
+- **chat**: Collaborative thinking partner
+- **thinkdeep**: Extended reasoning for edge cases
+- **challenge**: Critical thinking that prevents blind agreement
+- **planner**: Step-by-step planning for complex features
+- **consensus**: Multi-model perspectives
+- **codereview**: Professional review with prioritized feedback
+
+### Why Zen MCP Matters for V2
+- **Better Decisions**: Multiple AI perspectives catch blind spots
+- **Context Persistence**: Models remember across Claude resets
+- **Extended Analysis**: Gemini's 1M token context for large codebases
+- **Specialized Strengths**: Each model excels at different tasks
+
+### When to Use
+- Major architectural decisions
+- Complex algorithm design
+- Performance optimization strategies
+- Security review of critical paths
+- When you need a "second opinion"
 
 ## 💡 Key V2 Decisions
 
@@ -465,6 +727,119 @@ console.log('[Feature] Action', { userId, data });
 3. **Feature creep**: Ship core value first
 4. **Complex state**: Use simple patterns
 5. **Unnecessary dependencies**: Every package adds weight
+
+## 📋 PRP Framework for Feature Development
+
+### Overview
+Use Cole Meddin's PRP (Product Requirements Prompt) framework for systematic feature development with AI assistance.
+
+### Feature Development Workflow
+```
+1. Create initial.md → 2. Generate PRP → 3. Validate → 4. Execute → 5. Test
+```
+
+### 1. Feature Initial.md Template
+```markdown
+# /prps/features/[feature-name]/initial.md
+
+## Feature: [Name]
+
+### Dependencies
+- Required APIs (e.g., Apify, OpenRouter)
+- npm packages needed
+- Environment variables
+- Database tables/changes
+
+### Definition
+- User stories (As a user, I want to...)
+- Business logic details
+- Success criteria
+- UI/UX requirements
+
+### Functions/Components
+- API endpoints to create
+- React components to build
+- Database operations needed
+- Integration points
+
+### Examples
+- Link to similar features in codebase
+- Reference implementations
+- Design patterns to follow
+
+### Considerations
+- Known gotchas with this type of feature
+- Performance requirements
+- Security considerations
+- Error handling needs
+```
+
+### 2. Generate Feature PRP
+Use AI to expand initial.md into comprehensive PRP:
+```bash
+# In Claude Code or as prompt:
+"Generate a PRP for [feature] based on initial.md, including all Quest Core patterns"
+```
+
+### 3. Validation Checklist
+Before executing PRP, ensure:
+- [ ] All dependencies are correct
+- [ ] No sensitive data in PRP
+- [ ] File structure makes sense
+- [ ] Validation gates included
+- [ ] Confidence score addressed
+
+**Ask**: "What would make this PRP 10/10 confidence?"
+
+### 4. Validation Gates
+```typescript
+// Every feature must pass:
+interface ValidationGates {
+  compilation: "npm run build succeeds",
+  typecheck: "npm run typecheck passes",
+  linting: "npm run lint passes",
+  tests: "npm test passes for new code",
+  manual: "Feature works as specified",
+  security: "No exposed secrets or vulnerabilities"
+}
+```
+
+### 5. PRP Templates by Feature Type
+```
+/prps/templates/
+├── linkedin-scraping.md    # Apify integration patterns
+├── ai-coaching.md          # OpenRouter/Zep patterns  
+├── ui-component.md         # React/Tailwind patterns
+├── api-endpoint.md         # Next.js API patterns
+└── database-feature.md     # Prisma patterns
+```
+
+### 6. Examples Directory Structure
+```
+/examples/
+├── successful-patterns/
+│   ├── apify-scraping/
+│   ├── ai-integration/
+│   ├── auth-flows/
+│   └── ui-components/
+├── gotchas/
+│   ├── common-errors.md
+│   └── solutions.md
+└── reference-implementations/
+```
+
+### Feature Development Rules
+1. **Clear context first**: Always start with initial.md
+2. **Validate before execute**: Review every PRP
+3. **Test incrementally**: Run validation gates often
+4. **Document patterns**: Add successful patterns to /examples
+5. **Update CLAUDE.md**: Add new constants/patterns
+
+### Confidence Scoring
+Rate each PRP before execution:
+- 10/10: Ready to execute
+- 8-9/10: Minor clarifications needed
+- <8/10: Needs more context/examples
 
 ## 📚 V2 Resources
 

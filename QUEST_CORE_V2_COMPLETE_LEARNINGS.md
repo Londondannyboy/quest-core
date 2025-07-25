@@ -409,14 +409,152 @@ Based on V1 learnings, here's the optimal integration sequence:
 3. **Week 3 - Advanced Features**
    - ⏳ Hume AI voice coaching
    - ⏳ Zep conversation memory
+   - ⏳ Enhanced "Shock & Awe" Registration
    - ⏳ Company/employee enrichment
 
-4. **Month 2 - Innovation**
+4. **Month 2 - Innovation & Intelligence**
+   - ⏳ Zen MCP multi-model collaboration
    - ⏳ Neo4j graph database
    - ⏳ thesys.dev generative UI
    - ⏳ Advanced analytics
 
-### 10. Package.json for V2
+### 10. Enhanced Registration Strategy (Phase 2 Learning)
+
+**LEARNING: Single LinkedIn scrape is not enough for "shock & awe"**
+**SOLUTION: Apify MCP + n8n workflow orchestration**
+
+```typescript
+// Phase 1: Basic LinkedIn only
+const profile = await scrapeLinkedIn(url);
+
+// Phase 2: Enhanced discovery via Apify MCP
+const enhanced = await discoverDigitalFootprint(name, company);
+```
+
+#### Apify MCP Server Benefits:
+- Access to 5,000+ scrapers without individual setup
+- Dynamic scraper discovery (`search-actors` API)
+- Unified interface for all scrapers
+- Pay-per-use pricing (~$0.10 per registration)
+
+#### Available Scrapers for Shock & Awe:
+```typescript
+const scrapers = {
+  'twitter-scraper': '$0.40 per 1K results',
+  'reddit-scraper': '$45/month after trial',
+  'github-scraper': 'Free tier available',
+  'google-search': 'Results + snippets',
+  'company-websites': 'Team pages, about'
+};
+```
+
+#### n8n Workflow Orchestration:
+```typescript
+// Sequential scraping with error handling
+workflow: 'Enhanced Registration'
+├── LinkedIn scrape
+├── Extract company name
+├── Find Twitter/X profile
+├── Scrape GitHub if found
+├── Google search for talks/blogs
+└── Aggregate into unified profile
+```
+
+#### Integration Code:
+```json
+// claude_desktop_config.json
+{
+  "mcpServers": {
+    "apify": {
+      "command": "npx",
+      "args": ["@apify/mcp-server"],
+      "env": { "APIFY_API_TOKEN": "..." }
+    }
+  }
+}
+```
+
+#### CRITICAL LEARNINGS:
+- Start with Phase 1 (LinkedIn only) for MVP
+- Add enhanced discovery in Phase 2 for differentiation
+- Use n8n for complex multi-step workflows
+- Always handle scraper failures gracefully
+- Respect rate limits and privacy
+
+### 11. Multi-Model Collaboration Strategy (Phase 3 Learning)
+
+**LEARNING: Single AI model can have blind spots in complex decisions**
+**SOLUTION: Zen MCP for multi-model collaboration and perspectives**
+
+```typescript
+// Phase 1-2: Single model (Claude) for all decisions
+const decision = await makeArchitectureDecision();
+
+// Phase 3: Multi-model consensus for critical decisions
+const consensus = await zen.consensus({
+  question: "Should we use Neo4j or extend PostgreSQL?",
+  models: ['claude', 'gemini', 'gpt-4']
+});
+```
+
+#### Zen MCP Benefits:
+- **Context Persistence**: Models remember across Claude resets
+- **Extended Analysis**: Gemini's 1M token context window
+- **Diverse Perspectives**: Each model has different strengths
+- **Collaborative Building**: Models build on each other's insights
+
+#### Key Zen Tools:
+```typescript
+const zenTools = {
+  'chat': 'Quick collaborative thinking',
+  'thinkdeep': 'Extended reasoning for edge cases',
+  'challenge': 'Critical analysis, prevents groupthink',
+  'planner': 'Complex feature planning',
+  'consensus': 'Multi-model agreement',
+  'codereview': 'Comprehensive code analysis'
+};
+```
+
+#### When to Use Zen MCP:
+```typescript
+// Architecture decisions
+"Use zen consensus to evaluate microservices vs monolith"
+
+// Algorithm design
+"Use gemini thinkdeep to optimize Trinity scoring algorithm"
+
+// Security review
+"Use zen codereview for authentication implementation"
+
+// Large codebase analysis
+"Use gemini to analyze all 60+ API endpoints"
+```
+
+#### Integration:
+```json
+{
+  "mcpServers": {
+    "zen": {
+      "command": "npx",
+      "args": ["@199biotechnologies/zen-mcp"],
+      "env": {
+        "GEMINI_API_KEY": "...",
+        "OPENAI_API_KEY": "..."
+      }
+    }
+  }
+}
+```
+
+#### CRITICAL LEARNINGS:
+- Start with single model (Claude) for speed
+- Add Zen MCP only for complex decisions
+- Models maintain conversation context
+- Gemini excels at large context analysis
+- GPT-4 strong at code generation
+- Use consensus for architecture choices
+
+### 12. Package.json for V2
 ```json
 {
   "name": "quest-core-v2",
