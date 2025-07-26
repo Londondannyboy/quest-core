@@ -14,6 +14,10 @@ Built using Cole Medin's advanced context engineering methodology to create AI-p
 ## 🏗️ **Current Architecture**
 
 ### **Technology Stack**
+
+**📚 See [V2_TECH_STACK.md](./V2_TECH_STACK.md) for comprehensive technology documentation with URLs, versions, and setup guides.**
+
+**Core Stack Overview:**
 - **Frontend**: Next.js 15, React 18, TypeScript, Tailwind CSS
 - **Design System**: Quest premium visual language with GT Walsheim typography
 - **Generative UI**: thesys.dev C1 API (dynamic interface generation)
@@ -626,6 +630,44 @@ await prisma.userInsight.create({
 - Zep integration patterns
 - User data privacy compliance
 - Voice coaching UX quality
+
+## 🚀 **Claude Code Enhancement Opportunities**
+
+### **Sub-Agents for Quest Core V2**
+
+Consider upgrading Claude Code to latest version (1.0.60+) to leverage sub-agents feature for:
+
+#### **Proposed Sub-Agents**
+1. **Style Guide Compliance Agent**
+   - Validates UI components against V2_STYLE_GUIDE.md
+   - Checks design tokens, accessibility standards
+   - Ensures consistent Quest visual language
+
+2. **Security Scanner Agent**
+   - Runs Semgrep patterns on code changes
+   - Validates data privacy compliance
+   - Checks for exposed secrets/keys
+
+3. **Trinity Alignment Agent**
+   - Validates features against manifesto principles
+   - Ensures every change serves Story → Trinity → Quest journey
+   - Maintains philosophical integrity
+
+4. **Database Migration Agent**
+   - Handles Prisma schema changes safely
+   - Validates migrations before applying
+   - Manages rollback strategies
+
+5. **API Integration Agent**
+   - Specializes in OpenRouter/Zep/Apify patterns
+   - Knows common gotchas and best practices
+   - Maintains consistent error handling
+
+#### **Benefits**
+- Preserve main conversation context
+- Delegate specialized tasks efficiently
+- Create reusable expertise domains
+- Reduce cognitive load on main Claude instance
 
 ---
 
