@@ -356,30 +356,72 @@ Last Updated: 2025-07-26
   - Background refetching
   - Optimistic updates
 
-### React Force Graph
-- **Purpose**: 3D network visualizations
+### React Force Graph 3D
+- **Purpose**: 3D network visualizations with revolutionary layered system
 - **Website**: https://github.com/vasturiano/react-force-graph
 - **Documentation**: https://github.com/vasturiano/react-force-graph#readme
+- **Version**: Latest (with ForceGraph3D component)
+- **Critical Implementation Pattern**:
+  ```typescript
+  // MUST use dynamic import with SSR disabled
+  const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), {
+    ssr: false,
+    loading: () => <div>Loading 3D Timeline...</div>
+  });
+  ```
+- **Revolutionary Features**:
+  - **Transparent Background**: `backgroundColor="transparent"` enables layering
+  - **Scene Access**: `graphRef.current.scene()` for custom Three.js objects
+  - **Camera Control**: `graphRef.current.cameraPosition()` for positioning
+  - **4-Layer Architecture**: Background → Effects → Graph → UI
 - **Use Cases**:
-  - Trinity visualizations
-  - Professional network graphs
-  - **NEW**: LinkedIn journey visualization (left-to-right timeline)
-  - **NEW**: Quest node pulsing animations
-  - **NEW**: Real-time journey updates during conversations
-- **Key Features for V2**:
-  - Custom node objects for pulsing quest nodes
-  - Force-directed layout with fixed X positions
-  - Real-time graph updates via Zep integration
-  - Node proximity detection for voice modulation
-- **Related Files**: `components/three/`, `V2_LINKEDIN_MIRROR_USE_CASE.md`
+  - Trinity evolution visualization
+  - Professional journey timeline
+  - LinkedIn Mirror with temporal context
+  - Quest node pulsing with proximity detection
+  - Real-time updates during coaching conversations
+- **V1 Achievements**:
+  - 12+ working visualization variants
+  - "Never seen anything like it" - User feedback
+  - Temporal gradients (Past→Present→Future)
+  - 2000+ particle systems
+  - Morphing geometry animations
+- **Key Learnings**: See `V2_3D_VISUALIZATION_LEARNINGS.md`
+- **Related Files**: `components/visualization/`, `src/app/test-*/`
 
 ### Three.js
-- **Purpose**: 3D graphics library
+- **Purpose**: 3D graphics library for advanced temporal visualizations
 - **Website**: https://threejs.org/
 - **Documentation**: https://threejs.org/docs/
-- **Use Cases**:
-  - Professional Mirror timeline
-  - 3D sphere visualizations
+- **Version**: Latest (with TypeScript support)
+- **Critical Import Pattern**:
+  ```typescript
+  // MUST use direct import for reliability
+  import * as THREE from 'three';
+  ```
+- **Integration with ForceGraph3D**:
+  ```typescript
+  // Access Three.js scene from ForceGraph
+  const scene = graphRef.current.scene();
+  
+  // Add custom objects
+  const bgGroup = new THREE.Group();
+  bgGroup.name = 'timeBackground';
+  scene.add(bgGroup);
+  ```
+- **Proven Implementations**:
+  - **Temporal Gradients**: Canvas-based gradient textures
+  - **Particle Systems**: 2000+ particles with time-based colors
+  - **Morphing Geometry**: Real-time deformation animations
+  - **Custom Shaders**: GLSL for temporal wave effects
+  - **WebGL Renderer**: `{ alpha: true }` for transparency
+- **TypeScript Solutions**:
+  ```typescript
+  // Handle namespace issues pragmatically
+  const materials: any[] = [];
+  scene.traverse((child: any) => { });
+  ```
+- **Related Files**: `V2_3D_VISUALIZATION_LEARNINGS.md`
 
 ### Framer Motion
 - **Purpose**: Animation library
@@ -628,6 +670,9 @@ npm run e2e              # Playwright
 - **NEW**: Documented Tavily and LinkUp web search integration for Phase 2/3
 - **NEW**: Repositioned Neo4j as Phase 2 priority for relationship intelligence
 - **NEW**: Added Graphiti temporal knowledge graph framework for Trinity evolution tracking
+- **NEW**: Documented revolutionary 3D layered visualization system from V1
+- **NEW**: Added React Force Graph 3D transparent background technique
+- **NEW**: Preserved Three.js integration patterns and TypeScript solutions
 - **NEW**: Created comprehensive project evolution comparison report
 
 *This document serves as the single source of truth for all technologies used in Quest Core V2.*

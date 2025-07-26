@@ -329,12 +329,18 @@ const routeWithFallback = async (primary: string, fallback: string) => {
 - **Generative UI**: thesys.dev C1 API
 
 ### **Visualization**
-- **Journey Graph**: React Force Graph 3D with Graphiti real-time updates
+- **Journey Graph**: React Force Graph 3D with transparent layering system
+- **4-Layer Architecture**: 
+  - Layer 1: Temporal gradient backgrounds
+  - Layer 2: Particle effects (2000+ particles)
+  - Layer 3: Interactive graph (transparent)
+  - Layer 4: UI overlays
 - **Quest Node**: Pulsing based on proximity + voice modulation
-- **Timeline**: Three.js with floating nodes + temporal context
-- **Trinity Evolution**: Graphiti-powered time-based visualization
+- **Timeline Variants**: Spiral, circular, columns, morphing geometry
+- **Trinity Evolution**: Graphiti-powered temporal visualization
 - **Skills Network**: D3.js clustering with market demand overlays
-- **Organization Charts**: 3D company hierarchy visualization
+- **Critical Pattern**: Dynamic imports with `ssr: false`
+- **See**: `V2_3D_VISUALIZATION_LEARNINGS.md` for implementation
 
 ### **Performance Requirements**
 - Page load: <2 seconds
@@ -404,6 +410,16 @@ const routeWithFallback = async (primary: string, fallback: string) => {
 - **Performance Caching**: Intelligent query optimization
 - **GDPR Compliance**: Built-in data protection workflows
 
+### **Revolutionary 3D Visualization System**
+- **4-Layer Architecture**: Background → Effects → Graph → UI
+- **Transparent ForceGraph3D**: Enables layered temporal visualization
+- **Temporal Backgrounds**: Gradient progressions (Past→Present→Future)
+- **Particle Systems**: 2000+ particles showing data flow through time
+- **Morphing Geometry**: Real-time shape transformations
+- **12+ Variants Proven**: Spiral, circular, fixed columns, backgrounds
+- **TypeScript Solutions**: Pragmatic approaches for Three.js integration
+- **"Never Seen Before"**: Unique layered approach to temporal data
+
 ---
 
 ## 📅 **Implementation Phases**
@@ -446,6 +462,14 @@ const routeWithFallback = async (primary: string, fallback: string) => {
 - [ ] EVI 3 migration with voice cloning
 - [ ] Journey-aware responses
 - [ ] Turn-taking orchestration system
+
+#### **3D Visualization System**
+- [ ] Implement transparent ForceGraph3D setup
+- [ ] Create temporal gradient backgrounds
+- [ ] Add particle system (2000+ particles)
+- [ ] Build 4-layer rendering architecture
+- [ ] Implement timeline variants (spiral, circular, columns)
+- [ ] TypeScript pragmatic solutions for Three.js
 
 #### **Memory & Context**
 - [ ] Zep conversational memory setup
