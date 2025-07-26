@@ -315,13 +315,16 @@ Last Updated: 2025-07-26
   - Cost optimization
 
 ### Playwright MCP
-- **Purpose**: AI-graded UI testing
+- **Purpose**: AI-graded UI testing & browser automation
 - **Status**: Phase 1 - Immediate implementation
 - **Repository**: https://github.com/microsoft/playwright-mcp
 - **Use Cases**:
   - Style guide compliance
   - Accessibility validation
   - Visual regression
+  - **NEW**: End-to-end user journey testing
+  - **NEW**: Browser automation for complex flows
+  - **NEW**: Cross-browser compatibility testing
 
 ### Semgrep MCP
 - **Purpose**: Security vulnerability scanning
@@ -349,6 +352,21 @@ Last Updated: 2025-07-26
 - **Status**: Phase 3 - Team scaling
 - **Repository**: https://github.com/pieces-app/pieces-mcp
 - **Token overhead**: ~500-1000 per interaction
+
+### Sequential Thinking MCP
+- **Purpose**: Structured problem-solving for Trinity analysis
+- **Status**: Phase 3 - High priority
+- **Repository**: https://github.com/modelcontextprotocol/server-sequential-thinking
+- **Use Cases**:
+  - Dynamic Trinity pattern recognition
+  - Multi-step coaching logic
+  - Quest readiness assessment
+  - Branching user journey analysis
+- **Key Features**:
+  - Step-by-step problem breakdown
+  - Alternative reasoning paths
+  - Context preservation
+  - Hypothesis testing
 
 ---
 
@@ -506,5 +524,10 @@ npm run e2e              # Playwright
 
 **Last Updated**: 2025-07-26  
 **Maintained By**: Quest Core Development Team
+
+### Recent Updates
+- Added Sequential Thinking MCP for structured Trinity analysis
+- Enhanced Playwright MCP with browser automation capabilities from SuperClaude insights
+- Updated MCP server priorities based on Quest Core V2 needs
 
 *This document serves as the single source of truth for all technologies used in Quest Core V2.*

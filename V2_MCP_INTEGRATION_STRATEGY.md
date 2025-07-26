@@ -57,7 +57,7 @@ npm install @ref-tools/mcp-server
 }
 ```
 
-### 🎨 **PLAYWRIGHT MCP - AI-Graded UI Testing** ⭐⭐⭐⭐⭐
+### 🎨 **PLAYWRIGHT MCP - AI-Graded UI Testing & Browser Automation** ⭐⭐⭐⭐⭐
 **Priority: IMMEDIATE**
 
 #### Why Critical for V2
@@ -65,6 +65,20 @@ npm install @ref-tools/mcp-server
 - Validates Professional Mirror visualization interactions
 - Ensures accessibility compliance automatically
 - Uses accessibility tree (not screenshots) for deterministic testing
+- **NEW**: Browser automation for end-to-end user journey testing
+
+#### Enhanced Use Cases (from SuperClaude insights)
+1. **Style Guide Compliance** (Original Plan)
+   - Component visual regression testing
+   - Design token validation
+   - Accessibility standards enforcement
+
+2. **Browser Automation** (Enhanced Capability)
+   - **User Journey Testing**: Complete Story → Trinity → Quest flow
+   - **Data Scraping Validation**: Test Apify integration results
+   - **Multi-Step Interactions**: Professional Mirror timeline navigation
+   - **Cross-Browser Testing**: Ensure consistency across platforms
+   - **Performance Monitoring**: Track animation frame rates in real usage
 
 #### Integration with V2 Style Guide
 ```typescript
@@ -84,7 +98,41 @@ const playwrightTests = {
     gate: 'Test three-state system',
     feedback: 'Validate visual indicators',
     journey: 'Test complete flow'
+  },
+  // NEW: Browser automation tests
+  userJourney: {
+    registration: 'Automated sign-up through Trinity discovery',
+    dataCollection: 'Validate Apify scraping integration',
+    coachInteraction: 'Test voice coaching session flows',
+    profileCompletion: 'End-to-end profile building'
   }
+};
+```
+
+#### Browser Automation Examples
+```typescript
+// End-to-end user journey testing
+const testCompleteUserJourney = async (page: Page) => {
+  // 1. Registration flow
+  await page.goto('/register');
+  await page.fill('[data-testid="email"]', 'test@quest.com');
+  
+  // 2. LinkedIn data scraping
+  await page.click('[data-testid="connect-linkedin"]');
+  await page.waitForSelector('[data-timeline-loaded="true"]');
+  
+  // 3. Professional Mirror interaction
+  const timelineNode = page.locator('[data-timeline-period="past"]').first();
+  await timelineNode.click();
+  await page.fill('[data-correction-field]', 'Updated information');
+  
+  // 4. Trinity discovery
+  await page.click('[data-testid="discover-trinity"]');
+  await page.waitForSelector('[data-trinity-complete="true"]');
+  
+  // 5. Quest readiness check
+  const readiness = await page.getAttribute('[data-readiness-result]', 'data-status');
+  expect(readiness).toBe('ready');
 };
 ```
 
@@ -215,6 +263,64 @@ const apifyMCPConfig = {
 - Adds ~500-1000 tokens per interaction
 - Only enable when actively needed
 - Best for complex debugging sessions
+
+### 🔄 **SEQUENTIAL THINKING MCP - Structured Problem Solving** ⭐⭐⭐⭐⭐
+**Priority: HIGH (Trinity Analysis Enhancement)**
+
+#### Purpose & Value for Quest Core
+- **Dynamic Trinity Analysis**: Break down complex pattern recognition into steps
+- **Coaching Logic Enhancement**: Structured approach to multi-coach decisions
+- **Quest Readiness Assessment**: Step-by-step evaluation with branching logic
+- **User Journey Mapping**: Systematic analysis of Story → Trinity → Quest progression
+
+#### Key Capabilities
+- **Branching Logic**: Alternative reasoning paths for different user types
+- **Context Maintenance**: Preserves insights across coaching sessions
+- **Dynamic Adjustment**: Adapts thinking depth based on complexity
+- **Hypothesis Testing**: Validates Trinity patterns systematically
+
+#### Integration with Quest Core
+```typescript
+// Sequential thinking for Trinity pattern recognition
+const analyzeTrinitiyEvolution = async (userStory: Story) => {
+  const sequentialAnalysis = await mcp.sequentialThinking({
+    problem: "Identify Trinity pattern from user story",
+    steps: [
+      "Extract key life events and transitions",
+      "Identify recurring themes and motivations",
+      "Map Quest drivers across timeline",
+      "Analyze Service patterns in roles",
+      "Synthesize Pledge commitments",
+      "Validate Trinity coherence"
+    ],
+    allowBranching: true,
+    maxDepth: 10
+  });
+  
+  return sequentialAnalysis.conclusion;
+};
+```
+
+#### Implementation
+```bash
+# Install Sequential Thinking MCP
+claude mcp add sequential-thinking -s user -- npx -y @modelcontextprotocol/server-sequential-thinking
+
+# Configure for Quest Core use cases
+{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-sequential-thinking"],
+      "config": {
+        "defaultMaxSteps": 15,
+        "enableBranching": true,
+        "contextPreservation": true
+      }
+    }
+  }
+}
+```
 
 ---
 
