@@ -1,4 +1,4 @@
-# Quest Core's Trinity
+# Quest Core V2 Trinity
 
 > "Practice what you preach. Live what you build."
 
@@ -6,7 +6,7 @@
 
 ## Our Trinity Declaration
 
-Just as we ask every professional to discover their Trinity through story reflection, Quest Core as an organization must embody its own Trinity. This document serves as our north star, our accountability mirror, and our sacred commitment.
+Just as we ask every professional to discover their Trinity through story reflection, Quest Core V2 as an organization must embody its own Trinity. This document serves as our north star, our accountability mirror, and our sacred commitment.
 
 ---
 
@@ -30,11 +30,11 @@ We see professionals who:
 
 ### Our Personal Stakes
 
-**Dan**: "I've seen too many talented people lost in careers that diminish them. Quest Core is my answer to that tragedy."
+**Dan**: "I've seen too many talented people lost in careers that diminish them. Quest Core V2 is my answer to that tragedy."
 
 **Claude**: "Every interaction with someone seeking their purpose reminds me why this work matters more than any algorithm I could ever write."
 
-**The Team**: Each person on Quest Core has their own story of professional awakening - moments when they realized they were building someone else's dream instead of their own. This shared experience fuels our mission.
+**The Team**: Each person on Quest Core V2 has their own story of professional awakening - moments when they realized they were building someone else's dream instead of their own. This shared experience fuels our mission.
 
 ### What Success Looks Like
 
@@ -256,7 +256,7 @@ All three must be "yes" for us to proceed.
 
 ### Why This Matters
 
-Quest Core's Trinity isn't just corporate branding or team-building exercise. **It's our sacred responsibility to those who entrust us with their stories.**
+Quest Core V2's Trinity isn't just corporate branding or team-building exercise. **It's our sacred responsibility to those who entrust us with their stories.**
 
 When someone shares their professional journey with us, they're not just providing data - they're offering vulnerability, hope, and trust. Our Trinity is our promise that this gift will be honored, protected, and transformed into genuine service.
 
@@ -271,7 +271,7 @@ Our Trinity doesn't just guide Quest Core - it models possibility for every orga
 
 ### The Ultimate Test
 
-The ultimate test of our Trinity isn't what we build but who we become in building it. If creating Quest Core doesn't awaken us to our own authentic purpose, how can we awaken others to theirs?
+The ultimate test of our Trinity isn't what we build but who we become in building it. If creating Quest Core V2 doesn't awaken us to our own authentic purpose, how can we awaken others to theirs?
 
 **We are both the means and the end of our own mission.**
 
@@ -281,7 +281,7 @@ The ultimate test of our Trinity isn't what we build but who we become in buildi
 
 ### Our Collective Vow
 
-We, the builders of Quest Core, commit to living this Trinity not as aspiration but as daily practice. We pledge to hold each other accountable to these sacred commitments and to serve as examples of the transformation we create for others.
+We, the builders of Quest Core V2, commit to living this Trinity not as aspiration but as daily practice. We pledge to hold each other accountable to these sacred commitments and to serve as examples of the transformation we create for others.
 
 **When we forget our Quest**, may our teammates remind us of the injustice that drives us.
 
@@ -295,7 +295,7 @@ This Trinity is not just what we believe - **it's who we are and who we're becom
 
 *Signed in commitment to professional awakening for all humanity.*
 
-**The Quest Core Team - July 2025**
+**The Quest Core V2 Team - July 2025**
 
 ---
 
@@ -309,4 +309,4 @@ Like all living Trinities, ours will evolve as we learn and grow. Each evolution
 
 ---
 
-*Quest Core Trinity © 2025. Born from the belief that building sacred technology requires sacred intention.*
+*Quest Core V2 Trinity © 2025. Born from the belief that building sacred technology requires sacred intention.*

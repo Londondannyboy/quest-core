@@ -1,6 +1,6 @@
-# Quest Core Manifesto
+# Quest Core V2 Manifesto
 
-> "LinkedIn shows who you were. Quest shows who you're becoming."
+> "LinkedIn shows who you were. Quest Core V2 shows who you're becoming."
 
 ---
 
@@ -114,7 +114,7 @@ For those ready, the Quest begins. Not with generic advice but with personalized
 
 **We promise deep preparation.** Every person you coach comes with rich context - their story, their Trinity evolution, their readiness assessment. You'll never coach blindly.
 
-**We promise philosophical alignment.** Everyone at Quest Core believes in the manifesto. You'll never be asked to compromise authenticity for efficiency.
+**We promise philosophical alignment.** Everyone at Quest Core V2 believes in the manifesto. You'll never be asked to compromise authenticity for efficiency.
 
 **We promise continuous growth.** As you guide others toward their purpose, we'll support your own journey. Great coaches are always evolving.
 
@@ -122,7 +122,7 @@ For those ready, the Quest begins. Not with generic advice but with personalized
 
 **We promise to maintain the sacred.** As we scale, as investors pressure, as competitors emerge, we'll never compromise the core philosophy. Growth cannot come at the expense of truth.
 
-**We promise to honor our own Trinity.** We must practice what we preach. Our individual growth journeys inform and strengthen Quest Core's collective mission.
+**We promise to honor our own Trinity.** We must practice what we preach. Our individual growth journeys inform and strengthen Quest Core V2's collective mission.
 
 **We promise transparency in evolution.** When we learn something new about professional development, when we discover better ways to serve, we'll update our approach - and update this manifesto.
 
@@ -152,7 +152,7 @@ When one person discovers their authentic professional purpose, the effects ripp
 - They contribute more meaningfully to their communities
 - They raise children who understand that work can be sacred
 
-**Quest Core is not just changing careers. We're changing the culture of work itself.**
+**Quest Core V2 is not just changing careers. We're changing the culture of work itself.**
 
 ### The Network Effect
 
@@ -234,13 +234,13 @@ Every person who discovers their Trinity through Quest Core becomes an evangelis
 
 The old way - resume optimization, networking strategy, career laddering - will seem as quaint to future generations as newspaper classified ads seem to us.
 
-**Join us not as users but as co-creators** of a world where every professional journey is honored as the sacred quest it truly is.
+**Join Quest Core V2 not as users but as co-creators** of a world where every professional journey is honored as the sacred quest it truly is.
 
 ---
 
 *"Your Quest begins when you're ready. Let's discover if you are."*
 
-**- The Quest Core Team**
+**- The Quest Core V2 Team**
 
 ---
 
@@ -250,8 +250,8 @@ The old way - resume optimization, networking strategy, career laddering - will 
 
 This manifesto is a living document, evolving as we learn more about human professional development. Each version will be dated and preserved, creating its own story of growth and discovery.
 
-Just as individuals have Trinity evolution, Quest Core has manifesto evolution - always deepening, never abandoning core truths.
+Just as individuals have Trinity evolution, Quest Core V2 has manifesto evolution - always deepening, never abandoning core truths.
 
 ---
 
-*Quest Core Manifesto © 2025. Born from the belief that every professional journey is sacred.*
+*Quest Core V2 Manifesto © 2025. Born from the belief that every professional journey is sacred.*
