@@ -76,8 +76,28 @@ Last Updated: 2025-07-26
   - GPT-4 Turbo (Master Coach)
   - Claude-3 Sonnet (Career/Network Coach)
   - Gemini Pro (Leadership Coach)
+  - **NEW**: Kimi K2 (Skills Coach & Technical Tasks)
 - **Cost Savings**: 40-60% vs direct API calls
 - **Related Files**: `OPENROUTER_INTEGRATION.md`
+
+### Kimi K2 (Moonshot AI)
+- **Purpose**: Cost-effective AI model for coding and technical tasks
+- **Website**: https://moonshotai.github.io/Kimi-K2/
+- **Documentation**: https://platform.moonshot.ai/docs
+- **Model Variants**:
+  - `moonshotai/kimi-k2`: Paid version ($0.15/$2.50 per million tokens)
+  - `moonshotai/kimi-k2:free`: Free tier on OpenRouter
+- **Key Strengths**:
+  - 65.8% SWE-bench accuracy (vs Claude's 50.2%)
+  - 10x cheaper than Claude Sonnet 4
+  - Excellent at coding, math, and tool use
+  - 1 trillion parameters (32B active)
+- **Quest Core Use Cases**:
+  - Test generation and code scaffolding
+  - Trinity pattern analysis algorithms
+  - Technical documentation updates
+  - Skills assessment automation
+- **Limitations**: Slower output (34 tokens/sec vs Claude's 91)
 
 ### Hume AI EVI
 - **Purpose**: Empathic voice conversations with emotional intelligence
@@ -529,5 +549,7 @@ npm run e2e              # Playwright
 - Added Sequential Thinking MCP for structured Trinity analysis
 - Enhanced Playwright MCP with browser automation capabilities from SuperClaude insights
 - Updated MCP server priorities based on Quest Core V2 needs
+- **NEW**: Integrated Kimi K2 (Moonshot AI) for cost-effective technical tasks
+- **NEW**: Configured Kimi K2 as Skills Coach and added free Technical Coach role
 
 *This document serves as the single source of truth for all technologies used in Quest Core V2.*

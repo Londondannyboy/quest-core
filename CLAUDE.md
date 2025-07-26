@@ -311,9 +311,10 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 # Model selection for different coaches
 COACH_MODEL_MASTER=openai/gpt-4-turbo
 COACH_MODEL_CAREER=anthropic/claude-3-sonnet
-COACH_MODEL_SKILLS=openai/gpt-4
+COACH_MODEL_SKILLS=moonshotai/kimi-k2         # Updated: Superior coding performance
 COACH_MODEL_LEADERSHIP=google/gemini-pro
 COACH_MODEL_NETWORK=anthropic/claude-3-sonnet
+COACH_MODEL_TECHNICAL=moonshotai/kimi-k2:free # NEW: Free tier for technical tasks
 
 # Cost optimization settings
 OPENROUTER_PREFER_COST=true
@@ -509,10 +510,22 @@ const relevantFacts = await zep.graph.search({
 - OpenRouter.AI for intelligent model routing per coach type
 - Master Coach (GPT-4): Complex orchestration and final authority
 - Career Coach (Claude-3): Strategic analysis and market insights  
-- Skills Coach (GPT-4): Technical assessment and learning paths
+- **Skills Coach (Kimi K2)**: Technical assessment with 65.8% SWE-bench accuracy
 - Leadership Coach (Gemini Pro): Interpersonal and management growth
 - Network Coach (Claude-3): Relationship and networking strategy
+- **Technical Coach (Kimi K2 Free)**: Cost-free code generation and testing
 - Cost optimization through automatic model selection
+
+### **Kimi K2 Cost Optimization Strategy**
+- **10x Cost Reduction**: $0.15/M tokens vs Claude's $3/M for technical tasks
+- **Free Tier Usage**: Zero-cost test generation, documentation, and scaffolding
+- **Performance**: Outperforms GPT-4 on coding benchmarks (65.8% vs 54.6% SWE-bench)
+- **Use Cases**:
+  - Skills assessment and technical interviews
+  - Automated test suite generation
+  - Code review and refactoring suggestions
+  - Trinity pattern analysis algorithms
+  - Documentation updates and API specs
 
 ### **AI Client Abstraction Pattern**
 ```typescript
