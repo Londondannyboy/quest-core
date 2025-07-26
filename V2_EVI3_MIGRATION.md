@@ -333,6 +333,98 @@ ENABLE_VOICE_CLONING=true
 
 ---
 
+## 🎤 Journey Proximity Voice Modulation (NEW)
+
+### **Quest-Based Voice Dynamics**
+
+EVI 3 enables revolutionary voice modulation based on the user's position in their professional journey:
+
+#### **Implementation Pattern**
+```typescript
+// Calculate quest proximity from journey graph
+const calculateQuestProximity = (journeyState: JourneyState): number => {
+  const currentPosition = journeyState.currentNode.position.x;
+  const questPosition = journeyState.questNode.position.x;
+  const totalDistance = questPosition - journeyState.startNode.position.x;
+  const traveled = currentPosition - journeyState.startNode.position.x;
+  
+  return Math.min(traveled / totalDistance, 1.0); // 0 to 1
+};
+
+// Modulate voice based on proximity
+const getJourneyAwareVoiceConfig = (userId: string): VoiceConfig => {
+  const journeyState = await getJourneyState(userId);
+  const proximity = calculateQuestProximity(journeyState);
+  
+  // Dynamic voice adjustments
+  return {
+    voice_id: selectCoachVoiceForJourneyStage(journeyState),
+    expressiveness: 0.5 + (proximity * 0.4), // 0.5 to 0.9
+    pace: 1.0 + (proximity * 0.15), // 1.0 to 1.15
+    
+    // Emotional modulation
+    enthusiasm: proximity > 0.7 ? 'high' : 'moderate',
+    urgency: proximity > 0.8 ? 'increased' : 'normal',
+    
+    // Context for LLM
+    system_context: {
+      journey_position: proximity,
+      nodes_discovered: journeyState.nodes.length,
+      time_to_quest: estimateTimeToQuest(journeyState),
+      recent_achievements: journeyState.recentMilestones
+    }
+  };
+};
+```
+
+#### **Voice Behavior by Journey Stage**
+
+| Journey Position | Proximity | Voice Characteristics | Example Coaching Style |
+|-----------------|-----------|----------------------|----------------------|
+| **Early Journey** | 0-0.3 | Warm, patient, exploratory | "Let's discover what drives you..." |
+| **Mid Journey** | 0.3-0.6 | Encouraging, insightful | "I see the pattern emerging!" |
+| **Approaching Quest** | 0.6-0.8 | Excited, energizing | "You're so close to breakthrough!" |
+| **Near Quest** | 0.8-1.0 | Celebratory, affirming | "This is it! Your quest is within reach!" |
+
+#### **Real-time Voice Adaptation**
+```typescript
+// During conversation, voice adapts to discoveries
+socket.on('journey_node_discovered', async (node) => {
+  const newProximity = recalculateProximity();
+  
+  if (newProximity > previousProximity + 0.1) {
+    // Significant progress - increase enthusiasm
+    await updateVoiceConfig({
+      expressiveness: Math.min(currentExpressiveness + 0.1, 0.9),
+      message: "I just noticed something exciting about your journey!"
+    });
+  }
+});
+```
+
+#### **Coach-Specific Journey Responses**
+```typescript
+const coachJourneyResponses = {
+  biographer: {
+    early: "Tell me more about this experience...",
+    mid: "I'm starting to see the thread that connects these moments",
+    near: "Your story is coming together beautifully!"
+  },
+  pattern_seeker: {
+    early: "Interesting data point, let's explore further",
+    mid: "The pattern is becoming clear now!",
+    near: "This is the breakthrough pattern we've been looking for!"
+  },
+  career_coach: {
+    early: "Let's understand your professional foundation",
+    mid: "Your trajectory is taking shape",
+    near: "You're positioned perfectly for your next leap!"
+  }
+};
+```
+
+---
+
 ## 🎯 Success Metrics
 
 ### **Voice Quality**

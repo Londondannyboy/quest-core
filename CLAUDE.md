@@ -54,6 +54,17 @@ Multi-coach system with specialized AI agents:
 - **Leadership Coach**: Management and interpersonal growth
 - **Network Coach**: Professional relationships and networking
 
+### **LinkedIn Mirror & Journey Visualization (V2)**
+Revolutionary onboarding experience combining immediate value with visual storytelling:
+- **Mirror Concept**: Show users their professional story as we see it
+- **Immediate Value**: LinkedIn optimization suggestions during onboarding
+- **Journey Graph**: 3D left-to-right timeline visualization
+- **Quest Node**: Pulsing future node showing career destination
+- **Real-time Updates**: Graph evolves during coaching conversations
+- **Voice Integration**: EVI 3 voice intensity modulates based on quest proximity
+- **Trust Building**: Transparency about data collection and potential errors
+- See `V2_LINKEDIN_MIRROR_USE_CASE.md` for complete implementation details
+
 ## 🗂️ **4-Layer Repository System**
 
 ### **Privacy Model**
@@ -616,11 +627,15 @@ await prisma.userInsight.create({
 - `DESIGN_SYSTEM.md` - Premium visual language and brand standards
 - `POCKETFLOW_EVALUATION.md` - AI development acceleration strategy
 - `MULTI_COACH_AI_ARCHITECTURE.md` - AI coaching system design
+- `V2_LINKEDIN_MIRROR_USE_CASE.md` - Journey visualization and mirror concept
+- `V2_JOURNEY_GRAPH_VISUAL_DESIGN.md` - Detailed visual specifications
 
 ### **Status Documents**
 - `CURRENT_STATUS.md` - Development progress
 - `NEXT_SESSION_TODO.md` - Immediate priorities
 - `PRODUCT_REQUIREMENTS.md` - Feature specifications
+- `V2_PROJECT_EVOLUTION_COMPARISON.md` - Comprehensive comparison of all project phases
+- `V2_WEB_SEARCH_INTEGRATION.md` - Tavily and LinkUp integration documentation
 
 ### **Process Documents**
 - `DEVELOPMENT.md` - Development workflows
@@ -655,6 +670,49 @@ await prisma.userInsight.create({
 - Zep integration patterns
 - User data privacy compliance
 - Voice coaching UX quality
+
+## 🎭 **V2 Journey Visualization Implementation Notes**
+
+### **LinkedIn Mirror Technical Flow**
+```typescript
+// 1. Scrape LinkedIn with user consent
+const profile = await apifyClient.scrapeLinkedInProfile(url);
+
+// 2. Analyze with Kimi K2 (cost-effective)
+const mirror = await kimiK2.analyzeProfessionalMirror(profile);
+
+// 3. Create journey nodes from experience
+const nodes = createJourneyNodes(profile.experience, profile.education);
+
+// 4. Add pulsing quest node based on conversation
+const questNode = detectQuestFromConversation(zepContext);
+
+// 5. Update voice coaching based on proximity
+const voiceConfig = modulateVoiceByQuestProximity(questNode.distance);
+```
+
+### **Key V2 Features**
+- **Immediate Value**: Users get LinkedIn improvements in <3 minutes
+- **Visual Memory**: Journey graph becomes persistent visual anchor
+- **Conversational Evolution**: Graph updates as coaches discover more
+- **Trust Through Transparency**: "Here's what we see (and might miss)"
+
+## 📊 **Project Evolution Insights**
+
+### **Key Learnings from Legacy → Current → V2**
+Based on comprehensive comparison analysis:
+- **Legacy Platform Score**: 6.5/10 - Good vision but overengineered
+- **Current Quest Core**: 7.6/10 - Revolutionary Trinity but incomplete
+- **V2 Documentation**: 9.1/10 - Philosophy + technology fusion
+
+### **Critical V2 Success Factors**
+1. **Document Missing Services**: Tavily, LinkUp web search
+2. **Position Neo4j Correctly**: Phase 2 for relationships, not "future"
+3. **Security Hardening**: Learn from past API key incidents
+4. **Preserve Innovations**: Multi-agent patterns, web intelligence
+5. **Maintain Philosophy**: Resist feature creep with manifesto discipline
+
+See `V2_PROJECT_EVOLUTION_COMPARISON.md` for complete analysis.
 
 ## 🚀 **Claude Code Enhancement Opportunities**
 

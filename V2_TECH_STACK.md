@@ -162,16 +162,52 @@ Last Updated: 2025-07-26
   - Type generation
 - **Related Files**: `prisma/`, `lib/prisma.ts`
 
-### Neo4j (Future)
-- **Purpose**: Graph database for professional relationships
+### Neo4j
+- **Purpose**: Graph database for professional relationships and Trinity intelligence
 - **Website**: https://neo4j.com/
 - **Documentation**: https://neo4j.com/docs/
-- **Planned Use**: Trinity connections, network analysis
-- **Status**: Planned for Phase 3
+- **Use Cases**:
+  - Professional relationship mapping and analysis
+  - Trinity pattern recognition across users
+  - Career path intelligence and recommendations
+  - Network effect insights and connections
+  - Quest similarity and clustering
+- **Integration**: Works alongside PostgreSQL - relational data in Postgres, graph intelligence in Neo4j
+- **Status**: Phase 2 priority for relationship features
 
 ---
 
 ## 🕷️ Scraping & Automation
+
+### Tavily
+- **Purpose**: AI-powered web search for professional content discovery
+- **Website**: https://tavily.com/
+- **Documentation**: https://docs.tavily.com/
+- **Use Cases**:
+  - Discover user's articles, talks, and thought leadership
+  - Find GitHub contributions and open source work
+  - Research industry trends and insights
+  - Enhance "shock & awe" registration beyond LinkedIn
+- **Pricing**: Free tier (1K/month), Starter $50/month (25K searches)
+- **Status**: Phase 2 enhancement
+- **Related Files**: `V2_WEB_SEARCH_INTEGRATION.md`
+
+### LinkUp
+- **Purpose**: Real-time job market intelligence and skills analysis
+- **Website**: https://www.linkup.com/
+- **Documentation**: https://www.linkup.com/developers/
+- **Use Cases**:
+  - Current market demand for user's skills
+  - Salary benchmarking for Trinity-aligned roles
+  - Emerging skills identification
+  - Geographic opportunity analysis
+- **Pricing**: Custom API pricing (~$500/month)
+- **Status**: Phase 3 after product-market fit
+- **Related Files**: `V2_WEB_SEARCH_INTEGRATION.md`
+
+---
+
+## 🕷️ Primary Scraping
 
 ### Apify
 - **Purpose**: Web scraping platform for professional data
@@ -310,7 +346,15 @@ Last Updated: 2025-07-26
 - **Use Cases**:
   - Trinity visualizations
   - Professional network graphs
-- **Related Files**: `components/three/`
+  - **NEW**: LinkedIn journey visualization (left-to-right timeline)
+  - **NEW**: Quest node pulsing animations
+  - **NEW**: Real-time journey updates during conversations
+- **Key Features for V2**:
+  - Custom node objects for pulsing quest nodes
+  - Force-directed layout with fixed X positions
+  - Real-time graph updates via Zep integration
+  - Node proximity detection for voice modulation
+- **Related Files**: `components/three/`, `V2_LINKEDIN_MIRROR_USE_CASE.md`
 
 ### Three.js
 - **Purpose**: 3D graphics library
@@ -561,5 +605,11 @@ npm run e2e              # Playwright
 - **NEW**: Configured Kimi K2 as Skills Coach and added free Technical Coach role
 - **NEW**: Upgraded to Hume AI EVI 3 for speech-to-speech and voice cloning
 - **NEW**: Documented EVI 3 migration requirements (mandatory by Aug 2025)
+- **NEW**: Added LinkedIn Mirror & Journey Visualization use case for V2
+- **NEW**: Enhanced React Force Graph for professional journey timeline visualization
+- **NEW**: Integrated journey proximity with EVI 3 voice modulation
+- **NEW**: Documented Tavily and LinkUp web search integration for Phase 2/3
+- **NEW**: Repositioned Neo4j as Phase 2 priority for relationship intelligence
+- **NEW**: Created comprehensive project evolution comparison report
 
 *This document serves as the single source of truth for all technologies used in Quest Core V2.*
