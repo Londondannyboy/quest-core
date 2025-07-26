@@ -6,7 +6,7 @@
 ## 📋 **Active V2 Documents**
 
 ### **Primary Implementation Guide**
-- **`PRODUCT_REQUIREMENTS_V2.md`** - 🎯 SINGLE SOURCE OF TRUTH
+- **`V2_PRODUCT_REQUIREMENTS.md`** - 🎯 SINGLE SOURCE OF TRUTH
   - Complete requirements, features, and implementation details
   - All user journey, entity management, and technical specs
   - Implementation phases and success metrics
@@ -39,7 +39,7 @@
 
 Location: `/archive/v2-consolidated-docs/`
 
-These documents have been merged into PRODUCT_REQUIREMENTS_V2.md:
+These documents have been merged into V2_PRODUCT_REQUIREMENTS.md:
 - Implementation guides and methodologies
 - Individual feature specifications
 - Journey and architecture details
@@ -48,13 +48,13 @@ These documents have been merged into PRODUCT_REQUIREMENTS_V2.md:
 ## 🎯 **Quick Reference**
 
 **Starting V2 Development?**
-1. Read `PRODUCT_REQUIREMENTS_V2.md` first
+1. Read `V2_PRODUCT_REQUIREMENTS.md` first
 2. Reference `V2_TECH_STACK.md` for technical setup
 3. Check `V2_LAUNCH_CHECKLIST.md` before starting
 4. Use `V2_STYLE_GUIDE.md` for UI development
 
 **Need specific details?**
-Everything is in `PRODUCT_REQUIREMENTS_V2.md` - use the table of contents to navigate.
+Everything is in `V2_PRODUCT_REQUIREMENTS.md` - use the table of contents to navigate.
 
 ---
 

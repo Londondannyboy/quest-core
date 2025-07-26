@@ -15,8 +15,9 @@
 4. [Data & Entity Management](#data--entity-management)
 5. [AI & Voice Coaching System](#ai--voice-coaching-system)
 6. [Technical Requirements](#technical-requirements)
-7. [Implementation Phases](#implementation-phases)
-8. [Success Metrics](#success-metrics)
+7. [Enhanced Features from V1 Learnings](#enhanced-features-from-v1-learnings)
+8. [Implementation Phases](#implementation-phases)
+9. [Success Metrics](#success-metrics)
 
 ---
 
@@ -31,7 +32,7 @@ Quest Core V2 transforms professional development from a transactional platform 
 - Entity-based data (no strings, only validated objects)
 - Multi-voice coaching with signature transitions
 
-**Scoring Evolution**: Legacy (6.5/10) → Current (7.6/10) → V2 (9.1/10)
+**Scoring Evolution**: Legacy (6.5/10) → Current (7.6/10) → V2 (9.6/10)
 
 ---
 
@@ -47,6 +48,13 @@ Story Collection → Trinity Recognition → Quest Readiness → Quest Activatio
 - **Quest**: "What drives you?" (Purpose)
 - **Service**: "How do you serve?" (Value)
 - **Pledge**: "What do you commit to?" (Promise)
+
+### **Core Beliefs**
+- "LinkedIn shows who you were. Quest shows who you're becoming."
+- Sacred threshold: Making "not yet" an invitation, not rejection
+- Story as foundation: Everything builds from authentic narrative
+- Continuous Trinity evolution: Not static purpose discovery
+- Professional awakening: Transformation over transaction
 
 ### **Manifesto Principles**
 1. Every feature must serve the Story → Trinity → Quest journey
@@ -75,10 +83,12 @@ interface ProfessionalMirror {
 }
 ```
 
-#### **Enhanced Discovery**
-- **Phase 1**: LinkedIn via Apify
+#### **Enhanced Discovery (Shock & Awe Strategy)**
+- **Phase 1**: LinkedIn via Apify + Harvest API for company intelligence
 - **Phase 2**: Tavily web search (articles, talks, GitHub)
-- **Phase 3**: LinkUp market intelligence
+- **Phase 3**: LinkUp market intelligence + salary benchmarking
+- **Real-time Progress**: Progressive UI reveals during data gathering
+- **3D Organizational Charts**: Company relationships and influence mapping
 
 #### **Voice**: Story Coach (Female, Warm)
 - "Tell me about this transition..."
@@ -275,11 +285,21 @@ interface VoiceTransition {
 #### **Cost-Optimized Routing**
 ```typescript
 const modelSelection = {
-  storyCoach: "anthropic/claude-3-sonnet",     // Empathetic
-  questCoach: "openai/gpt-4-turbo",           // Insightful
-  deliveryCoach: "moonshotai/kimi-k2",        // Direct, efficient
-  skillsAnalysis: "moonshotai/kimi-k2:free",  // Cost-effective
-  patternRecognition: "google/gemini-pro"      // Large context
+  storyCoach: "anthropic/claude-3-sonnet",     // Empathetic ($3/M)
+  questCoach: "openai/gpt-4-turbo",           // Insightful ($10/M)
+  deliveryCoach: "moonshotai/kimi-k2",        // Direct ($0.15/M)
+  skillsAnalysis: "moonshotai/kimi-k2:free",  // Zero cost
+  patternRecognition: "google/gemini-pro",     // Large context ($0.5/M)
+  fallback: "openai/gpt-3.5-turbo"            // Budget option ($0.5/M)
+};
+
+// Automatic fallback on errors
+const routeWithFallback = async (primary: string, fallback: string) => {
+  try {
+    return await openRouter.chat(primary);
+  } catch (error) {
+    return await openRouter.chat(fallback);
+  }
 };
 ```
 
@@ -326,67 +346,136 @@ const modelSelection = {
 
 ---
 
+## 🚀 **Enhanced Features from V1 Learnings**
+
+### **Memory & Context Management (Zep Integration)**
+- **Temporal Knowledge Graphs**: Track Trinity evolution over time
+- **Cross-Session Memory**: 70% token reduction through intelligent context
+- **Fact Extraction**: 13+ entity types automatically extracted
+- **Multi-Coach Context Sharing**: Unified memory across all coaches
+- **Session Cost Tracking**: Per-conversation analytics
+
+### **Advanced Multi-Coach Orchestration**
+- **Debate Management**: Structured disagreements between coaches
+- **Turn-Taking System**: Explicit orchestration of perspectives
+- **Conflict Resolution**: Factual/Strategic/Priority handling
+- **Authority Hierarchy**: Master Coach as final arbiter
+- **Performance Analytics**: Track coaching effectiveness
+
+### **Generative UI (thesys.dev Integration)**
+- **Real-time UI Morphing**: Interfaces adapt during conversations
+- **Trinity-Aware Design**: UI changes based on user's Trinity state
+- **Streaming Updates**: Progressive interface reveals
+- **Brand Compliance**: Automatic Quest design system enforcement
+- **Context-Driven Components**: Generate UI based on coaching progress
+
+### **Professional Intelligence Features**
+- **3D Organizational Mapping**: Interactive company hierarchy visualization
+- **Skill Network Graphs**: Market demand heat maps and clustering
+- **Media Graph Visualization**: Professional content and influence
+- **Influence Scoring**: Network-based professional impact metrics
+- **Geographic Opportunity Maps**: Location-based career insights
+
+### **Cost Optimization Framework**
+- **Intelligent Model Routing**: Task-appropriate model selection
+- **Kimi K2 Integration**: 10x cost reduction for technical coaching
+- **Free Tier Utilization**: Strategic use of free models
+- **Budget-Aware Selection**: Cost caps and fallback strategies
+- **Performance/Cost Analytics**: ROI tracking per model
+
+### **Innovation Lab (PocketFlow Integration)**
+- **Rapid Prototyping**: Test coaching patterns before production
+- **Agent Development**: Self-improving coaching capabilities
+- **Pattern Analysis Services**: Trinity prediction algorithms
+- **Experimental Features**: Safe testing environment
+- **Innovation Pipeline**: Systematic feature development
+
+### **Data Architecture Enhancements**
+- **Unified Master ID**: Clerk ID consistent across all systems
+- **Automated Sync Healing**: Self-correcting inconsistencies
+- **Privacy Classification**: Public/private/encrypted data tiers
+- **Performance Caching**: Intelligent query optimization
+- **GDPR Compliance**: Built-in data protection workflows
+
+---
+
 ## 📅 **Implementation Phases**
 
 ### **Phase 1: Foundation (Weeks 1-2)**
 
 #### **Core Journey**
 - [ ] Story → Trinity → Quest flow
-- [ ] Professional Mirror with LinkedIn
+- [ ] Professional Mirror with LinkedIn + Harvest API
 - [ ] Basic voice coaching (single voice)
 - [ ] Quest Readiness Gate logic
+- [ ] Temporal Trinity visualization (Past/Present/Future)
 
 #### **Entity System**
 - [ ] Company, Skill, Education entities
 - [ ] Deduplication logic
 - [ ] Basic validation UI
 - [ ] Synthetic entity creation
+- [ ] Unified Clerk ID strategy
 
 #### **Infrastructure**
 - [ ] Semgrep security scanning
 - [ ] Monitoring (Checkly + HyperDX)
 - [ ] Error tracking and recovery
 - [ ] Basic analytics
+- [ ] Zep memory integration setup
 
 ### **Phase 2: Enhancement (Weeks 3-4)**
 
-#### **Discovery**
+#### **Discovery & Intelligence**
 - [ ] Tavily web search integration
 - [ ] Multi-platform enrichment
-- [ ] Company hierarchy mapping
-- [ ] Skill clustering AI
+- [ ] 3D organizational mapping
+- [ ] Skill clustering with market overlays
+- [ ] Progressive reveal UI during scraping
 
 #### **Voice Evolution**
-- [ ] Multi-coach personalities
-- [ ] Voice transitions
-- [ ] EVI 3 migration
+- [ ] Multi-coach personalities with debate protocols
+- [ ] Voice transitions with signature sounds
+- [ ] EVI 3 migration with voice cloning
 - [ ] Journey-aware responses
+- [ ] Turn-taking orchestration system
+
+#### **Memory & Context**
+- [ ] Zep temporal knowledge graphs
+- [ ] Cross-session memory sharing
+- [ ] Fact extraction (13+ entity types)
+- [ ] Context visualization during coaching
 
 #### **Relationships**
 - [ ] Neo4j integration
 - [ ] Professional network graph
 - [ ] Synthetic relationship validation
-- [ ] Network effects tracking
+- [ ] Influence scoring algorithms
 
 ### **Phase 3: Intelligence (Weeks 5-6)**
 
 #### **Market Intelligence**
-- [ ] LinkUp integration
-- [ ] Salary benchmarking
-- [ ] Skill demand tracking
-- [ ] Geographic insights
+- [ ] LinkUp deep integration
+- [ ] Salary benchmarking by skill cluster
+- [ ] Skill demand tracking with predictions
+- [ ] Geographic opportunity mapping
+- [ ] Media graph visualization
 
-#### **Advanced AI**
-- [ ] Kimi K2 optimization
-- [ ] Multi-model debates
-- [ ] Pattern recognition
+#### **Advanced AI & UI**
+- [ ] Kimi K2 optimization (10x cost reduction)
+- [ ] Multi-model debates with conflict resolution
+- [ ] Pattern recognition for Trinity prediction
 - [ ] Predictive Quest paths
+- [ ] thesys.dev generative UI integration
+- [ ] Real-time UI morphing
 
-#### **Scale Features**
+#### **Scale & Innovation**
 - [ ] Workflow automation (n8n)
 - [ ] Bulk entity validation
 - [ ] Community features
 - [ ] Performance optimization
+- [ ] PocketFlow innovation lab
+- [ ] Self-improving agent capabilities
 
 ---
 
@@ -444,9 +533,12 @@ const modelSelection = {
 
 ### **Definition of Done**
 - [ ] User can complete Story → Trinity → Quest journey
-- [ ] Entities are validated and deduplicated
+- [ ] Entities are validated and deduplicated  
 - [ ] Voice coaches transition naturally
 - [ ] Performance meets all benchmarks
+- [ ] Zep memory persists across sessions
+- [ ] Cost per user under $0.50/month
+- [ ] Security scanning passes all checks
 
 ---
 

@@ -76,7 +76,7 @@ Revolutionary onboarding experience combining immediate value with visual storyt
 ## 🔄 **V2 Implementation Focus**
 
 ### **📋 Single Source of Truth**
-**ALL V2 requirements are now consolidated in `PRODUCT_REQUIREMENTS_V2.md`**
+**ALL V2 requirements are now consolidated in `V2_PRODUCT_REQUIREMENTS.md`**
 
 This includes:
 - Complete user journey (Story → Trinity → Quest)
@@ -100,7 +100,7 @@ This includes:
 - 📋 See `CURRENT_STATUS.md` for V1 progress
 
 ### **🎯 V2 Next Steps**
-1. Review `PRODUCT_REQUIREMENTS_V2.md` for complete implementation guide
+1. Review `V2_PRODUCT_REQUIREMENTS.md` for complete implementation guide
 2. Create clean V2 repository with entity-first architecture
 3. Implement Phase 1: Core journey + Entity system
 4. Security scanning from Day 1 (Semgrep MCP)
@@ -642,7 +642,7 @@ await prisma.userInsight.create({
 - `CURRENT_STATUS.md` - Development progress
 - `NEXT_SESSION_TODO.md` - Immediate priorities
 - `PRODUCT_REQUIREMENTS.md` - V1 feature specifications
-- **`PRODUCT_REQUIREMENTS_V2.md`** - 🎯 **SINGLE SOURCE OF TRUTH FOR V2**
+- **`V2_PRODUCT_REQUIREMENTS.md`** - 🎯 **SINGLE SOURCE OF TRUTH FOR V2**
 - `V2_PROJECT_EVOLUTION_COMPARISON.md` - Comprehensive comparison of all project phases
 
 ### **Process Documents**
