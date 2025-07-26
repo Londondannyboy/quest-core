@@ -127,6 +127,23 @@ Last Updated: 2025-07-26
   - Session management
 - **Related Files**: `ZEP_INTEGRATION.md`
 
+### Graphiti
+- **Purpose**: Temporal knowledge graph framework for Trinity evolution tracking
+- **Website**: https://github.com/getzep/graphiti
+- **Documentation**: https://docs.getzep.com/graphiti
+- **Key Features**:
+  - **Bi-temporal data model**: Tracks event time AND ingestion time
+  - **Real-time incremental updates**: No batch processing delays
+  - **Hybrid retrieval**: Semantic + keyword + graph traversal
+  - **Point-in-time queries**: "What was your Trinity 6 months ago?"
+- **Quest Core Use Cases**:
+  - Trinity evolution visualization over time
+  - Professional journey timeline with temporal context
+  - Story → Trinity → Quest progression tracking
+  - Dynamic relationship mapping as story unfolds
+- **Integration**: Works alongside Zep for enhanced temporal intelligence
+- **Status**: Phase 2 priority for journey visualization
+
 ### PocketFlow
 - **Purpose**: Rapid AI prototyping and experimentation
 - **Website**: https://github.com/pocketflow/pocketflow
@@ -610,6 +627,7 @@ npm run e2e              # Playwright
 - **NEW**: Integrated journey proximity with EVI 3 voice modulation
 - **NEW**: Documented Tavily and LinkUp web search integration for Phase 2/3
 - **NEW**: Repositioned Neo4j as Phase 2 priority for relationship intelligence
+- **NEW**: Added Graphiti temporal knowledge graph framework for Trinity evolution tracking
 - **NEW**: Created comprehensive project evolution comparison report
 
 *This document serves as the single source of truth for all technologies used in Quest Core V2.*

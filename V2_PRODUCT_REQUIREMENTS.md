@@ -321,16 +321,20 @@ const routeWithFallback = async (primary: string, fallback: string) => {
 - **Voice**: Hume AI EVI 3 with voice cloning
 
 ### **Data Services**
-- **Primary Scraping**: Apify (LinkedIn + 5000 actors)
-- **Web Search**: Tavily AI search
-- **Market Intelligence**: LinkUp API
+- **Primary Scraping**: Apify (LinkedIn + 5000 actors) + Harvest API
+- **Web Search**: Tavily AI search (professional content discovery)
+- **Market Intelligence**: LinkUp API (jobs + salary benchmarking)
+- **Memory Management**: Zep (conversational memory) + Graphiti (temporal graphs)
 - **Workflow**: n8n for orchestration
+- **Generative UI**: thesys.dev C1 API
 
 ### **Visualization**
-- **Journey Graph**: React Force Graph 3D
-- **Quest Node**: Pulsing based on proximity
-- **Timeline**: Three.js custom implementation
-- **Skills Network**: D3.js clustering
+- **Journey Graph**: React Force Graph 3D with Graphiti real-time updates
+- **Quest Node**: Pulsing based on proximity + voice modulation
+- **Timeline**: Three.js with floating nodes + temporal context
+- **Trinity Evolution**: Graphiti-powered time-based visualization
+- **Skills Network**: D3.js clustering with market demand overlays
+- **Organization Charts**: 3D company hierarchy visualization
 
 ### **Performance Requirements**
 - Page load: <2 seconds
@@ -348,12 +352,15 @@ const routeWithFallback = async (primary: string, fallback: string) => {
 
 ## 🚀 **Enhanced Features from V1 Learnings**
 
-### **Memory & Context Management (Zep Integration)**
-- **Temporal Knowledge Graphs**: Track Trinity evolution over time
+### **Memory & Context Management (Zep + Graphiti Integration)**
+- **Temporal Knowledge Graphs**: Track Trinity evolution over time via Graphiti
+- **Bi-Temporal Tracking**: Know when things happened AND when discovered
 - **Cross-Session Memory**: 70% token reduction through intelligent context
 - **Fact Extraction**: 13+ entity types automatically extracted
 - **Multi-Coach Context Sharing**: Unified memory across all coaches
 - **Session Cost Tracking**: Per-conversation analytics
+- **Point-in-Time Queries**: "Show my Trinity from 6 months ago"
+- **Real-Time Graph Updates**: Journey visualization updates as story unfolds
 
 ### **Advanced Multi-Coach Orchestration**
 - **Debate Management**: Structured disagreements between coaches
@@ -441,10 +448,13 @@ const routeWithFallback = async (primary: string, fallback: string) => {
 - [ ] Turn-taking orchestration system
 
 #### **Memory & Context**
-- [ ] Zep temporal knowledge graphs
+- [ ] Zep conversational memory setup
+- [ ] Graphiti temporal knowledge graphs
+- [ ] Bi-temporal Trinity tracking
 - [ ] Cross-session memory sharing
 - [ ] Fact extraction (13+ entity types)
 - [ ] Context visualization during coaching
+- [ ] Point-in-time query capability
 
 #### **Relationships**
 - [ ] Neo4j integration
