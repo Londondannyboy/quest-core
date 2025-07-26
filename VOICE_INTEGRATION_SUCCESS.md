@@ -1,5 +1,7 @@
 # 🎉 Quest Core Voice Integration - Success Documentation
 
+> **🚨 CRITICAL UPDATE**: EVI 3 API now available - Major enhancements for V2 implementation
+
 ## Achievement Summary
 Successfully integrated Hume's Empathic Voice Interface (EVI) with Quest Core, creating a fully functional AI voice coach that:
 
@@ -7,8 +9,19 @@ Successfully integrated Hume's Empathic Voice Interface (EVI) with Quest Core, c
 - ✅ **Real-time Responses**: No timeouts or disconnections
 - ✅ **Professional Coaching**: Trinity System, Skills, Career, and Wellness guidance
 - ✅ **Production Ready**: Deployed on Vercel with proper configuration
+- 🆕 **EVI 3 Ready**: Migration path documented for V2
 
-## Working Configuration
+## EVI 3 Migration Alert (For V2)
+**See [V2_EVI3_MIGRATION.md](./V2_EVI3_MIGRATION.md) for complete EVI 3 implementation guide**
+
+### Key EVI 3 Enhancements:
+- **Speech-to-Speech**: Direct voice processing (no text pipeline)
+- **Voice Cloning**: Create unique coach personalities
+- **Multi-LLM Integration**: Seamless Claude 4 + Kimi K2 + GPT-4
+- **Superior Performance**: Outperforms GPT-4o in empathy & naturalness
+- **Mandatory**: EVI 1 & 2 sunset on August 30, 2025
+
+## Working Configuration (EVI 2 - Current)
 
 ### Environment Variables (Vercel)
 ```
@@ -22,6 +35,33 @@ OPENAI_API_KEY=your_openai_api_key
 - **Config ID**: 671d99bc-1358-4aa7-b92a-d6b762cb18b5
 - **CLM URL**: `https://quest-core.vercel.app/api/hume-clm-sse/chat/completions`
 - **Voice**: Your selected voice (e.g., AURA)
+- **EVI Version**: 2 (upgrade to 3 for V2)
+
+## V2 Configuration (EVI 3)
+
+### Updated Environment Variables
+```
+# Core Hume Configuration
+NEXT_PUBLIC_HUME_API_KEY=your_hume_api_key
+HUME_CLIENT_SECRET=your_client_secret
+HUME_CONFIG_ID=your_evi3_config_id  # New EVI 3 config
+
+# Coach Voice IDs (after cloning)
+BIOGRAPHER_VOICE_ID=cloned_voice_id_1
+PATTERN_SEEKER_VOICE_ID=cloned_voice_id_2
+CAREER_COACH_VOICE_ID=cloned_voice_id_3
+SKILLS_COACH_VOICE_ID=cloned_voice_id_4
+
+# EVI 3 Settings
+EVI_VERSION=3
+ENABLE_LLM_INTEGRATION=true
+```
+
+### Key EVI 3 Changes
+- **Voice Selection Required**: No default voice in EVI 3
+- **Prosody Handling**: Now delivered in separate `assistant_prosody` message
+- **SDK Upgrades**: React SDK v0.2.1+, TypeScript SDK v0.12.1+
+- **Voice Cloning**: 30 seconds of audio creates hyperrealistic coach voices
 
 ## Technical Architecture
 

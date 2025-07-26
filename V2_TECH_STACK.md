@@ -99,15 +99,23 @@ Last Updated: 2025-07-26
   - Skills assessment automation
 - **Limitations**: Slower output (34 tokens/sec vs Claude's 91)
 
-### Hume AI EVI
+### Hume AI EVI 3 (V2)
 - **Purpose**: Empathic voice conversations with emotional intelligence
+- **Version**: EVI 3 (mandatory for V2 - EVI 2 sunsets Aug 2025)
 - **Website**: https://www.hume.ai/
 - **Documentation**: https://dev.hume.ai/docs
 - **Key Features**:
+  - **NEW**: Speech-to-speech architecture (no text pipeline)
+  - **NEW**: Voice cloning (30 seconds = unique coach voice)
+  - **NEW**: Multi-LLM integration (Claude 4 + Kimi K2 + GPT-4)
   - Real-time voice processing
   - Emotional context understanding
-  - WebSocket integration
-- **Related Files**: `components/voice/`, `VOICE_INTEGRATION_SUCCESS.md`
+  - Superior to GPT-4o in empathy & naturalness
+- **Quest Core Use**:
+  - Unique voice for each coach persona
+  - Direct emotional understanding
+  - Seamless model switching mid-conversation
+- **Related Files**: `V2_EVI3_MIGRATION.md`, `VOICE_INTEGRATION_SUCCESS.md`
 
 ### Zep
 - **Purpose**: Long-term memory management for AI conversations
@@ -551,5 +559,7 @@ npm run e2e              # Playwright
 - Updated MCP server priorities based on Quest Core V2 needs
 - **NEW**: Integrated Kimi K2 (Moonshot AI) for cost-effective technical tasks
 - **NEW**: Configured Kimi K2 as Skills Coach and added free Technical Coach role
+- **NEW**: Upgraded to Hume AI EVI 3 for speech-to-speech and voice cloning
+- **NEW**: Documented EVI 3 migration requirements (mandatory by Aug 2025)
 
 *This document serves as the single source of truth for all technologies used in Quest Core V2.*

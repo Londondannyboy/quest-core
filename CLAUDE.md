@@ -23,7 +23,7 @@ Built using Cole Medin's advanced context engineering methodology to create AI-p
 - **Generative UI**: thesys.dev C1 API (dynamic interface generation)
 - **Authentication**: Clerk (user management)
 - **Database**: PostgreSQL (Neon) - Single source of truth
-- **AI & Voice**: Hume AI EVI, OpenRouter.AI (AI gateway), Zep (memory management)
+- **AI & Voice**: Hume AI EVI 3 (speech-to-speech), OpenRouter.AI (AI gateway), Zep (memory management)
 - **AI Models**: GPT-4, Claude-3, Gemini Pro (via OpenRouter for optimal routing)
 - **AI Development**: PocketFlow (rapid prototyping and experimentation)
 - **Future**: Neo4j (professional relationship graphs)
@@ -334,18 +334,30 @@ THESYS_STREAMING=true         # Enable real-time UI updates
 
 ## 🎤 **Voice Coaching Integration**
 
-### **Hume AI Setup**
-- Empathic voice conversations with emotional intelligence
-- Real-time coaching feedback and guidance
-- Session continuity with memory preservation
-- Multiple coaching modes: Trinity, Skills, Career, Wellness
+### **Hume AI EVI 3 Setup (V2)**
+- **Speech-to-Speech**: Direct voice processing without text pipeline
+- **Voice Cloning**: Unique personality for each coach (30 second samples)
+- **Multi-LLM Integration**: Seamless switching between Claude 4, Kimi K2, GPT-4
+- **Emotional Intelligence**: Superior empathy and naturalness vs GPT-4o
+- **Mandatory Migration**: EVI 2 sunsets August 30, 2025
+
+### **Coach Voice Personas**
+- **Biographer**: Warm, patient narrator (think David Attenborough)
+- **Pattern Seeker**: Insightful analyst (think Malcolm Gladwell)
+- **Career Coach**: Professional mentor voice
+- **Skills Coach**: Technical but encouraging (powered by Kimi K2)
+- **Leadership Coach**: Authoritative yet supportive
+- **Network Coach**: Socially savvy connector
 
 ### **Voice Session Flow**
 1. User initiates voice session via interface
-2. Hume AI processes speech and emotional context
-3. System queries Zep for relevant user history
-4. AI coaches provide contextual guidance
+2. EVI 3 processes speech directly (no text conversion)
+3. System routes to appropriate LLM based on coach type
+4. Voice cloned coach responds with emotional understanding
 5. Session insights stored in both Zep and PostgreSQL
+
+### **Migration Documentation**
+- See `V2_EVI3_MIGRATION.md` for complete implementation guide
 
 ## 🎨 **Generative UI Integration**
 
