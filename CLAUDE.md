@@ -73,29 +73,37 @@ Revolutionary onboarding experience combining immediate value with visual storyt
 - **Personal Repo**: Private goals, notes, development tracking
 - **Deep Repo**: AI insights, Trinity analysis, system-managed
 
-## 🔄 **Current Development Status**
+## 🔄 **V2 Implementation Focus**
 
-### **✅ Completed Features**
-- Complete user authentication with Clerk + database integration
-- Profile system with searchable companies, skills, institutions
-- Working Repo with access control, analytics, and token-based sharing
-- 3D visualization with React Force Graph
-- Voice coaching with Hume AI integration
-- Zero-approval auto-fix deployment system
-- MCP-Vercel integration for deployment monitoring
+### **📋 Single Source of Truth**
+**ALL V2 requirements are now consolidated in `PRODUCT_REQUIREMENTS_V2.md`**
 
-### **🚧 In Progress**
-- OpenRouter AI gateway integration for cost optimization
-- Multi-coach AI system implementation
-- Zustand state management enhancement
-- Enhanced context engineering
+This includes:
+- Complete user journey (Story → Trinity → Quest)
+- Entity Management System with synthetic organizations
+- Multi-voice coaching with personality transitions
+- Technical stack and integrations
+- Implementation phases and success metrics
 
-### **📋 Next Priorities**
-1. OpenRouter integration for 40-60% cost reduction and model specialization
-2. Zep integration for persistent conversation memory
-3. Zustand state management for complex AI features
-4. thesys.dev C1 API implementation for adaptive interfaces
-5. Neo4j integration for professional relationship intelligence
+### **🏗️ V2 Key Innovations**
+1. **Entity-First Data**: No strings, only validated objects
+2. **Synthetic Organizations**: Provisional entities users validate
+3. **Skill Clustering**: AI-powered taxonomy and relationships
+4. **Voice Journey**: Story Coach → Quest Coach → Delivery Coach
+5. **Smart Caching**: 6-month rescrape policy with deduplication
+
+### **📊 Current V1 Status**
+- ✅ Authentication, profiles, and basic repo system working
+- ✅ Voice coaching with Hume AI integrated
+- ✅ 3D visualizations functional
+- 🚧 Multi-coach system partially implemented
+- 📋 See `CURRENT_STATUS.md` for V1 progress
+
+### **🎯 V2 Next Steps**
+1. Review `PRODUCT_REQUIREMENTS_V2.md` for complete implementation guide
+2. Create clean V2 repository with entity-first architecture
+3. Implement Phase 1: Core journey + Entity system
+4. Security scanning from Day 1 (Semgrep MCP)
 
 ## 🛠️ **Development Guidelines**
 
@@ -633,9 +641,9 @@ await prisma.userInsight.create({
 ### **Status Documents**
 - `CURRENT_STATUS.md` - Development progress
 - `NEXT_SESSION_TODO.md` - Immediate priorities
-- `PRODUCT_REQUIREMENTS.md` - Feature specifications
+- `PRODUCT_REQUIREMENTS.md` - V1 feature specifications
+- **`PRODUCT_REQUIREMENTS_V2.md`** - 🎯 **SINGLE SOURCE OF TRUTH FOR V2**
 - `V2_PROJECT_EVOLUTION_COMPARISON.md` - Comprehensive comparison of all project phases
-- `V2_WEB_SEARCH_INTEGRATION.md` - Tavily and LinkUp integration documentation
 
 ### **Process Documents**
 - `DEVELOPMENT.md` - Development workflows
