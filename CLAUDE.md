@@ -722,6 +722,26 @@ Based on comprehensive comparison analysis:
 
 See `V2_PROJECT_EVOLUTION_COMPARISON.md` for complete analysis.
 
+## 📚 **Recent Learnings & Documentation Updates** (December 2024)
+
+### **Agent-Based Development Insights**
+- **Rob Shocks Stack Validation**: Nearly identical to Quest (Next.js, Prisma, Neon, Clerk, Tailwind)
+- **Agent Workflows**: Specialized agents with 200k token windows each
+- **PG Vector**: Use with Neon for semantic Trinity matching
+- **21st.dev Magic MCP**: Add delightful micro-interactions
+- **Whimsy Injector**: Proactive agent for adding delight after UI changes
+
+### **New Documentation**
+- `QUEST_AGENT_WORKFLOW_LEARNINGS.md` - AI Labs HIVE methodology
+- `QUEST_ROB_SHOCKS_STACK_ANALYSIS.md` - Stack validation and enhancements
+- `QUEST_V2_PHOENIX_RESTART.md` - Turn and burn restart plan with BMAD + agents
+
+### **Key Takeaways**
+1. **Validation**: Our tech choices are industry best practices
+2. **Agent Workflows**: Specialized agents dramatically improve quality
+3. **Whimsy Matters**: Micro-interactions differentiate great apps
+4. **PG Vector**: Perfect for Trinity-to-job semantic matching
+
 ## 🚀 **Claude Code Enhancement Opportunities**
 
 ### **Sub-Agents for Quest Core V2**
